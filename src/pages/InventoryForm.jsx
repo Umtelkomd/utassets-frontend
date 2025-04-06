@@ -1,4 +1,3 @@
-// src/pages/InventoryForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -10,7 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
 
 const InventoryForm = () => {
   const { id } = useParams();
@@ -18,18 +17,18 @@ const InventoryForm = () => {
   const isEditing = !!id;
 
   const initialFormState = {
-    itemName: '',
-    itemCode: '',
+    item_name: '',
+    item_code: '',
     category: '',
     quantity: 1,
     condition: 'Bueno',
     location: '',
-    acquisitionDate: '',
-    lastMaintenanceDate: '',
-    nextMaintenanceDate: '',
-    responsiblePerson: '',
+    acquisition_date: null,
+    last_maintenance_date: null,
+    next_maintenance_date: null,
+    responsible_person: '',
     notes: '',
-    image: null
+    image_path: null
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -39,7 +38,6 @@ const InventoryForm = () => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    // Cargar categorías
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${API_URL}/categories`);
@@ -52,30 +50,44 @@ const InventoryForm = () => {
 
     fetchCategories();
 
-    // Si estamos editando, cargar los datos del item
     if (isEditing) {
       const fetchItemData = async () => {
         setIsLoading(true);
         try {
           const response = await axios.get(`${API_URL}/inventory/${id}`);
           const item = response.data;
-          
+
+          // Función para ajustar la fecha y mostrar el día correcto
+          const adjustDate = (dateStr) => {
+            if (!dateStr) return null;
+            // Crear un objeto Date desde la fecha del backend
+            const date = new Date(dateStr);
+            // Ajustar manualmente al día correcto sumando el desplazamiento de la zona horaria
+            const offsetMinutes = date.getTimezoneOffset(); // Diferencia en minutos respecto a UTC
+            const adjustedDate = new Date(date.getTime() - offsetMinutes * 60 * 1000);
+            // Formatear como YYYY-MM-DD
+            const year = adjustedDate.getFullYear();
+            const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(adjustedDate.getDate()).padStart(2, '0');
+
+            return `${year}-${month}-${day}`;
+          };
+
+          // Asegurar que ningún valor sea undefined
           setFormData({
-            itemName: item.item_name,
-            itemCode: item.item_code,
-            category: item.category,
-            quantity: item.quantity,
-            condition: item.condition,
-            location: item.location,
-            acquisitionDate: item.acquisition_date ? item.acquisition_date.split('T')[0] : '',
-            lastMaintenanceDate: item.last_maintenance_date ? item.last_maintenance_date.split('T')[0] : '',
-            nextMaintenanceDate: item.next_maintenance_date ? item.next_maintenance_date.split('T')[0] : '',
-            responsiblePerson: item.responsible_person,
+            item_name: item.item_name || '',
+            item_code: item.item_code || '',
+            category: item.category || '',
+            quantity: item.quantity !== undefined ? item.quantity : 1,
+            condition: item.condition || 'Bueno',
+            location: item.location || '', acquisition_date: adjustDate(item.acquisition_date),
+            last_maintenance_date: adjustDate(item.last_maintenance_date),
+            next_maintenance_date: adjustDate(item.next_maintenance_date),
+            responsible_person: item.responsible_person || '',
             notes: item.notes || '',
-            image: null
+            image_path: item.image_path || null
           });
 
-          // Si hay una imagen, establecer la vista previa
           if (item.image_path) {
             setImagePreview(`${API_URL}${item.image_path}`);
           }
@@ -94,83 +106,65 @@ const InventoryForm = () => {
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
-    
-    if (name === 'image' && files && files[0]) {
-      setFormData({
-        ...formData,
-        image: files[0]
-      });
-      
-      // Crear URL para vista previa de la imagen
+
+    if (name === 'image_path' && files && files[0]) {
+      setFormData((prev) => ({
+        ...prev,
+        image_path: files[0]
+      }));
       const previewUrl = URL.createObjectURL(files[0]);
       setImagePreview(previewUrl);
     } else {
-      setFormData({
-        ...formData,
+      setFormData((prev) => ({
+        ...prev,
         [name]: value
-      });
+      }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.itemName.trim()) {
-      newErrors.itemName = 'El nombre del item es requerido';
-    }
-    
-    if (!formData.itemCode.trim()) {
-      newErrors.itemCode = 'El código del item es requerido';
-    }
-    
-    if (!formData.category) {
-      newErrors.category = 'La categoría es requerida';
-    }
-    
-    if (formData.quantity < 1) {
-      newErrors.quantity = 'La cantidad debe ser al menos 1';
-    }
-    
-    if (!formData.location.trim()) {
-      newErrors.location = 'La ubicación es requerida';
-    }
-    
-    if (!formData.responsiblePerson.trim()) {
-      newErrors.responsiblePerson = 'El responsable es requerido';
-    }
-    
+
+    if (!formData.item_name.trim()) newErrors.item_name = 'El nombre del item es requerido';
+    if (!formData.item_code.trim()) newErrors.item_code = 'El código del item es requerido';
+    if (!formData.category) newErrors.category = 'La categoría es requerida';
+    if (formData.quantity < 1) newErrors.quantity = 'La cantidad debe ser al menos 1';
+    if (!formData.location.trim()) newErrors.location = 'La ubicación es requerida';
+    if (!formData.responsible_person.trim()) newErrors.responsible_person = 'El responsable es requerido';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error('Por favor, completa todos los campos requeridos');
       return;
     }
-    
+
     setIsLoading(true);
-    
-    // Crear FormData para enviar archivos
+
     const data = new FormData();
     for (const key in formData) {
-      if (key === 'image' && formData[key] === null) {
-        continue;
+      if (formData[key] !== null && formData[key] !== undefined) {
+        data.append(key, formData[key]);
       }
-      data.append(key, formData[key]);
     }
-    
+
     try {
       if (isEditing) {
-        await axios.put(`${API_URL}/inventory/${id}`, data);
+        await axios.put(`${API_URL}/inventory/${id}`, data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         toast.success('Item actualizado correctamente');
       } else {
-        await axios.post(`${API_URL}/inventory`, data);
+        await axios.post(`${API_URL}/inventory`, data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         toast.success('Item añadido correctamente');
       }
-      
       navigate('/inventory');
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -182,7 +176,7 @@ const InventoryForm = () => {
 
   if (isLoading && isEditing) {
     return (
-      <div className="loading-spinner">
+      <div className="page-loading-spinner">
         <p>Cargando datos...</p>
       </div>
     );
@@ -195,42 +189,42 @@ const InventoryForm = () => {
           <h2 className="card-title">
             {isEditing ? 'Editar Item' : 'Añadir Nuevo Item'}
           </h2>
-          <button 
+          <button
             className="btn btn-secondary btn-sm"
             onClick={() => navigate('/inventory')}
           >
             <ArrowBackIcon /> Volver
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="inventory-form">
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="itemName">Nombre del Item*</label>
+              <label htmlFor="item_name">Nombre del Item*</label>
               <input
                 type="text"
-                id="itemName"
-                name="itemName"
-                className={`form-control ${errors.itemName ? 'error' : ''}`}
-                value={formData.itemName}
+                id="item_name"
+                name="item_name"
+                className={`form-control ${errors.item_name ? 'error' : ''}`}
+                value={formData.item_name}
                 onChange={handleInputChange}
                 placeholder="Ej: Taladro Eléctrico"
               />
-              {errors.itemName && <div className="error-message">{errors.itemName}</div>}
+              {errors.item_name && <div className="error-message">{errors.item_name}</div>}
             </div>
 
             <div className="form-group">
-              <label htmlFor="itemCode">Código*</label>
+              <label htmlFor="item_code">Código*</label>
               <input
                 type="text"
-                id="itemCode"
-                name="itemCode"
-                className={`form-control ${errors.itemCode ? 'error' : ''}`}
-                value={formData.itemCode}
+                id="item_code"
+                name="item_code"
+                className={`form-control ${errors.item_code ? 'error' : ''}`}
+                value={formData.item_code}
                 onChange={handleInputChange}
                 placeholder="Ej: TOOL-001"
               />
-              {errors.itemCode && <div className="error-message">{errors.itemCode}</div>}
+              {errors.item_code && <div className="error-message">{errors.item_code}</div>}
             </div>
 
             <div className="form-group">
@@ -307,54 +301,54 @@ const InventoryForm = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="acquisitionDate">Fecha de Adquisición</label>
+              <label htmlFor="acquisition_date">Fecha de Adquisición</label>
               <input
                 type="date"
-                id="acquisitionDate"
-                name="acquisitionDate"
+                id="acquisition_date"
+                name="acquisition_date"
                 className="form-control"
-                value={formData.acquisitionDate}
+                value={formData.acquisition_date}
                 onChange={handleInputChange}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="lastMaintenanceDate">Último Mantenimiento</label>
+              <label htmlFor="last_maintenance_date">Último Mantenimiento</label>
               <input
                 type="date"
-                id="lastMaintenanceDate"
-                name="lastMaintenanceDate"
+                id="last_maintenance_date"
+                name="last_maintenance_date"
                 className="form-control"
-                value={formData.lastMaintenanceDate}
+                value={formData.last_maintenance_date}
                 onChange={handleInputChange}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="nextMaintenanceDate">Próximo Mantenimiento</label>
+              <label htmlFor="next_maintenance_date">Próximo Mantenimiento</label>
               <input
                 type="date"
-                id="nextMaintenanceDate"
-                name="nextMaintenanceDate"
+                id="next_maintenance_date"
+                name="next_maintenance_date"
                 className="form-control"
-                value={formData.nextMaintenanceDate}
+                value={formData.next_maintenance_date}
                 onChange={handleInputChange}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="responsiblePerson">Responsable*</label>
+              <label htmlFor="responsible_person">Responsable*</label>
               <input
                 type="text"
-                id="responsiblePerson"
-                name="responsiblePerson"
-                className={`form-control ${errors.responsiblePerson ? 'error' : ''}`}
-                value={formData.responsiblePerson}
+                id="responsible_person"
+                name="responsible_person"
+                className={`form-control ${errors.responsible_person ? 'error' : ''}`}
+                value={formData.responsible_person}
                 onChange={handleInputChange}
                 placeholder="Ej: Juan Pérez"
               />
-              {errors.responsiblePerson && (
-                <div className="error-message">{errors.responsiblePerson}</div>
+              {errors.responsible_person && (
+                <div className="error-message">{errors.responsible_person}</div>
               )}
             </div>
 
@@ -368,20 +362,19 @@ const InventoryForm = () => {
                 onChange={handleInputChange}
                 placeholder="Información adicional relevante"
                 rows="3"
-              ></textarea>
+              />
             </div>
 
             <div className="form-group image-upload-group">
-              <label htmlFor="image">Imagen del Item</label>
+              <label htmlFor="image_path">Imagen del Item</label>
               <input
                 type="file"
-                id="image"
-                name="image"
+                id="image_path"
+                name="image_path"
                 className="form-control"
                 accept="image/*"
                 onChange={handleInputChange}
               />
-              
               {imagePreview && (
                 <div className="image-preview-container">
                   <img src={imagePreview} alt="Vista previa" className="image-preview" />
@@ -391,15 +384,11 @@ const InventoryForm = () => {
           </div>
 
           <div className="form-actions">
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={isLoading}
-            >
+            <button type="submit" className="btn btn-primary" disabled={isLoading}>
               <SaveIcon /> {isLoading ? 'Guardando...' : 'Guardar'}
             </button>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn btn-secondary"
               onClick={() => navigate('/inventory')}
               disabled={isLoading}

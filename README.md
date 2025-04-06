@@ -1,3 +1,64 @@
+# Panda Assets - Frontend
+
+Sistema de gestión de activos empresariales.
+
+## Autenticación
+
+El sistema cuenta con las siguientes funcionalidades de autenticación:
+
+1. **Inicio de sesión**:
+   - Con correo electrónico y contraseña
+   - Con Google
+
+2. **Registro de usuarios**:
+   - Los nuevos usuarios se registran inicialmente como técnicos
+   - Un administrador puede cambiar los roles posteriormente
+
+3. **Configuración de Firebase**:
+   - El sistema utiliza Firebase para autenticación
+   - La configuración ya está lista en el archivo `.env`
+
+## Primeros pasos
+
+1. **Iniciar el backend**:
+   ```bash
+   cd ../backend
+   npm run dev
+   ```
+
+2. **Iniciar el frontend**:
+   ```bash
+   npm start
+   ```
+
+3. **Crear un usuario administrador**:
+   - Regístrate primero a través de la interfaz
+   - Actualiza tu usuario en la base de datos para tener rol de administrador:
+   ```sql
+   UPDATE "user" SET role = 'administrador' WHERE email = 'tu_email@ejemplo.com';
+   ```
+
+## Estructura del proyecto
+
+- `src/context`: Contextos globales, incluido AuthContext
+- `src/pages`: Páginas principales de la aplicación
+- `src/components`: Componentes reutilizables
+- `src/utils`: Utilidades y configuraciones
+
+## Desarrollo
+
+Para ejecutar la aplicación en modo desarrollo:
+
+```bash
+npm start
+```
+
+Para construir la aplicación para producción:
+
+```bash
+npm run build
+```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

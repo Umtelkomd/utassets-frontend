@@ -13,7 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
 
 const ProjectAssignment = () => {
   const navigate = useNavigate();
@@ -25,13 +25,13 @@ const ProjectAssignment = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredInventory, setFilteredInventory] = useState([]);
-  
+
   const [newAssignment, setNewAssignment] = useState({
     inventoryId: '',
     quantity: 1,
     notes: ''
   });
-  
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -39,7 +39,7 @@ const ProjectAssignment = () => {
         // Obtener proyectos
         const projectsResponse = await axios.get(`${API_URL}/projects`);
         setProjects(projectsResponse.data);
-        
+
         // Obtener inventario
         const inventoryResponse = await axios.get(`${API_URL}/inventory`);
         setInventory(inventoryResponse.data);
@@ -51,14 +51,14 @@ const ProjectAssignment = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
-  
+
   useEffect(() => {
     // Filtrar inventario basado en el término de búsqueda
     if (searchTerm) {
-      const filtered = inventory.filter(item => 
+      const filtered = inventory.filter(item =>
         item.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.item_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -68,7 +68,7 @@ const ProjectAssignment = () => {
       setFilteredInventory(inventory);
     }
   }, [searchTerm, inventory]);
-  
+
   const fetchProjectAssignments = async (projectId) => {
     setIsLoading(true);
     try {
@@ -81,13 +81,13 @@ const ProjectAssignment = () => {
       setIsLoading(false);
     }
   };
-  
+
   const handleProjectSelect = (project) => {
     setSelectedProject(project);
     fetchProjectAssignments(project.id);
     setShowAddForm(false);
   };
-  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAssignment({
@@ -95,27 +95,27 @@ const ProjectAssignment = () => {
       [name]: value
     });
   };
-  
+
   const handleAddAssignment = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedProject) {
       toast.error('Debes seleccionar un proyecto');
       return;
     }
-    
+
     if (!newAssignment.inventoryId) {
       toast.error('Debes seleccionar un item del inventario');
       return;
     }
-    
+
     if (newAssignment.quantity < 1) {
       toast.error('La cantidad debe ser al menos 1');
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // Enviar los datos al backend
       await axios.post(`${API_URL}/projects/${selectedProject.id}/inventory`, {
@@ -123,22 +123,22 @@ const ProjectAssignment = () => {
         quantity: newAssignment.quantity,
         notes: newAssignment.notes
       });
-      
+
       // Recargar las asignaciones
       fetchProjectAssignments(selectedProject.id);
-      
+
       // Resetear el formulario
       setNewAssignment({
         inventoryId: '',
         quantity: 1,
         notes: ''
       });
-      
+
       setShowAddForm(false);
       toast.success('Item asignado correctamente al proyecto');
     } catch (error) {
       console.error('Error adding assignment:', error);
-      
+
       // Mostrar mensaje de error específico si el backend lo proporciona
       if (error.response && error.response.data && error.response.data.error) {
         toast.error(error.response.data.error);
@@ -149,16 +149,16 @@ const ProjectAssignment = () => {
       setIsLoading(false);
     }
   };
-  
+
   const handleReturnItem = async (assignmentId) => {
     if (window.confirm('¿Estás seguro de que deseas marcar este item como devuelto?')) {
       setIsLoading(true);
       try {
         await axios.put(`${API_URL}/projects/${selectedProject.id}/inventory/${assignmentId}/return`);
-        
+
         // Recargar las asignaciones
         fetchProjectAssignments(selectedProject.id);
-        
+
         toast.success('Item marcado como devuelto correctamente');
       } catch (error) {
         console.error('Error returning item:', error);
@@ -168,16 +168,16 @@ const ProjectAssignment = () => {
       }
     }
   };
-  
+
   const handleDeleteAssignment = async (assignmentId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta asignación?')) {
       setIsLoading(true);
       try {
         await axios.delete(`${API_URL}/projects/${selectedProject.id}/inventory/${assignmentId}`);
-        
+
         // Recargar las asignaciones
         fetchProjectAssignments(selectedProject.id);
-        
+
         toast.success('Asignación eliminada correctamente');
       } catch (error) {
         console.error('Error deleting assignment:', error);
@@ -187,7 +187,7 @@ const ProjectAssignment = () => {
       }
     }
   };
-  
+
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -197,15 +197,15 @@ const ProjectAssignment = () => {
       year: 'numeric'
     });
   };
-  
+
   if (isLoading && projects.length === 0) {
     return (
-      <div className="loading-spinner">
+      <div className="page-loading-spinner">
         <p>Cargando datos...</p>
       </div>
     );
   }
-  
+
   return (
     <div className="project-assignment-page">
       <div className="card">
@@ -214,12 +214,12 @@ const ProjectAssignment = () => {
             <AssignmentIcon /> Asignación a Proyectos
           </h2>
         </div>
-        
+
         <div className="project-assignment-container">
           {/* Lista de proyectos */}
           <div className="projects-list-container">
             <h3 className="section-title">Proyectos</h3>
-            
+
             {projects.length === 0 ? (
               <div className="no-projects">
                 <p>No hay proyectos disponibles.</p>
@@ -227,8 +227,8 @@ const ProjectAssignment = () => {
             ) : (
               <ul className="projects-list">
                 {projects.map(project => (
-                  <li 
-                    key={project.id} 
+                  <li
+                    key={project.id}
                     className={`project-item ${selectedProject && selectedProject.id === project.id ? 'active' : ''}`}
                     onClick={() => handleProjectSelect(project)}
                   >
@@ -246,7 +246,7 @@ const ProjectAssignment = () => {
               </ul>
             )}
           </div>
-          
+
           {/* Detalle del proyecto seleccionado */}
           <div className="project-detail-container">
             {selectedProject ? (
@@ -256,7 +256,7 @@ const ProjectAssignment = () => {
                     <h3>{selectedProject.name}</h3>
                     <span className="project-code">{selectedProject.project_code}</span>
                   </div>
-                  
+
                   <div className="project-dates">
                     <div className="date-group">
                       <span className="date-label">Inicio:</span>
@@ -268,15 +268,15 @@ const ProjectAssignment = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="project-description">
                   <p>{selectedProject.description || 'Sin descripción.'}</p>
                 </div>
-                
+
                 <div className="assignments-section">
                   <div className="section-header">
                     <h3>Equipos y Herramientas Asignados</h3>
-                    <button 
+                    <button
                       className="btn btn-primary btn-sm"
                       onClick={() => setShowAddForm(!showAddForm)}
                     >
@@ -287,7 +287,7 @@ const ProjectAssignment = () => {
                       )}
                     </button>
                   </div>
-                  
+
                   {showAddForm && (
                     <div className="assignment-form-container">
                       <form onSubmit={handleAddAssignment} className="assignment-form">
@@ -302,7 +302,7 @@ const ProjectAssignment = () => {
                             />
                           </div>
                         </div>
-                        
+
                         <div className="inventory-selector">
                           <table className="inventory-table">
                             <thead>
@@ -316,16 +316,16 @@ const ProjectAssignment = () => {
                             </thead>
                             <tbody>
                               {filteredInventory.map(item => (
-                                <tr 
+                                <tr
                                   key={item.id}
                                   className={newAssignment.inventoryId === item.id.toString() ? 'selected' : ''}
-                                  onClick={() => setNewAssignment({...newAssignment, inventoryId: item.id.toString()})}
+                                  onClick={() => setNewAssignment({ ...newAssignment, inventoryId: item.id.toString() })}
                                 >
                                   <td>
-                                    <input 
-                                      type="radio" 
-                                      name="inventoryId" 
-                                      value={item.id} 
+                                    <input
+                                      type="radio"
+                                      name="inventoryId"
+                                      value={item.id}
                                       checked={newAssignment.inventoryId === item.id.toString()}
                                       onChange={handleInputChange}
                                     />
@@ -339,7 +339,7 @@ const ProjectAssignment = () => {
                             </tbody>
                           </table>
                         </div>
-                        
+
                         <div className="form-row">
                           <div className="form-group">
                             <label htmlFor="quantity">Cantidad*</label>
@@ -354,7 +354,7 @@ const ProjectAssignment = () => {
                               required
                             />
                           </div>
-                          
+
                           <div className="form-group">
                             <label htmlFor="notes">Notas</label>
                             <input
@@ -368,10 +368,10 @@ const ProjectAssignment = () => {
                             />
                           </div>
                         </div>
-                        
+
                         <div className="form-actions">
-                          <button 
-                            type="submit" 
+                          <button
+                            type="submit"
                             className="btn btn-primary"
                             disabled={isLoading || !newAssignment.inventoryId}
                           >
@@ -381,7 +381,7 @@ const ProjectAssignment = () => {
                       </form>
                     </div>
                   )}
-                  
+
                   {isLoading ? (
                     <div className="loading">Cargando asignaciones...</div>
                   ) : assignments.length === 0 ? (
@@ -420,7 +420,7 @@ const ProjectAssignment = () => {
                               <td>
                                 <div className="action-buttons">
                                   {!assignment.returned_date && (
-                                    <button 
+                                    <button
                                       className="btn-action return"
                                       onClick={() => handleReturnItem(assignment.id)}
                                       title="Marcar como devuelto"
@@ -428,8 +428,8 @@ const ProjectAssignment = () => {
                                       <CheckIcon />
                                     </button>
                                   )}
-                                  
-                                  <button 
+
+                                  <button
                                     className="btn-action delete"
                                     onClick={() => handleDeleteAssignment(assignment.id)}
                                     title="Eliminar asignación"

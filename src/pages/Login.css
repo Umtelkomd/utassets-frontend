@@ -1,0 +1,253 @@
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background-color: #f5f7fa;
+}
+
+.login-form-container {
+  flex: 1;
+  max-width: 500px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.login-background {
+  flex: 1;
+  background: linear-gradient(135deg, #4a90e2, #6c63ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding: 2rem;
+}
+
+.login-background-content {
+  max-width: 500px;
+}
+
+.login-background h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+.login-background ul {
+  font-size: 1.2rem;
+  padding-left: 1.5rem;
+  line-height: 2;
+}
+
+.login-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.panda-logo {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.panda-logo span {
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.login-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  color: #666;
+  font-size: 1rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+}
+
+.password-input-container input {
+  flex: 1;
+  padding-right: 70px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: none;
+  border: none;
+  padding: 0 0.8rem;
+  cursor: pointer;
+  color: #4a90e2;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-top: -0.5rem;
+}
+
+.forgot-password a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+.login-button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 1rem;
+}
+
+.login-button:hover {
+  background-color: #3a7bc8;
+}
+
+.login-button:disabled {
+  background-color: #b3d0f5;
+  cursor: not-allowed;
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #999;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.separator span {
+  padding: 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.social-login {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.google-button {
+  width: 100% !important;
+  border-radius: 4px !important;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.register-link a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #d32f2f;
+  padding: 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.info-message {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  padding: 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.info-message p {
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  .login-form-container {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+  
+  .login-background {
+    display: none;
+  }
+} 

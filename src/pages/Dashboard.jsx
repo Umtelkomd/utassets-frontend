@@ -13,8 +13,9 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CategoryIcon from '@mui/icons-material/Category';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -24,7 +25,13 @@ const Dashboard = () => {
     itemsByCategory: [],
     itemsByCondition: [],
     itemsByLocation: [],
-    recentItems: []
+    recentItems: [],
+    // Nuevas estadísticas para vehículos
+    totalVehicles: 0,
+    vehiclesByStatus: [],
+    vehiclesByFuelType: [],
+    vehiclesNeedingMaintenance: 0,
+    recentVehicles: []
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,48 +40,80 @@ const Dashboard = () => {
       setIsLoading(true);
       try {
         // En un entorno real, tendríamos un endpoint específico para estadísticas
-        // Aquí simularemos procesando los datos del inventario
-        const response = await axios.get(`${API_URL}/inventory`);
-        const items = response.data;
-        
+        // Aquí simularemos procesando los datos del inventario y vehículos
+        const [inventoryResponse, vehiclesResponse] = await Promise.all([
+          axios.get(`${API_URL}/inventory`),
+          axios.get(`${API_URL}/vehicles`)
+        ]);
+
+        const items = inventoryResponse.data;
+        const vehicles = vehiclesResponse.data;
+
         // Procesar datos para estadísticas
         const totalItems = items.length;
-        
+
         // Obtener categorías únicas
         const categories = [...new Set(items.map(item => item.category))];
         const totalCategories = categories.length;
-        
+
         // Items que necesitan mantenimiento
-        const maintenanceNeeded = items.filter(item => 
-          item.condition === 'Necesita Reparación' || 
+        const maintenanceNeeded = items.filter(item =>
+          item.condition === 'Necesita Reparación' ||
           item.condition === 'Fuera de Servicio'
         ).length;
-        
+
         // Agrupar por categoría
         const itemsByCategory = categories.map(category => {
           const count = items.filter(item => item.category === category).length;
           return { category, count };
         }).sort((a, b) => b.count - a.count);
-        
+
         // Agrupar por condición
         const conditions = ['Excelente', 'Bueno', 'Regular', 'Necesita Reparación', 'Fuera de Servicio'];
         const itemsByCondition = conditions.map(condition => {
           const count = items.filter(item => item.condition === condition).length;
           return { condition, count };
         });
-        
+
         // Agrupar por ubicación
         const locations = [...new Set(items.map(item => item.location))];
         const itemsByLocation = locations.map(location => {
           const count = items.filter(item => item.location === location).length;
           return { location, count };
         }).sort((a, b) => b.count - a.count).slice(0, 5); // Top 5 ubicaciones
-        
+
         // Items más recientes (basados en la fecha de creación)
         const recentItems = [...items]
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 5);
-        
+
+        // Estadísticas de vehículos
+        const totalVehicles = vehicles.length;
+
+        // Agrupar vehículos por estado
+        const vehicleStatuses = ['Operativo', 'En Reparación', 'Fuera de Servicio'];
+        const vehiclesByStatus = vehicleStatuses.map(status => {
+          const count = vehicles.filter(vehicle => vehicle.vehicleStatus === status).length;
+          return { status, count };
+        });
+
+        // Agrupar vehículos por tipo de combustible
+        const fuelTypes = ['Gasolina', 'Diésel', 'Eléctrico', 'Híbrido'];
+        const vehiclesByFuelType = fuelTypes.map(fuelType => {
+          const count = vehicles.filter(vehicle => vehicle.fuelType === fuelType).length;
+          return { fuelType, count };
+        }).sort((a, b) => b.count - a.count);
+
+        // Vehículos que necesitan mantenimiento (no operativos)
+        const vehiclesNeedingMaintenance = vehicles.filter(
+          vehicle => vehicle.vehicleStatus !== 'Operativo'
+        ).length;
+
+        // Vehículos más recientes
+        const recentVehicles = [...vehicles]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5);
+
         setStats({
           totalItems,
           totalCategories,
@@ -82,7 +121,12 @@ const Dashboard = () => {
           itemsByCategory,
           itemsByCondition,
           itemsByLocation,
-          recentItems
+          recentItems,
+          totalVehicles,
+          vehiclesByStatus,
+          vehiclesByFuelType,
+          vehiclesNeedingMaintenance,
+          recentVehicles
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -90,13 +134,13 @@ const Dashboard = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchDashboardData();
   }, []);
 
   if (isLoading) {
     return (
-      <div className="loading-spinner">
+      <div className="page-loading-spinner">
         <p>Cargando estadísticas...</p>
       </div>
     );
@@ -105,10 +149,10 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
       <h1 className="dashboard-title">
-        <span className="panda-logo">🐼</span> 
+        <span className="panda-logo">🐼</span>
         Dashboard Panda Assets
       </h1>
-      
+
       <div className="dashboard-grid">
         {/* Tarjetas de resumen */}
         <div className="summary-card total-items">
@@ -120,7 +164,7 @@ const Dashboard = () => {
             <p className="summary-value">{stats.totalItems}</p>
           </div>
         </div>
-        
+
         <div className="summary-card total-categories">
           <div className="summary-icon">
             <CategoryIcon />
@@ -130,7 +174,7 @@ const Dashboard = () => {
             <p className="summary-value">{stats.totalCategories}</p>
           </div>
         </div>
-        
+
         <div className="summary-card maintenance-needed">
           <div className="summary-icon">
             <BuildIcon />
@@ -140,23 +184,17 @@ const Dashboard = () => {
             <p className="summary-value">{stats.maintenanceNeeded}</p>
           </div>
         </div>
-        
-        <div className="summary-card info-card">
+
+        <div className="summary-card vehicles-card">
           <div className="summary-icon">
-            <InfoIcon />
+            <DirectionsCarIcon />
           </div>
           <div className="summary-content">
-            <h3>Alerta de Inventario</h3>
-            {stats.maintenanceNeeded > 0 ? (
-              <p className="alert-message">
-                <WarningIcon /> {stats.maintenanceNeeded} items requieren atención
-              </p>
-            ) : (
-              <p className="normal-message">Todos los items están en buen estado</p>
-            )}
+            <h3>Total Vehículos</h3>
+            <p className="summary-value">{stats.totalVehicles}</p>
           </div>
         </div>
-        
+
         {/* Distribución por categoría */}
         <div className="dashboard-card category-distribution">
           <div className="card-header">
@@ -170,9 +208,9 @@ const Dashboard = () => {
                 <div className="bar-item" key={index}>
                   <div className="bar-label">{cat.category}</div>
                   <div className="bar-container">
-                    <div 
+                    <div
                       className="bar-fill"
-                      style={{ 
+                      style={{
                         width: `${(cat.count / stats.totalItems) * 100}%`,
                         backgroundColor: getBarColor(index)
                       }}
@@ -184,7 +222,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Estado de equipos */}
         <div className="dashboard-card condition-stats">
           <div className="card-header">
@@ -195,10 +233,10 @@ const Dashboard = () => {
           <div className="card-content">
             <div className="condition-chart">
               {stats.itemsByCondition.map((condition, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="condition-segment"
-                  style={{ 
+                  style={{
                     width: `${(condition.count / stats.totalItems) * 100}%`,
                     backgroundColor: getConditionColor(condition.condition)
                   }}
@@ -210,8 +248,8 @@ const Dashboard = () => {
             <div className="condition-legend">
               {stats.itemsByCondition.map((condition, index) => (
                 <div key={index} className="legend-item">
-                  <span 
-                    className="legend-color" 
+                  <span
+                    className="legend-color"
                     style={{ backgroundColor: getConditionColor(condition.condition) }}
                   ></span>
                   <span className="legend-label">{condition.condition}</span>
@@ -221,7 +259,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Top ubicaciones */}
         <div className="dashboard-card locations-card">
           <div className="card-header">
@@ -240,7 +278,75 @@ const Dashboard = () => {
             </ul>
           </div>
         </div>
-        
+
+        {/* Nueva sección: Estado de los vehículos */}
+        <div className="dashboard-card vehicle-status">
+          <div className="card-header">
+            <h3>
+              <DirectionsCarIcon /> Estado de Vehículos
+            </h3>
+            <Link to="/vehicles" className="view-all-link">
+              Ver todos
+            </Link>
+          </div>
+          <div className="card-content">
+            <div className="condition-chart">
+              {stats.vehiclesByStatus.map((status, index) => (
+                <div
+                  key={index}
+                  className="condition-segment"
+                  style={{
+                    width: `${(status.count / Math.max(1, stats.totalVehicles)) * 100}%`,
+                    backgroundColor: getVehicleStatusColor(status.status)
+                  }}
+                  title={`${status.status}: ${status.count} vehículos`}
+                >
+                </div>
+              ))}
+            </div>
+            <div className="condition-legend">
+              {stats.vehiclesByStatus.map((status, index) => (
+                <div key={index} className="legend-item">
+                  <span
+                    className="legend-color"
+                    style={{ backgroundColor: getVehicleStatusColor(status.status) }}
+                  ></span>
+                  <span className="legend-label">{status.status}</span>
+                  <span className="legend-value">{status.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Distribución de combustible */}
+        <div className="dashboard-card fuel-distribution">
+          <div className="card-header">
+            <h3>
+              <DirectionsCarIcon /> Tipos de Combustible
+            </h3>
+          </div>
+          <div className="card-content">
+            <div className="distribution-bars">
+              {stats.vehiclesByFuelType.map((fuelType, index) => (
+                <div className="bar-item" key={index}>
+                  <div className="bar-label">{fuelType.fuelType}</div>
+                  <div className="bar-container">
+                    <div
+                      className="bar-fill"
+                      style={{
+                        width: `${(fuelType.count / Math.max(1, stats.totalVehicles)) * 100}%`,
+                        backgroundColor: getFuelTypeColor(index)
+                      }}
+                    ></div>
+                    <span className="bar-value">{fuelType.count}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Items recientes */}
         <div className="dashboard-card recent-items">
           <div className="card-header">
@@ -278,7 +384,45 @@ const Dashboard = () => {
             </table>
           </div>
         </div>
-        
+
+        {/* Vehículos recientes */}
+        <div className="dashboard-card recent-vehicles">
+          <div className="card-header">
+            <h3>
+              <DirectionsCarIcon /> Vehículos Recientes
+            </h3>
+            <Link to="/vehicles" className="view-all-link">
+              Ver todos
+            </Link>
+          </div>
+          <div className="card-content">
+            <table className="recent-items-table">
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th>Marca/Modelo</th>
+                  <th>Estado</th>
+                  <th>Combustible</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recentVehicles.map((vehicle, index) => (
+                  <tr key={index}>
+                    <td>{vehicle.licensePlate}</td>
+                    <td>{vehicle.brand} {vehicle.model}</td>
+                    <td>
+                      <span className={`status-badge ${getVehicleStatusClass(vehicle.vehicleStatus)}`}>
+                        {vehicle.vehicleStatus}
+                      </span>
+                    </td>
+                    <td>{vehicle.fuelType}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {/* Acciones rápidas */}
         <div className="dashboard-card quick-actions">
           <div className="card-header">
@@ -296,9 +440,9 @@ const Dashboard = () => {
                 <BuildIcon />
                 <span>Ver Inventario</span>
               </Link>
-              <Link to="/project-assignment" className="quick-action-button">
-                <AssignmentIcon />
-                <span>Asignar a Proyecto</span>
+              <Link to="/vehicles" className="quick-action-button">
+                <DirectionsCarIcon />
+                <span>Ver Vehículos</span>
               </Link>
             </div>
           </div>
@@ -325,12 +469,35 @@ const getConditionColor = (condition) => {
   }
 };
 
+const getVehicleStatusColor = (status) => {
+  switch (status) {
+    case 'Operativo': return '#4caf50';
+    case 'En Reparación': return '#ff9800';
+    case 'Fuera de Servicio': return '#f44336';
+    default: return '#9e9e9e';
+  }
+};
+
+const getFuelTypeColor = (index) => {
+  const colors = ['#3f51b5', '#009688', '#e91e63', '#ffc107'];
+  return colors[index % colors.length];
+};
+
 const getStatusClass = (condition) => {
   switch (condition) {
     case 'Excelente': return 'excelente';
     case 'Bueno': return 'bueno';
     case 'Regular': return 'regular';
     case 'Necesita Reparación': return 'necesita-reparacion';
+    case 'Fuera de Servicio': return 'fuera-de-servicio';
+    default: return '';
+  }
+};
+
+const getVehicleStatusClass = (status) => {
+  switch (status) {
+    case 'Operativo': return 'excelente';
+    case 'En Reparación': return 'regular';
     case 'Fuera de Servicio': return 'fuera-de-servicio';
     default: return '';
   }

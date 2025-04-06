@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import axios from '../axiosConfig';
 import './InventoryList.css';
 
 // Iconos de Material UI
@@ -13,8 +13,6 @@ import BuildIcon from '@mui/icons-material/Build';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SortIcon from '@mui/icons-material/Sort';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const InventoryList = () => {
   const navigate = useNavigate();
@@ -36,12 +34,55 @@ const InventoryList = () => {
     setIsLoading(true);
     try {
       const [inventoryResponse, categoriesResponse] = await Promise.all([
-        axios.get(`${API_URL}/inventory`),
-        axios.get(`${API_URL}/categories`)
+        axios.get('/inventory'),
+        axios.get('/categories')
       ]);
-      
-      setItems(inventoryResponse.data);
-      setFilteredItems(inventoryResponse.data);
+
+      console.log('Datos de inventario recibidos:', inventoryResponse.data);
+
+      // Asegurar que los datos tienen la estructura esperada
+      const processedItems = inventoryResponse.data.map(item => {
+        // Verificar si el item tiene la estructura esperada
+        if (!item.name && !item.item_name) {
+          console.warn('Item sin nombre encontrado:', item);
+        }
+        if (!item.code && !item.item_code) {
+          console.warn('Item sin código encontrado:', item);
+        }
+
+        // Manejar el caso especial de vehículos
+        if (item.category === 'Vehículo') {
+          return {
+            ...item,
+            id: item.id || item._id,
+            item_name: item.brand && item.model
+              ? `${item.brand} ${item.model}`
+              : (item.item_name || item.name || 'Vehículo sin especificar'),
+            item_code: item.license_plate || item.licensePlate || item.placa || item.item_code || item.code || 'Sin placa',
+            category: item.category || 'Vehículo',
+            quantity: item.quantity || 1,
+            condition: item.condition || 'Desconocido',
+            location: item.location || 'Sin ubicación',
+            responsible_person: item.responsible_person || item.responsiblePerson || 'Sin asignar'
+          };
+        }
+
+        // Si los datos vienen en otro formato (name en lugar de item_name, etc.), normalizarlos
+        return {
+          ...item,
+          id: item.id || item._id,
+          item_name: item.item_name || item.name || 'Sin nombre',
+          item_code: item.item_code || item.code || 'Sin código',
+          category: item.category || 'Sin categoría',
+          quantity: item.quantity || 0,
+          condition: item.condition || 'Desconocido',
+          location: item.location || 'Sin ubicación',
+          responsible_person: item.responsible_person || item.responsiblePerson || 'Sin asignar'
+        };
+      });
+
+      setItems(processedItems);
+      setFilteredItems(processedItems);
       setCategories(categoriesResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -54,18 +95,18 @@ const InventoryList = () => {
   useEffect(() => {
     // Filtrar y ordenar items
     let result = [...items];
-    
+
     // Aplicar filtro de búsqueda
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(item => 
-        item.item_name.toLowerCase().includes(term) ||
-        item.item_code.toLowerCase().includes(term) ||
-        item.location.toLowerCase().includes(term) ||
-        item.responsible_person.toLowerCase().includes(term)
+      result = result.filter(item =>
+        (item.item_name && item.item_name.toLowerCase().includes(term)) ||
+        (item.item_code && item.item_code.toLowerCase().includes(term)) ||
+        (item.location && item.location.toLowerCase().includes(term)) ||
+        (item.responsible_person && item.responsible_person.toLowerCase().includes(term))
       );
     }
-    
+
     // Aplicar filtro de categoría
     if (categoryFilter) {
       result = result.filter(item => item.category === categoryFilter);
@@ -75,17 +116,17 @@ const InventoryList = () => {
     if (selectedCondition) {
       result = result.filter(item => item.condition === selectedCondition);
     }
-    
+
     // Aplicar ordenamiento
     if (sortField) {
       result.sort((a, b) => {
-        let valueA = a[sortField];
-        let valueB = b[sortField];
-        
+        let valueA = a[sortField] || '';
+        let valueB = b[sortField] || '';
+
         // Convertir a minúsculas si son strings
         if (typeof valueA === 'string') valueA = valueA.toLowerCase();
         if (typeof valueB === 'string') valueB = valueB.toLowerCase();
-        
+
         if (valueA < valueB) {
           return sortDirection === 'asc' ? -1 : 1;
         }
@@ -95,14 +136,14 @@ const InventoryList = () => {
         return 0;
       });
     }
-    
+
     setFilteredItems(result);
   }, [items, searchTerm, categoryFilter, sortField, sortDirection, selectedCondition]);
 
   const handleDelete = async (id, itemName) => {
     if (window.confirm(`¿Estás seguro de que deseas eliminar "${itemName}"?`)) {
       try {
-        await axios.delete(`${API_URL}/inventory/${id}`);
+        await axios.delete(`/inventory/${id}`);
         toast.success('Item eliminado correctamente');
         fetchInventory();
       } catch (error) {
@@ -144,7 +185,7 @@ const InventoryList = () => {
 
   if (isLoading) {
     return (
-      <div className="loading-spinner">
+      <div className="page-loading-spinner">
         <p>Cargando inventario...</p>
       </div>
     );
@@ -170,27 +211,27 @@ const InventoryList = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           <div className="filter-options">
             <div className="filter-group">
               <FilterListIcon />
-              <select 
+              <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="filter-select"
               >
                 <option value="">Todas las categorías</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.name}>
+                  <option key={category.id || category._id} value={category.name}>
                     {category.name}
                   </option>
                 ))}
               </select>
             </div>
-            
+
             <div className="filter-group">
               <FilterListIcon />
-              <select 
+              <select
                 value={selectedCondition}
                 onChange={(e) => setSelectedCondition(e.target.value)}
                 className="filter-select"
@@ -203,8 +244,8 @@ const InventoryList = () => {
                 <option value="Fuera de Servicio">Fuera de Servicio</option>
               </select>
             </div>
-            
-            <button 
+
+            <button
               className="btn btn-secondary btn-sm"
               onClick={resetFilters}
             >
@@ -269,7 +310,7 @@ const InventoryList = () => {
               </thead>
               <tbody>
                 {filteredItems.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item.id || item._id}>
                     <td>{item.item_code}</td>
                     <td className="item-name">{item.item_name}</td>
                     <td>{item.category}</td>
@@ -283,27 +324,43 @@ const InventoryList = () => {
                     <td>{item.responsible_person}</td>
                     <td>
                       <div className="action-buttons">
-                        <button 
+                        <button
                           className="btn-action edit"
-                          onClick={() => navigate(`/inventory/edit/${item.id}`)}
+                          onClick={() => {
+                            // Verificar si es un vehículo para redirigir a la página correcta
+                            if (item.category === 'Vehículo') {
+                              console.log('Editando un vehículo desde inventario:', item);
+
+                              // Establecer explícitamente que venimos del inventario antes de navegar
+                              localStorage.setItem('fromInventory', 'true');
+                              console.log('Contexto de inventario establecido:', localStorage.getItem('fromInventory'));
+
+                              navigate(`/vehicles/edit/${item.id}`);
+                            } else {
+                              navigate(`/inventory/edit/${item.id}`);
+                            }
+                          }}
                           title="Editar"
                         >
                           <EditIcon />
                         </button>
-                        <button 
+                        <button
                           className="btn-action delete"
-                          onClick={() => handleDelete(item.id, item.item_name)}
+                          onClick={() => handleDelete(item.id || item._id, item.item_name)}
                           title="Eliminar"
                         >
                           <DeleteIcon />
                         </button>
-                        <button 
-                          className="btn-action maintain"
-                          onClick={() => navigate(`/maintenance/${item.id}`)}
-                          title="Historial de mantenimiento"
-                        >
-                          <BuildIcon />
-                        </button>
+                        {/* Mostrar botón de mantenimiento solo para vehículos o equipos que lo requieran */}
+                        {(item.category === 'Vehículo' || item.category === 'Maquinaria' || item.category === 'Equipo') && (
+                          <button
+                            className="btn-action maintain"
+                            onClick={() => navigate(`/maintenance/history/${item.id || item._id}`)}
+                            title="Historial de mantenimiento"
+                          >
+                            <BuildIcon />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -2,17 +2,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary-color: #4caf50;
-  --primary-hover: #45a049;
-  --secondary-color: #2196f3;
-  --danger-color: #f44336;
-  --warning-color: #ff9800;
-  --success-color: #4caf50;
-  --light-color: #f5f5f5;
-  --dark-color: #333;
-  --border-color: #ddd;
-  --font-main: 'Poppins', sans-serif;
-  --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --primary-color: #3498db;
+  --primary-dark: #2980b9;
+  --secondary-color: #2ecc71;
+  --secondary-dark: #27ae60;
+  --accent-color: #e74c3c;
+  --accent-dark: #c0392b;
+  --text-color: #333;
+  --text-light: #7f8c8d;
+  --background-color: #f5f7fa;
+  --card-color: #ffffff;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --border-radius: 8px;
+  --transition-speed: 0.3s;
+  --font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 * {
@@ -22,69 +25,89 @@
 }
 
 body {
-  font-family: var(--font-main);
-  background-color: #f4f7f6;
-  color: var(--dark-color);
+  font-family: var(--font-family);
+  background-color: var(--background-color);
+  color: var(--text-color);
   line-height: 1.6;
 }
 
+/* Contenedor principal de la aplicación */
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
+/* Estilo para el contenido principal */
 .main-content {
   flex: 1;
   padding: 20px;
-  margin-left: 250px; /* Ancho del sidebar */
-  transition: margin-left 0.3s ease;
+  margin-top: 60px; /* Ajustado a la nueva altura del navbar */
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeIn 0.5s ease-out;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0;
-    padding: 10px;
+    padding: 80px 10px 10px;
   }
 }
 
 a {
   text-decoration: none;
   color: var(--primary-color);
+  transition: color var(--transition-speed);
 }
 
 .card {
-  background: white;
-  border-radius: 8px;
+  background-color: var(--card-color);
+  border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .card-title {
   font-size: 1.5rem;
-  color: var(--primary-color);
-  margin: 0;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
 }
 
-.btn {
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: none;
-  font-weight: 500;
+button {
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  text-align: center;
+  border: none;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 .btn-primary {
@@ -93,7 +116,7 @@ a {
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--primary-dark);
 }
 
 .btn-secondary {
@@ -102,80 +125,108 @@ a {
 }
 
 .btn-secondary:hover {
-  background-color: #0b7dda;
+  background-color: var(--secondary-dark);
 }
 
 .btn-danger {
-  background-color: var(--danger-color);
+  background-color: var(--accent-color);
   color: white;
 }
 
 .btn-danger:hover {
-  background-color: #d32f2f;
+  background-color: var(--accent-dark);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+  min-height: 200px;
 }
 
 .loading-spinner {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100px;
+  justify-content: center;
+  min-height: 200px;
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+
+.loading-spinner::before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  margin-bottom: 1rem;
+  border: 4px solid rgba(52, 152, 219, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color, #3498db);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 1.2rem;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
   font-weight: 500;
+  color: var(--text-color);
 }
 
-.form-control {
+input, select, textarea {
   width: 100%;
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
   font-size: 1rem;
-  transition: border 0.3s ease;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
 }
 
-.form-control:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-.text-danger {
-  color: var(--danger-color);
-}
-
-/* Estilos para la tabla */
-.table-container {
-  overflow-x: auto;
+.error-message {
+  color: var(--accent-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 1.5rem;
 }
 
-table th {
-  background-color: var(--primary-color);
-  color: white;
+th, td {
+  padding: 0.75rem 1rem;
   text-align: left;
-  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--border-color);
+th {
+  font-weight: 600;
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
-table tr:hover {
-  background-color: rgba(76, 175, 80, 0.05);
+tr:hover {
+  background-color: rgba(52, 152, 219, 0.05);
 }
 
-/* Estilos para paginación */
 .pagination {
   display: flex;
   justify-content: center;
@@ -201,7 +252,6 @@ table tr:hover {
   border-color: var(--primary-color);
 }
 
-/* Logo de Panda Assets */
 .panda-logo {
   font-size: 24px;
   font-weight: 700;
@@ -247,7 +297,6 @@ table tr:hover {
   color: #424242;
 }
 
-/* Alertas y mensajes */
 .alert {
   padding: 15px;
   margin-bottom: 20px;
@@ -278,7 +327,6 @@ table tr:hover {
   border-left: 4px solid #2196F3;
 }
 
-/* Estilos responsivos */
 @media (max-width: 576px) {
   .btn {
     width: 100%;
@@ -286,6 +334,74 @@ table tr:hover {
   }
 
   .card {
-    padding: 15px;
+    padding: 1rem;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.card-title {
+  animation: slideInFromLeft 0.5s ease-out;
+}
+
+.form-group {
+  animation: slideInFromRight 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.2s; }
+.form-group:nth-child(3) { animation-delay: 0.3s; }
+.form-group:nth-child(4) { animation-delay: 0.4s; }
+.form-group:nth-child(5) { animation-delay: 0.5s; }
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Estilo para cuando el spinner está en una página completa */
+.page-loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 64px); /* Altura del viewport menos la altura del navbar */
+  width: 100%;
+  text-align: center;
 }

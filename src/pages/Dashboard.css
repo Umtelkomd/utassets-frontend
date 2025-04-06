@@ -82,6 +82,10 @@
   .info-card {
     background-color: #9c27b0;
   }
+
+  .vehicles-card {
+    background-color: #3f51b5;
+  }
   
   .alert-message {
     display: flex;
@@ -216,30 +220,25 @@
   .legend-item {
     display: flex;
     align-items: center;
-    margin-right: 15px;
+    font-size: 0.9rem;
   }
   
   .legend-color {
-    width: 15px;
-    height: 15px;
-    border-radius: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
     margin-right: 5px;
   }
   
   .legend-label {
-    font-size: 0.9rem;
     margin-right: 5px;
   }
   
   .legend-value {
     font-weight: 600;
-    background-color: #f1f1f1;
-    border-radius: 10px;
-    padding: 2px 8px;
-    font-size: 0.8rem;
   }
   
-  /* Top ubicaciones */
+  /* Ubicaciones */
   .locations-list {
     list-style: none;
     padding: 0;
@@ -249,7 +248,7 @@
   .location-item {
     display: flex;
     justify-content: space-between;
-    padding: 12px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #f1f1f1;
   }
   
@@ -262,28 +261,56 @@
   }
   
   .location-count {
-    background-color: #f1f1f1;
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 0.9rem;
+    color: var(--dark-gray);
+    font-weight: 500;
   }
   
-  /* Items recientes */
+  /* Tablas de items recientes */
   .recent-items-table {
     width: 100%;
     border-collapse: collapse;
   }
   
-  .recent-items-table th {
+  .recent-items-table th,
+  .recent-items-table td {
+    padding: 12px;
     text-align: left;
-    padding: 10px;
-    background-color: #f1f1f1;
-    font-weight: 600;
+    border-bottom: 1px solid #f1f1f1;
   }
   
-  .recent-items-table td {
-    padding: 10px;
-    border-bottom: 1px solid #f1f1f1;
+  .recent-items-table th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+    color: var(--dark-gray);
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+  }
+  
+  .status-badge.excelente {
+    background-color: #4caf50;
+  }
+  
+  .status-badge.bueno {
+    background-color: #2196f3;
+  }
+  
+  .status-badge.regular {
+    background-color: #ff9800;
+  }
+  
+  .status-badge.necesita-reparacion {
+    background-color: #f44336;
+  }
+  
+  .status-badge.fuera-de-servicio {
+    background-color: #9e9e9e;
   }
   
   /* Acciones rápidas */
@@ -293,9 +320,9 @@
     gap: 15px;
   }
   
-  @media (max-width: 576px) {
+  @media (max-width: 768px) {
     .quick-actions-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
     }
   }
   
@@ -304,32 +331,59 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #f9f9f9;
-    border: 1px solid var(--border-color);
+    padding: 15px;
+    background-color: var(--light-bg);
     border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--dark-color);
+    transition: all 0.2s ease;
+  }
+  
+  .quick-action-button:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-2px);
   }
   
   .quick-action-button svg {
     font-size: 2rem;
+    margin-bottom: 8px;
     color: var(--primary-color);
-    margin-bottom: 10px;
   }
   
   .quick-action-button span {
     font-weight: 500;
-    color: var(--dark-color);
+    text-align: center;
   }
   
-  .quick-action-button:hover {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    transform: translateY(-5px);
+  /* Estado de carga */
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 1.2rem;
+    color: var(--dark-gray);
   }
-  
-  .quick-action-button:hover svg,
-  .quick-action-button:hover span {
-    color: white;
+
+  /* Secciones de vehículos */
+  .vehicle-status .card-header h3 svg,
+  .fuel-distribution .card-header h3 svg,
+  .recent-vehicles .card-header h3 svg {
+    color: #3f51b5;
+  }
+
+  .quick-action-button:hover svg {
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
