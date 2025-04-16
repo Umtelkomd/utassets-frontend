@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import './Profile.css';
 import { toast } from 'react-toastify';
+import ProfileImageUpload from '../components/ProfileImageUpload';
 
 // Iconos
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -18,12 +19,10 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 const Profile = () => {
     const { currentUser, updateUserProfile } = useAuth();
     const [profile, setProfile] = useState({
-        displayName: '',
+        fullName: '',
         email: '',
-        phoneNumber: '',
-        department: '',
-        position: '',
-        address: '',
+        phone: '',
+        imagePath: '',
     });
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
@@ -36,15 +35,11 @@ const Profile = () => {
 
     useEffect(() => {
         if (currentUser) {
-            // Cargar datos del perfil desde Firebase/Backend
             setProfile({
-                displayName: currentUser.displayName || '',
+                fullName: currentUser.fullName || '',
                 email: currentUser.email || '',
-                photoURL: currentUser.photoURL || '',
-                phoneNumber: currentUser.phoneNumber || '',
-                department: currentUser.department || 'No especificado',
-                position: currentUser.position || 'No especificado',
-                address: currentUser.address || 'No especificada',
+                phone: currentUser.phone || '',
+                imagePath: currentUser.imagePath || ''
             });
             setLoading(false);
         }
@@ -70,20 +65,14 @@ const Profile = () => {
         try {
             setLoading(true);
 
-            // Actualizar el perfil en Firebase/Backend
-            await updateUserProfile({
-                displayName: profile.displayName,
-                photoURL: profile.photoURL,
-            });
-
-            // Si tienes un backend, puedes guardar información adicional
-            if (currentUser.uid) {
-                await axios.put(`/api/users/${currentUser.uid}`, {
-                    phoneNumber: profile.phoneNumber,
-                    department: profile.department,
-                    position: profile.position,
-                    address: profile.address,
+            if (currentUser.id) {
+                const updatedUser = await updateUserProfile({
+                    phone: profile.phone,
+                    email: profile.email,
+                    fullName: profile.fullName,
                 });
+
+                console.log('Usuario actualizado:', updatedUser);
             }
 
             toast.success('Perfil actualizado correctamente');
@@ -153,14 +142,10 @@ const Profile = () => {
             </div>
 
             <div className="profile-content">
-                <div className="profile-section user-info">
-                    <div className="profile-photo">
-                        {profile.photoURL ? (
-                            <img src={profile.photoURL} alt="Foto de perfil" />
-                        ) : (
-                            <AccountCircleIcon className="default-avatar" />
-                        )}
-                    </div>
+                <div className="profile-section">
+                    <ProfileImageUpload onImageUpdate={(imagePath) => {
+                        setProfile(prev => ({ ...prev, imagePath }));
+                    }} />
 
                     <div className="profile-details">
                         <div className="profile-field">
@@ -171,11 +156,11 @@ const Profile = () => {
                                     <input
                                         type="text"
                                         name="displayName"
-                                        value={profile.displayName}
+                                        value={profile.fullName}
                                         onChange={handleInputChange}
                                     />
                                 ) : (
-                                    <p>{profile.displayName || 'No especificado'}</p>
+                                    <p>{profile.fullName || 'No especificado'}</p>
                                 )}
                             </div>
                         </div>
@@ -195,69 +180,14 @@ const Profile = () => {
                                 {editing ? (
                                     <input
                                         type="text"
-                                        name="phoneNumber"
-                                        value={profile.phoneNumber}
+                                        name="phone"
+                                        value={profile.phone}
                                         onChange={handleInputChange}
                                     />
                                 ) : (
-                                    <p>{profile.phoneNumber || 'No especificado'}</p>
+                                    <p>{profile.phone || 'No especificado'}</p>
                                 )}
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="profile-section work-info">
-                    <h2>Información Laboral</h2>
-
-                    <div className="profile-field">
-                        <WorkIcon className="field-icon" />
-                        <div className="field-content">
-                            <label>Cargo</label>
-                            {editing ? (
-                                <input
-                                    type="text"
-                                    name="position"
-                                    value={profile.position}
-                                    onChange={handleInputChange}
-                                />
-                            ) : (
-                                <p>{profile.position}</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="profile-field">
-                        <LocationOnIcon className="field-icon" />
-                        <div className="field-content">
-                            <label>Departamento</label>
-                            {editing ? (
-                                <input
-                                    type="text"
-                                    name="department"
-                                    value={profile.department}
-                                    onChange={handleInputChange}
-                                />
-                            ) : (
-                                <p>{profile.department}</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="profile-field">
-                        <LocationOnIcon className="field-icon" />
-                        <div className="field-content">
-                            <label>Dirección</label>
-                            {editing ? (
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={profile.address}
-                                    onChange={handleInputChange}
-                                />
-                            ) : (
-                                <p>{profile.address}</p>
-                            )}
                         </div>
                     </div>
                 </div>

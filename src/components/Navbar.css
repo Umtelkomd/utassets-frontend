@@ -67,7 +67,7 @@
   align-items: center;
   height: 100%;
   padding: 0 1.2rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: white;
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s;
@@ -104,7 +104,7 @@
 .nav-icon {
   margin-right: 0.5rem;
   font-size: 1.2rem;
-  transition: transform 0.3s;
+  color: white;
 }
 
 .navbar-item:hover .nav-icon {
@@ -124,10 +124,11 @@
 .profile-trigger {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.2rem;
   cursor: pointer;
   border-radius: 8px;
   transition: background-color 0.3s;
+  gap: 1rem;
 }
 
 .profile-trigger:hover {
@@ -135,17 +136,17 @@
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #3498db, #2ecc71);
-  margin-right: 0.8rem;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.2);
   transition: transform 0.3s, border 0.3s;
+  flex-shrink: 0;
 }
 
 .profile-trigger:hover .avatar {
@@ -159,23 +160,24 @@
   object-fit: cover;
 }
 
-.user-info {
+.profile-trigger .user-info {
   display: flex;
   flex-direction: column;
-  margin-right: 0.5rem;
+  gap: 0;
 }
 
-.username {
+.profile-trigger .username {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: white;
 }
 
-.user-role {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.7);
+.profile-trigger .user-role {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-top: -2px;
 }
 
 .profile-menu {
@@ -241,7 +243,7 @@
 
 .navbar-dropdown.active .navbar-dropdown-trigger {
   color: #3498db;
-  background-color: rgba(52, 152, 219, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .navbar-dropdown-trigger {
@@ -249,14 +251,14 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.8rem 1rem;
-  color: #243447;
+  color: white;
   text-decoration: none;
   border-radius: 4px;
   transition: all 0.3s ease;
 }
 
 .navbar-dropdown-trigger:hover {
-  background-color: rgba(52, 152, 219, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   color: #3498db;
 }
 
@@ -277,6 +279,9 @@
   z-index: 100;
   overflow: hidden;
   animation: fadeInMenu 0.3s ease;
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @keyframes fadeInMenu {

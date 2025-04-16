@@ -1,200 +1,114 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../axiosConfig';
 
-// API URL del backend
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
-
-// Contexto de autenticación
 const AuthContext = createContext();
 
-// Hook personalizado para usar el contexto de autenticación
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
-
-// Proveedor del contexto de autenticación
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [userToken, setUserToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [isAuthInitialized, setIsAuthInitialized] = useState(false);
 
-  // Función para iniciar sesión con email y contraseña
-  const login = async (email, password) => {
-    try {
-      setError('');
-      
-      // Iniciar sesión con el backend
-      const response = await axios.post(`${API_URL}/auth/login`, {
-        username: email,
-        password: password
-      });
-      
-      if (response.data && response.data.token) {
-        // Guardar token en localStorage
-        localStorage.setItem('authToken', response.data.token);
-        setUserToken(response.data.token);
-        
-        // Establecer datos de usuario desde la respuesta del backend
-        if (response.data.user) {
-          const userData = {
-            id: response.data.user.id,
-            email: response.data.user.email,
-            username: response.data.user.username,
-            displayName: response.data.user.fullName,
-            role: response.data.user.role
-          };
-          
-          console.log('Usuario establecido desde login:', userData);
-          setCurrentUser(userData);
-        }
-        
-        return response.data;
-      }
-      
-      throw new Error('Respuesta del servidor no contiene token');
-    } catch (err) {
-      console.error('Error al iniciar sesión:', err);
-      setError(err.response?.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.');
-      throw err;
-    }
-  };
-
-  // Función para registrar un nuevo usuario
-  const register = async (email, password, fullName) => {
-    try {
-      setError('');
-      
-      // Registrar usuario en el backend
-      const response = await axios.post(`${API_URL}/auth/register`, {
-        username: email.split('@')[0],
-        email,
-        password,
-        fullName
-      });
-      
-      if (response.data && response.data.user) {
-        // Si la respuesta incluye un token, guardarlo
-        if (response.data.token) {
-          localStorage.setItem('authToken', response.data.token);
-          setUserToken(response.data.token);
-        }
-        
-        return response.data;
-      }
-      
-      return response.data;
-    } catch (err) {
-      console.error('Error al registrar usuario:', err);
-      setError(err.response?.data?.message || 'Error al registrar usuario. Inténtalo nuevamente.');
-      throw err;
-    }
-  };
-
-  // Función para cerrar sesión
-  const logout = async () => {
-    try {
-      // Limpiar el token y el usuario actual
-      localStorage.removeItem('authToken');
-      setUserToken(null);
-      setCurrentUser(null);
-    } catch (err) {
-      setError('Error al cerrar sesión: ' + err.message);
-      throw err;
-    }
-  };
-
-  // Función para restablecer contraseña (envía email al backend)
-  const resetPassword = async (email) => {
-    try {
-      const response = await axios.post(`${API_URL}/auth/reset-password`, { email });
-      return response.data;
-    } catch (err) {
-      setError('Error al solicitar restablecimiento de contraseña: ' + err.message);
-      throw err;
-    }
-  };
-
-  // Efecto para verificar el estado de autenticación al cargar la aplicación
-  useEffect(() => {
-    console.log('Verificando autenticación...');
-    
-    const initializeAuth = async () => {
-      setLoading(true);
-      try {
-        // Verificar si hay un token de autenticación en localStorage
-        const token = localStorage.getItem('authToken');
-        
-        console.log('Token encontrado en localStorage:', !!token);
-        
-        if (token) {
-          try {
-            // Verificar el token con el backend y obtener información del usuario
-            console.log('Verificando token con el backend...');
-            const response = await axios.get(
-              `${API_URL}/auth/me`, 
-              {
-                headers: { Authorization: `Bearer ${token}` }
-              }
-            );
-            
-            console.log('Respuesta del backend (token válido):', response.data);
-            
-            if (response.data) {
-              // Establecer el token y la información del usuario
-              setUserToken(token);
-              
-              const userData = {
-                id: response.data.id,
-                email: response.data.email,
-                username: response.data.username,
-                displayName: response.data.fullName,
-                role: response.data.role
-              };
-              
-              console.log('Estableciendo usuario desde token:', userData);
-              setCurrentUser(userData);
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                if (parsedUser && typeof parsedUser === 'object') {
+                    setCurrentUser(parsedUser);
+                }
+            } catch (error) {
+                console.error('Error al parsear usuario almacenado:', error);
+                localStorage.removeItem('user');
             }
-          } catch (err) {
-            console.error('Error al verificar token con backend:', err);
-            // Si hay error, eliminar el token
-            localStorage.removeItem('authToken');
-            setUserToken(null);
-          }
         }
-        
-      } catch (error) {
-        console.error('Error al inicializar autenticación:', error);
-      } finally {
         setIsAuthInitialized(true);
-        setLoading(false);
-      }
+    }, []);
+
+    const login = async (userData) => {
+        try {
+            const response = await axios.post('/auth/login', userData);
+            const { user, token } = response.data;
+
+            if (!user || !user.role) {
+                throw new Error('Datos de usuario inválidos o rol no asignado');
+            }
+
+            const userWithRole = {
+                ...user,
+                role: user.role
+            };
+
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(userWithRole));
+            setCurrentUser(userWithRole);
+
+            return userWithRole;
+        } catch (error) {
+            console.error('Error al iniciar sesión:', error);
+            throw error;
+        }
     };
-    
-    // Iniciar verificación de autenticación
-    initializeAuth();
-  }, []);
 
-  // Valores a proporcionar a través del contexto
-  const value = {
-    currentUser,
-    userToken,
-    login,
-    register,
-    logout,
-    resetPassword,
-    loading,
-    error,
-    setError,
-    isAuthInitialized
-  };
+    const logout = async () => {
+        try {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setCurrentUser(null);
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            throw error;
+        }
+    };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+    const updateUserProfile = async (userData) => {
+        try {
+            if (!currentUser) {
+                throw new Error('No hay usuario autenticado');
+            }
+
+            const response = await axios.put(`/users/${currentUser.id}`, {
+                ...userData,
+                imagePath: userData.imagePath || null
+            });
+            const updatedUser = response.data;
+
+            if (!updatedUser || !updatedUser.role) {
+                throw new Error('Datos de usuario inválidos o rol no asignado');
+            }
+
+            const userWithRole = {
+                ...updatedUser,
+                role: updatedUser.role
+            };
+
+            setCurrentUser(userWithRole);
+            localStorage.setItem('user', JSON.stringify(userWithRole));
+
+            return userWithRole;
+        } catch (error) {
+            console.error('Error al actualizar el perfil:', error);
+            throw error;
+        }
+    };
+
+    const value = {
+        currentUser,
+        isAuthInitialized,
+        login,
+        logout,
+        updateUserProfile
+    };
+
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
-export default AuthContext; 
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth debe usarse dentro de un AuthProvider');
+    }
+    return context;
+}; 

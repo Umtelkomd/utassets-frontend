@@ -13,17 +13,25 @@ const instance = axios.create({
   }
 });
 
-// Interceptor para añadir el token de autenticación a las peticiones
+// Interceptor para añadir el token de autenticación y manejar headers
 instance.interceptors.request.use(
   (config) => {
     console.log(`Enviando solicitud a: ${config.baseURL}${config.url}`, config.method);
-    const token = localStorage.getItem('authToken');
+    
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
       console.log('Token incluido en la solicitud');
     } else {
-      console.log('No hay token disponible para la solicitud');
+      console.warn('No se encontró token de autenticación');
     }
+
+    // Si los datos son FormData, asegurarse de que el Content-Type sea multipart/form-data
+    if (config.data instanceof FormData) {
+      config.headers['Content-Type'] = 'multipart/form-data';
+      console.log('Configurando headers para FormData');
+    }
+
     return config;
   },
   (error) => {
@@ -51,6 +59,9 @@ instance.interceptors.response.use(
       if (error.response.status === 401) {
         // Token expirado o inválido, redirigir a login
         console.error('Error 401: Unauthorized - Sesión expirada o token inválido');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
       }
     } else if (error.request) {
       // La petición fue hecha pero no se recibió respuesta

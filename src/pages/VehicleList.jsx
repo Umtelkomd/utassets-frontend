@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import axiosInstance from '../axiosConfig';
 import './VehicleList.css';
 import { usePermissions } from '../context/PermissionsContext';
 
@@ -9,15 +9,10 @@ import { usePermissions } from '../context/PermissionsContext';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import BuildIcon from '@mui/icons-material/Build';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SortIcon from '@mui/icons-material/Sort';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const VehicleList = () => {
     const navigate = useNavigate();
@@ -42,9 +37,9 @@ const VehicleList = () => {
     const fetchVehicles = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_URL}/vehicles`);
+            const response = await axiosInstance.get('/vehicles');
             const vehiclesData = response.data;
-
+            console.log('vehiclesData', vehiclesData)
             setVehicles(vehiclesData);
             setFilteredVehicles(vehiclesData);
 
@@ -115,7 +110,7 @@ const VehicleList = () => {
     const handleDelete = async (inventoryId, vehicle) => {
         if (window.confirm(`¿Estás seguro de que deseas eliminar el vehículo con placa "${vehicle.licensePlate}"?`)) {
             try {
-                await axios.delete(`${API_URL}/vehicles/${inventoryId}`);
+                await axiosInstance.delete(`/vehicles/${vehicle.id}`);
                 toast.success('Vehículo eliminado correctamente');
                 fetchVehicles();
             } catch (error) {
@@ -216,7 +211,14 @@ const VehicleList = () => {
             ) : (
                 <div className="vehicle-list">
                     {filteredVehicles.map((vehicle) => (
-                        <div key={vehicle.inventoryId} className="vehicle-card">
+                        <div key={vehicle.id} className="vehicle-card">
+                            <div className="vehicle-image-container">
+                                <img
+                                    src={vehicle.imagePath ? `${API_URL}/uploads/vehicles/${vehicle.imagePath}` : '/default-vehicle.jpg'}
+                                    alt={vehicle.brand}
+                                    className="vehicle-image"
+                                />
+                            </div>
                             <div className="vehicle-info">
                                 <div className="vehicle-primary-info">
                                     <h3>{vehicle.brand} {vehicle.model}</h3>
@@ -232,24 +234,15 @@ const VehicleList = () => {
                             </div>
                             <div className="vehicle-actions">
                                 <Link
-                                    to={`/vehicles/${vehicle.inventoryId}`}
+                                    to={`/vehicles/${vehicle.id}`}
                                     className="action-button view-button"
                                     title="Ver detalles"
                                 >
                                     <VisibilityIcon />
                                 </Link>
-                                {hasPermission('viewVehicleAssignments') && (
-                                    <Link
-                                        to={`/vehicles/assignment/${vehicle.inventoryId}`}
-                                        className="action-button assign-button"
-                                        title="Gestionar Asignaciones"
-                                    >
-                                        <AssignmentIndIcon />
-                                    </Link>
-                                )}
                                 {hasPermission('canEditVehicle') && (
                                     <Link
-                                        to={`/vehicles/edit/${vehicle.inventoryId}`}
+                                        to={`/vehicles/edit/${vehicle.id}`}
                                         className="action-button edit-button"
                                         title="Editar"
                                     >
@@ -258,7 +251,7 @@ const VehicleList = () => {
                                 )}
                                 {hasPermission('canDeleteVehicle') && (
                                     <button
-                                        onClick={() => handleDelete(vehicle.inventoryId, vehicle)}
+                                        onClick={() => handleDelete(vehicle.id, vehicle)}
                                         className="action-button delete-button"
                                         title="Eliminar"
                                     >

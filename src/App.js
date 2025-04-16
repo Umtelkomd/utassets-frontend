@@ -22,7 +22,6 @@ import ProjectAssignment from './pages/ProjectAssignment';
 import Projects from './pages/Projects';
 import VehicleList from './pages/VehicleList';
 import VehicleForm from './pages/VehicleForm';
-import VehicleAssignment from './pages/VehicleAssignment';
 import NotFound from './pages/NotFound';
 import AccessDenied from './pages/AccessDenied';
 import Profile from './pages/Profile';
@@ -181,15 +180,6 @@ function App() {
                 <ProtectedRoute 
                   element={<PageContainer><VehicleForm /></PageContainer>}
                   requiredPermission="canEditVehicle"
-                />
-              } 
-            />
-            <Route 
-              path="/vehicles/assignment/:vehicleId" 
-              element={
-                <ProtectedRoute 
-                  element={<PageContainer><VehicleAssignment /></PageContainer>}
-                  requiredPermission="canViewAllInventory"
                 />
               } 
             />

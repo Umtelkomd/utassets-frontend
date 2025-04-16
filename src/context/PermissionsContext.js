@@ -53,17 +53,9 @@ export const PermissionsProvider = ({ children }) => {
   const { currentUser } = useAuth();
   
   // Determinar el rol del usuario actual
-  const userRole = currentUser?.role || 'tecnico';
-  
-  // Log para depuración
-  console.log('PermissionsContext - Rol del usuario:', {
-    userRole,
-    currentUser: currentUser ? {
-      email: currentUser.email,
-      role: currentUser.role,
-      hasBackendUser: !!currentUser.backendUser
-    } : null
-  });
+  const userRole = useMemo(() => {
+    return currentUser?.role || 'tecnico';
+  }, [currentUser?.role]);
   
   // Calcular los permisos basados en el rol
   const permissions = useMemo(() => {
@@ -71,16 +63,18 @@ export const PermissionsProvider = ({ children }) => {
   }, [userRole]);
   
   // Función para verificar si el usuario tiene un permiso específico
-  const hasPermission = (permission) => {
-    return permissions[permission] === true;
-  };
+  const hasPermission = useMemo(() => {
+    return (permission) => {
+      return permissions[permission] === true;
+    };
+  }, [permissions]);
   
   // Valor del contexto
-  const value = {
+  const value = useMemo(() => ({
     permissions,
     hasPermission,
     userRole
-  };
+  }), [permissions, hasPermission, userRole]);
   
   return (
     <PermissionsContext.Provider value={value}>

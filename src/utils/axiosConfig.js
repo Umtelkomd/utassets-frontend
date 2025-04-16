@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Crear una instancia de Axios con la URL base
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5050/api',
+  baseURL: process.env.REACT_APP_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -22,19 +22,13 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar errores de respuesta
+// Interceptor para manejar errores de autenticación
 apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // Si el error es de autenticación (401), redirigir a login
     if (error.response && error.response.status === 401) {
-      // Solo redirigir si no estamos ya en la página de login
-      if (!window.location.pathname.includes('/login')) {
-        localStorage.removeItem('authToken');
-        window.location.href = '/login';
-      }
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
