@@ -269,15 +269,6 @@
   background-color: #2980b9;
 }
 
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-  font-size: 1.2rem;
-  color: #757575;
-}
-
 /* Estilos responsivos */
 @media (max-width: 768px) {
   .profile-container {

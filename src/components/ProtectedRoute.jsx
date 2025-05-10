@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
-import './Loading.css';
+import LoadingSpinner from './LoadingSpinner';
 
 // Componente para proteger rutas basado en permisos
 const ProtectedRoute = ({ element, requiredPermission }) => {
@@ -12,7 +12,7 @@ const ProtectedRoute = ({ element, requiredPermission }) => {
 
     // Mientras se está verificando la autenticación, mostrar un loader o nada
     if (!isAuthInitialized) {
-        return <div className="page-loading-spinner">Verificando permisos...</div>;
+        return <LoadingSpinner message="Verificando permisos..." />;
     }
 
     // Si no hay usuario, redirigir al login

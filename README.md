@@ -1,131 +1,168 @@
-# Panda Assets - Frontend
+# UTAssets - Frontend
 
-Sistema de gestión de activos empresariales.
+Sistema de gestión de activos y recursos para universidades y empresas. Este repositorio contiene el código frontend de la aplicación.
 
-## Autenticación
+## 🚀 Características
 
-El sistema cuenta con las siguientes funcionalidades de autenticación:
+- Dashboard con indicadores clave y visualización de datos
+- Gestión de inventario con búsqueda, filtrado y categorización
+- Administración de vehículos y mantenimientos
+- Gestión de ubicaciones y asignaciones
+- Interfaz completamente responsive para dispositivos móviles y desktop
+- Diseño intuitivo y moderno
 
-1. **Inicio de sesión**:
-   - Con correo electrónico y contraseña
-   - Con Google
+## 🔧 Tecnologías
 
-2. **Registro de usuarios**:
-   - Los nuevos usuarios se registran inicialmente como técnicos
-   - Un administrador puede cambiar los roles posteriormente
+- React
+- Material UI
+- Axios para comunicación con la API
+- React Router para navegación
+- Chart.js para visualización de datos
+- CSS modular para estilos
 
-3. **Configuración de Firebase**:
-   - El sistema utiliza Firebase para autenticación
-   - La configuración ya está lista en el archivo `.env`
+## 📋 Requisitos previos
 
-## Primeros pasos
+- Node.js (v14 o superior)
+- npm (v6 o superior)
 
-1. **Iniciar el backend**:
+## 🛠️ Instalación
+
+1. Clona este repositorio
    ```bash
-   cd ../backend
-   npm run dev
+git clone https://github.com/tu-usuario/utassets-frontend.git
+cd utassets-frontend
    ```
 
-2. **Iniciar el frontend**:
+2. Instala las dependencias
    ```bash
-   npm start
-   ```
+npm install
+```
 
-3. **Crear un usuario administrador**:
-   - Regístrate primero a través de la interfaz
-   - Actualiza tu usuario en la base de datos para tener rol de administrador:
-   ```sql
-   UPDATE "user" SET role = 'administrador' WHERE email = 'tu_email@ejemplo.com';
-   ```
+3. Crea un archivo `.env.local` basado en `.env.example`
+```bash
+cp .env.example .env.local
+```
 
-## Estructura del proyecto
+4. Configura las variables de entorno en `.env.local`
+```
+REACT_APP_API_URL=http://localhost:5050/api
+```
 
-- `src/context`: Contextos globales, incluido AuthContext
-- `src/pages`: Páginas principales de la aplicación
-- `src/components`: Componentes reutilizables
-- `src/utils`: Utilidades y configuraciones
-
-## Desarrollo
-
-Para ejecutar la aplicación en modo desarrollo:
-
+5. Inicia la aplicación en modo desarrollo
 ```bash
 npm start
 ```
 
-Para construir la aplicación para producción:
+La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
 
+## 🌐 Despliegue en producción
+
+### Método automatizado
+
+El proyecto incluye un script de despliegue automatizado:
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+Este script guiará el proceso de optimización y despliegue.
+
+### Despliegue manual
+
+1. Optimiza el código para producción
+```bash
+node optimize.js
+```
+
+2. Construye la aplicación
 ```bash
 npm run build
 ```
 
-# Getting Started with Create React App
+3. Configura el servidor Nginx
+   - Copia el archivo `nginx.conf` a `/etc/nginx/sites-available/utassets.conf`
+   - Modifica el dominio/IP según tus necesidades
+   - Crea un enlace simbólico: `sudo ln -s /etc/nginx/sites-available/utassets.conf /etc/nginx/sites-enabled/`
+   - Prueba la configuración: `sudo nginx -t`
+   - Reinicia Nginx: `sudo systemctl restart nginx`
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+4. Copia la carpeta `build` al directorio de tu servidor
+```bash
+cp -r build/* /var/www/html/utassets/frontend/
+```
 
-## Available Scripts
+## 🔒 Seguridad
 
-In the project directory, you can run:
+El proyecto implementa las siguientes medidas de seguridad:
 
-### `npm start`
+- Headers HTTP de seguridad
+- Sanitización de inputs
+- Validación de datos en formularios
+- Protección contra XSS y CSRF
+- Content Security Policy (CSP)
+- HTTPS forzado en producción
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 💾 Estructura del proyecto
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```
+utassets-frontend/
+├── public/             # Archivos estáticos
+├── src/                # Código fuente
+│   ├── components/     # Componentes reutilizables
+│   ├── context/        # Contextos React
+│   ├── data/           # Datos estáticos/mocks
+│   ├── pages/          # Componentes de página
+│   ├── services/       # Servicios API
+│   ├── utils/          # Funciones de utilidad
+│   ├── App.js          # Componente principal
+│   └── index.js        # Punto de entrada
+├── .env.example        # Ejemplo de variables de entorno
+├── deploy.sh           # Script de despliegue
+├── nginx.conf          # Configuración de Nginx
+└── optimize.js         # Script de optimización
+```
 
-### `npm test`
+## 📱 Responsive Design
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+La aplicación está diseñada para funcionar en cualquier dispositivo:
 
-### `npm run build`
+- Desktop (1200px y superior)
+- Tablets (992px - 1199px)
+- Tablets pequeñas y móviles (768px - 991px)
+- Móviles (480px - 767px)
+- Móviles pequeños (320px - 479px)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🧪 Testing
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Para ejecutar las pruebas:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm test
+```
 
-### `npm run eject`
+## 🚧 Mantenimiento
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Para verificar dependencias desactualizadas:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm outdated
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Para actualizar dependencias:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npm update
+```
 
-## Learn More
+## 📝 Licencia
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Este proyecto está licenciado bajo [MIT License](LICENSE).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 👥 Contribuciones
 
-### Code Splitting
+Las contribuciones son bienvenidas. Por favor, abre un issue o pull request para sugerir cambios o mejoras.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📞 Contacto
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Para cualquier consulta o soporte, contacta a: tu-email@ejemplo.com

@@ -14,7 +14,7 @@ const Footer = () => {
                 <div className="footer-logo">
                     <div className="footer-company">
                         <Link to="/">
-                            <img src="/logoutk.png" alt="Logo UTK" className="footer-logo-img" />
+                            <img src="/logo_azul.png" alt="Logo UTK" className="footer-logo-img" />
                         </Link>
                         <span className="company-name">UTK Assets</span>
                         <span className="company-slogan">Gestión de activos simplificada</span>

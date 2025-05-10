@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import './Navbar.css';
+import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 
 // Iconos
 import MenuIcon from '@mui/icons-material/Menu';
@@ -14,7 +15,6 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import BuildIcon from '@mui/icons-material/Build';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -22,6 +22,10 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import BusinessIcon from '@mui/icons-material/Business';
 import CategoryIcon from '@mui/icons-material/Category';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import PeopleIcon from '@mui/icons-material/People';
+import InsightsIcon from '@mui/icons-material/Insights';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +57,7 @@ const Navbar = () => {
             await logout();
             navigate('/login');
         } catch (error) {
-            console.error('Error al cerrar sesión:', error);
+
         }
     };
 
@@ -91,131 +95,94 @@ const Navbar = () => {
                 </Link>
 
                 {/* Menú desplegable de Activos */}
-                {hasPermission('canViewAllInventory') && (
-                    <div className={`navbar-dropdown ${isActive('/vehicles') || isActive('/inventory') ? 'active' : ''}`}>
-                        <div
-                            className="navbar-dropdown-trigger"
-                            onClick={() => {
-                                toggleAssetsMenu();
-                                setMaintenanceMenuOpen(false);
-                                setProjectsMenuOpen(false);
-                            }}
-                        >
-                            <CategoryIcon className="nav-icon" />
-                            <span>Activos</span>
-                            {assetsMenuOpen ? <KeyboardArrowUpIcon className="dropdown-arrow" /> : <KeyboardArrowDownIcon className="dropdown-arrow" />}
-                        </div>
-
-                        {assetsMenuOpen && (
-                            <div className="navbar-dropdown-menu">
-                                <Link
-                                    to="/vehicles"
-                                    className={`dropdown-item ${isActive('/vehicles') ? 'active' : ''}`}
-                                    onClick={closeMenu}
-                                >
-                                    <DirectionsCarIcon className="dropdown-icon" />
-                                    <span>Vehículos</span>
-                                </Link>
-                                <Link
-                                    to="/inventory"
-                                    className={`dropdown-item ${isActive('/inventory') ? 'active' : ''}`}
-                                    onClick={closeMenu}
-                                >
-                                    <InventoryIcon className="dropdown-icon" />
-                                    <span>Inventario</span>
-                                </Link>
-                            </div>
-                        )}
+                <div className={`navbar-dropdown ${isActive('/vehicles') || isActive('/inventory') ? 'active' : ''}`}>
+                    <div
+                        className="navbar-dropdown-trigger"
+                        onClick={() => {
+                            toggleAssetsMenu();
+                            setMaintenanceMenuOpen(false);
+                            setProjectsMenuOpen(false);
+                        }}
+                    >
+                        <CategoryIcon className="nav-icon" />
+                        <span>Activos</span>
+                        {assetsMenuOpen ? <KeyboardArrowUpIcon className="dropdown-arrow" /> : <KeyboardArrowDownIcon className="dropdown-arrow" />}
                     </div>
-                )}
 
-                {/* Menú desplegable de Mantenimiento */}
+                    {assetsMenuOpen && (
+                        <div className="navbar-dropdown-menu">
+                            <Link
+                                to="/vehicles"
+                                className={`dropdown-item ${isActive('/vehicles') ? 'active' : ''}`}
+                                onClick={() => {
+                                    closeMenu();
+                                    setAssetsMenuOpen(false);
+                                }}
+                            >
+                                <DirectionsCarIcon className="dropdown-icon" />
+                                <span>Vehículos</span>
+                            </Link>
+                            <Link
+                                to="/inventory"
+                                className={`dropdown-item ${isActive('/inventory') ? 'active' : ''}`}
+                                onClick={() => {
+                                    closeMenu();
+                                    setAssetsMenuOpen(false);
+                                }}
+                            >
+                                <InventoryIcon className="dropdown-icon" />
+                                <span>Inventario</span>
+                            </Link>
+                        </div>
+                    )}
+                </div>
+
+                {/* Enlace directo a Proyectos */}
                 {hasPermission('canViewReports') && (
-                    <div className={`navbar-dropdown ${isActive('/maintenance') ? 'active' : ''}`}>
-                        <div
-                            className="navbar-dropdown-trigger"
-                            onClick={() => {
-                                toggleMaintenanceMenu();
-                                setAssetsMenuOpen(false);
-                                setProjectsMenuOpen(false);
-                            }}
-                        >
-                            <BuildIcon className="nav-icon" />
-                            <span>Mantenimiento</span>
-                            {maintenanceMenuOpen ? <KeyboardArrowUpIcon className="dropdown-arrow" /> : <KeyboardArrowDownIcon className="dropdown-arrow" />}
-                        </div>
-
-                        {maintenanceMenuOpen && (
-                            <div className="navbar-dropdown-menu">
-                                <Link
-                                    to="/maintenance/history"
-                                    className={`dropdown-item ${isActive('/maintenance/history') ? 'active' : ''}`}
-                                    onClick={closeMenu}
-                                >
-                                    <BuildIcon className="dropdown-icon" />
-                                    <span>Historial</span>
-                                </Link>
-                                <Link
-                                    to="/maintenance/schedule"
-                                    className={`dropdown-item ${isActive('/maintenance/schedule') ? 'active' : ''}`}
-                                    onClick={closeMenu}
-                                >
-                                    <ScheduleIcon className="dropdown-icon" />
-                                    <span>Programación</span>
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Menú desplegable de Proyectos */}
-                {hasPermission('canAssignVehicle') && (
-                    <div className={`navbar-dropdown ${isActive('/projects') || isActive('/project-assignment') ? 'active' : ''}`}>
-                        <div
-                            className="navbar-dropdown-trigger"
-                            onClick={() => {
-                                toggleProjectsMenu();
-                                setAssetsMenuOpen(false);
-                                setMaintenanceMenuOpen(false);
-                            }}
-                        >
-                            <BusinessIcon className="nav-icon" />
-                            <span>Proyectos</span>
-                            {projectsMenuOpen ? <KeyboardArrowUpIcon className="dropdown-arrow" /> : <KeyboardArrowDownIcon className="dropdown-arrow" />}
-                        </div>
-
-                        {projectsMenuOpen && (
-                            <div className="navbar-dropdown-menu">
-                                <Link
-                                    to="/projects"
-                                    className={`dropdown-item ${isActive('/projects') ? 'active' : ''}`}
-                                    onClick={closeMenu}
-                                >
-                                    <BusinessIcon className="dropdown-icon" />
-                                    <span>Lista de Proyectos</span>
-                                </Link>
-                                <Link
-                                    to="/project-assignment"
-                                    className={`dropdown-item ${isActive('/project-assignment') ? 'active' : ''}`}
-                                    onClick={closeMenu}
-                                >
-                                    <AssignmentIcon className="dropdown-icon" />
-                                    <span>Asignaciones</span>
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Elemento Administración - Solo para administradores */}
-                {hasPermission('canAccessSettings') && (
                     <Link
-                        to="/settings"
-                        className={`navbar-item ${isActive('/settings') ? 'active' : ''}`}
+                        to="/projects"
+                        className={`navbar-item ${isActive('/projects') ? 'active' : ''}`}
                         onClick={closeMenu}
                     >
-                        <SettingsIcon className="nav-icon" />
-                        <span>Administración</span>
+                        <AssignmentIcon className="nav-icon" />
+                        <span>Proyectos</span>
+                    </Link>
+                )}
+
+                {/* Enlace a Reportes - COMENTADO TEMPORALMENTE HASTA QUE SE COMPLETE EL DESARROLLO
+                <Link
+                    to="/reports"
+                    className={`navbar-item ${isActive('/reports') ? 'active' : ''}`}
+                    onClick={closeMenu}
+                >
+                    <ReportProblemIcon className="nav-icon" />
+                    <span>Reportes</span>
+                </Link>
+                */}
+
+                {/* Enlace a Estadísticas */}
+                {/*
+                {hasPermission('canViewReports') && (
+                    <Link
+                        to="/statistics"
+                        className={`navbar-item ${isActive('/statistics') ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        <InsightsIcon className="nav-icon" />
+                        <span>Estadísticas</span>
+                    </Link>
+                )}
+                */}
+
+                {/* Opción de Usuarios - Solo para administradores */}
+                {hasPermission('canAccessSettings') && (
+                    <Link
+                        to="/users"
+                        className={`navbar-item ${isActive('/users') ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        <PeopleIcon className="nav-icon" />
+                        <span>Personal</span>
                     </Link>
                 )}
             </div>
@@ -225,13 +192,17 @@ const Navbar = () => {
                     <div className="profile-trigger" onClick={toggleProfile}>
                         <div className="avatar">
                             {currentUser?.imagePath ? (
-                                <img src={`${process.env.REACT_APP_API_URL}/uploads/users/${currentUser.imagePath}`} alt="Perfil" />
+                                <img
+                                    src={getImageUrl(currentUser.imagePath, IMAGE_TYPES.USERS)}
+                                    alt={currentUser.fullName}
+                                    className="user-avatar"
+                                />
                             ) : (
                                 <AccountCircleIcon />
                             )}
                         </div>
                         <div className="user-info">
-                            <span className="username">{currentUser?.displayName || currentUser?.email || 'Usuario'}</span>
+                            <span className="username">{currentUser?.fullName || 'Usuario'}</span>
                             <span className="user-role">
                                 {userRole === 'administrador' ? 'Administrador' : 'Técnico'}
                             </span>

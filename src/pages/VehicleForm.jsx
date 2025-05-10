@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import axiosInstance from '../axiosConfig';
 import './VehicleForm.css';
 import { usePermissions } from '../context/PermissionsContext';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 
 // Componentes de Material UI
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -37,10 +39,10 @@ const VehicleForm = () => {
     const isFromInventory = window.location.pathname.includes('/inventory/') ||
         localStorage.getItem('fromInventory') === 'true';
 
-    console.log('Estado de navegación:', {
-        ruta: window.location.pathname,
-        desdeInventario: isFromInventory,
-        localStorage: localStorage.getItem('fromInventory')
+    useEffect(() => {
+        return () => {
+            // Cleanup function if needed
+        };
     });
 
     // Configurar el contexto al montar el componente
@@ -49,11 +51,9 @@ const VehicleForm = () => {
 
         // Si estamos en una ruta de inventario, guardar el contexto
         if (currentPath.includes('/inventory/') || currentPath.includes('/inventory/edit/')) {
-            console.log('Estableciendo contexto de inventario (ruta actual:', currentPath, ')');
+            console.log('Detectada navegación desde inventario');
             localStorage.setItem('fromInventory', 'true');
         }
-
-        console.log('Contexto después de inicialización:', localStorage.getItem('fromInventory'));
 
         // No limpiar el localStorage en la función de limpieza
         // Lo manejaremos en los handlers de navegación
@@ -63,11 +63,9 @@ const VehicleForm = () => {
     const handleEditButtonClick = () => {
         // Vamos a preservar explícitamente el contexto al navegar a la edición
         if (isFromInventory) {
-            console.log('Preservando contexto de inventario para edición');
             // Estamos usando replaceItem para asegurarnos de que el valor se actualiza
             localStorage.setItem('fromInventory', 'true');
         }
-        console.log('Navegando a edición con contexto:', localStorage.getItem('fromInventory'));
         navigate(`/vehicles/edit/${id}`);
     };
 
@@ -107,8 +105,8 @@ const VehicleForm = () => {
                 const response = await axiosInstance.get('/users');
                 setUsers(response.data);
             } catch (error) {
-                console.error('Error fetching users:', error);
-                toast.error('Error al cargar la lista de usuarios');
+
+                toast.error('Error al cargar la lista de personal');
             } finally {
                 setIsLoadingUsers(false);
             }
@@ -128,6 +126,7 @@ const VehicleForm = () => {
         mileage: '',
         fuelType: 'Gasolina',
         insuranceExpiryDate: null,
+        technicalRevisionExpiryDate: null,
         notes: '',
         imagePath: null,
         responsibleUsers: []
@@ -147,10 +146,12 @@ const VehicleForm = () => {
             const fetchVehicleData = async () => {
                 setIsLoading(true);
                 try {
-                    console.log('Obteniendo datos del vehículo con ID:', id);
+
                     const response = await axiosInstance.get(`/vehicles/${id}`);
                     const vehicle = response.data;
-                    console.log('Vehículo obtenido:', vehicle);
+
+                    console.log('vehicle', vehicle);
+
 
                     // Función para ajustar la fecha y mostrar el día correcto
                     const adjustDate = (dateStr) => {
@@ -181,16 +182,17 @@ const VehicleForm = () => {
                         mileage: vehicle.mileage || '',
                         fuelType: vehicle.fuelType || 'Gasolina',
                         insuranceExpiryDate: adjustDate(vehicle.insuranceExpiryDate),
+                        technicalRevisionExpiryDate: adjustDate(vehicle.technicalRevisionExpiryDate),
                         notes: vehicle.notes || '',
                         imagePath: vehicle.imagePath || null,
                         responsibleUsers: formattedResponsibleUsers
                     });
 
                     if (vehicle.imagePath) {
-                        setImagePreview(`${API_URL}/uploads/vehicles/${vehicle.imagePath}`);
+                        setImagePreview(getImageUrl(vehicle.imagePath, IMAGE_TYPES.VEHICLES));
                     }
                 } catch (error) {
-                    console.error('Error fetching vehicle data:', error);
+
                     toast.error('Error al cargar los datos del vehículo');
                     navigate('/vehicles');
                 } finally {
@@ -247,6 +249,22 @@ const VehicleForm = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validar el tipo de archivo
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                toast.error('Por favor, selecciona una imagen en formato JPG o PNG');
+                e.target.value = ''; // Limpiar el input
+                return;
+            }
+
+            // Validar el tamaño (máximo 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+            if (file.size > maxSize) {
+                toast.error('La imagen no debe superar los 5MB');
+                e.target.value = ''; // Limpiar el input
+                return;
+            }
+
             setSelectedFile(file);
             setFormData(prev => ({ ...prev, imagePath: file }));
             const reader = new FileReader();
@@ -306,16 +324,13 @@ const VehicleForm = () => {
             Object.keys(formData).forEach(key => {
                 if (key === 'imagePath' && formData[key] instanceof File) {
                     formDataToSend.append('image', formData[key]);
+                } else if (key === 'responsibleUsers') {
+                    // Convertir el array de objetos a JSON string
+                    formDataToSend.append(key, JSON.stringify(formData[key]));
                 } else if (formData[key] !== null && formData[key] !== '') {
-                    if (key === 'responsibleUsers') {
-                        // Convertir el array de objetos a JSON string
-                        formDataToSend.append(key, JSON.stringify(formData[key]));
-                    } else {
-                        formDataToSend.append(key, formData[key]);
-                    }
+                    formDataToSend.append(key, formData[key]);
                 }
             });
-
 
             if (isEditing) {
                 await axiosInstance.put(`/vehicles/${id}`, formDataToSend, {
@@ -335,13 +350,16 @@ const VehicleForm = () => {
 
             navigate('/vehicles');
         } catch (error) {
-            console.error('Error saving vehicle:', error);
+            console.error('Error completo:', error);
             let errorMsg = 'Error al guardar el vehículo';
 
             if (error.response?.data?.message) {
-                errorMsg = error.response.data.message;
+                // Limitar el mensaje de error a 100 caracteres
+                errorMsg = error.response.data.message.substring(0, 100) + (error.response.data.message.length > 100 ? '...' : '');
             } else if (error.response?.data?.error) {
-                errorMsg = error.response.data.error;
+                errorMsg = error.response.data.error.substring(0, 100) + (error.response.data.error.length > 100 ? '...' : '');
+            } else if (error.message) {
+                errorMsg = error.message.substring(0, 100) + (error.message.length > 100 ? '...' : '');
             }
 
             toast.error(errorMsg);
@@ -388,11 +406,7 @@ const VehicleForm = () => {
     };
 
     if (isLoading) {
-        return (
-            <div className="page-loading-spinner">
-                <p>Cargando datos...</p>
-            </div>
-        );
+        return <LoadingSpinner message="Cargando datos..." />;
     }
 
     return (
@@ -411,7 +425,7 @@ const VehicleForm = () => {
                 </div>
 
                 {isLoading ? (
-                    <div className="page-loading-spinner">Cargando...</div>
+                    <LoadingSpinner message="Cargando..." />
                 ) : (
                     <form onSubmit={(e) => e.preventDefault()}>
                         <div className="form-grid">
@@ -421,7 +435,7 @@ const VehicleForm = () => {
                                     {imagePreview ? (
                                         <img src={imagePreview} alt="Vista previa del vehículo" />
                                     ) : formData.imagePath ? (
-                                        <img src={`${API_URL}/uploads/vehicles/${formData.imagePath}`} alt="Imagen actual del vehículo" />
+                                        <img src={getImageUrl(formData.imagePath, IMAGE_TYPES.VEHICLES)} alt="Imagen actual del vehículo" />
                                     ) : (
                                         <div className="no-image">
                                             <DirectionsCarIcon />
@@ -615,55 +629,87 @@ const VehicleForm = () => {
 
                                 <div className="form-row">
                                     <div className="form-group">
+                                        <label htmlFor="technicalRevisionExpiryDate">Vencimiento TÜV</label>
+                                        <input
+                                            type="date"
+                                            id="technicalRevisionExpiryDate"
+                                            name="technicalRevisionExpiryDate"
+                                            value={formData.technicalRevisionExpiryDate || ''}
+                                            onChange={handleInputChange}
+                                            className="form-control"
+                                            disabled={isViewing}
+                                            readOnly={isViewing}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
                                         <label htmlFor="responsibleUsers">Técnicos Responsables</label>
-                                        <div className="users-select-container">
-                                            <div
-                                                className="users-select-input"
-                                                onClick={() => setIsUsersDropdownOpen(!isUsersDropdownOpen)}
-                                            >
-                                                <div className="selected-users">
-                                                    {formData.responsibleUsers.length > 0 ? (
-                                                        formData.responsibleUsers.map(user => {
-                                                            const userData = users.find(u => u.id === user.id);
-                                                            return (
-                                                                <span key={user.id} className="user-chip">
-                                                                    {userData ? (userData.fullName) : 'Usuario no encontsrado'}
-                                                                    <button
-                                                                        type="button"
-                                                                        className="remove-user"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            removeUser(user.id);
-                                                                        }}
-                                                                    >
-                                                                        <CloseIcon />
-                                                                    </button>
-                                                                </span>
-                                                            );
-                                                        })
-                                                    ) : (
-                                                        <span className="placeholder">Seleccione técnicos responsables</span>
+                                        {isViewing ? (
+                                            <div className="technicians-info">
+                                                <div className="technicians-list">
+                                                    {formData.responsibleUsers.map((user, index) => {
+                                                        const userData = users.find(u => u.id === user.id);
+                                                        return (
+                                                            <span key={index} className="technician-chip">
+                                                                <PersonIcon className="technician-icon" />
+                                                                {userData ? (userData.fullName) : 'Usuario no encontrado'}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="users-select-container">
+                                                    <div
+                                                        className="users-select-input"
+                                                        onClick={() => setIsUsersDropdownOpen(!isUsersDropdownOpen)}
+                                                    >
+                                                        <div className="selected-users">
+                                                            {formData.responsibleUsers.length > 0 ? (
+                                                                formData.responsibleUsers.map(user => {
+                                                                    const userData = users.find(u => u.id === user.id);
+                                                                    return (
+                                                                        <span key={user.id} className="user-chip">
+                                                                            {userData ? (userData.fullName) : 'Usuario no encontrado'}
+                                                                            <button
+                                                                                type="button"
+                                                                                className="remove-user"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    removeUser(user.id);
+                                                                                }}
+                                                                            >
+                                                                                <CloseIcon />
+                                                                            </button>
+                                                                        </span>
+                                                                    );
+                                                                })
+                                                            ) : (
+                                                                <span className="placeholder">Seleccione técnicos responsables</span>
+                                                            )}
+                                                        </div>
+                                                        <ArrowDropDownIcon className="dropdown-icon" />
+                                                    </div>
+
+                                                    {isUsersDropdownOpen && (
+                                                        <div className="users-dropdown">
+                                                            {users.map(user => (
+                                                                <div
+                                                                    key={user.id}
+                                                                    className={`user-option ${formData.responsibleUsers.some(u => u.id === user.id) ? 'selected' : ''}`}
+                                                                    onClick={() => toggleUserSelection(user.id)}
+                                                                >
+                                                                    <PersonIcon className="user-icon" />
+                                                                    <span>{user.fullName || `${user.name} ${user.last_name}`}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     )}
                                                 </div>
-                                                <ArrowDropDownIcon className="dropdown-icon" />
-                                            </div>
-
-                                            {isUsersDropdownOpen && (
-                                                <div className="users-dropdown">
-                                                    {users.map(user => (
-                                                        <div
-                                                            key={user.id}
-                                                            className={`user-option ${formData.responsibleUsers.some(u => u.id === user.id) ? 'selected' : ''}`}
-                                                            onClick={() => toggleUserSelection(user.id)}
-                                                        >
-                                                            <PersonIcon className="user-icon" />
-                                                            <span>{user.fullName || `${user.name} ${user.last_name}`}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <small className="vehicle-form-help">Puedes seleccionar múltiples técnicos responsables</small>
+                                                <small className="vehicle-form-help">Puedes seleccionar múltiples técnicos responsables</small>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 

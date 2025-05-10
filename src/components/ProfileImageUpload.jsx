@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import './ProfileImageUpload.css';
+import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 
 // Iconos
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -42,7 +43,7 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                     ...currentUser,
                     imagePath: response.data.imagePath || null
                 };
-                console.log('Actualizando usuario con imagen:', updatedUser);
+
                 await updateUserProfile(updatedUser);
             }
 
@@ -84,17 +85,30 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
         }
     };
 
+    // Construir la URL base sin /api
+    const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5050';
+    const imageUrl = currentUser?.imagePath
+        ? `${baseUrl}/uploads/users/${currentUser.imagePath}`
+        : null;
+
+    console.log('URL de la imagen:', imageUrl);
+    console.log('Datos del usuario:', currentUser);
+
     return (
         <div className="profile-image-container">
             <div className="profile-image-wrapper">
                 {currentUser?.imagePath ? (
                     <>
                         <img
-                            src={`${process.env.REACT_APP_API_URL}/uploads/users/${currentUser.imagePath}`}
-                            alt="Foto de perfil"
+                            src={getImageUrl(currentUser.imagePath, IMAGE_TYPES.USERS)}
+                            alt={currentUser.fullName}
                             className="profile-image"
                             onError={(e) => {
-                                console.error('Error al cargar la imagen:', e);
+                                console.error('Error al cargar la imagen:', {
+                                    url: imageUrl,
+                                    error: e,
+                                    user: currentUser
+                                });
                                 e.target.src = ''; // Esto hará que se muestre el ícono por defecto
                             }}
                         />

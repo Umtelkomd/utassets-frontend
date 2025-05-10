@@ -72,13 +72,13 @@ const Profile = () => {
                     fullName: profile.fullName,
                 });
 
-                console.log('Usuario actualizado:', updatedUser);
+                
             }
 
             toast.success('Perfil actualizado correctamente');
             setEditing(false);
         } catch (error) {
-            console.error('Error al actualizar perfil:', error);
+            
             toast.error('Error al actualizar el perfil');
         } finally {
             setLoading(false);
@@ -105,7 +105,7 @@ const Profile = () => {
                 confirmPassword: '',
             });
         } catch (error) {
-            console.error('Error al actualizar contraseña:', error);
+            
             toast.error('Error al actualizar la contraseña');
         } finally {
             setLoading(false);

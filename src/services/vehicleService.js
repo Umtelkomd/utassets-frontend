@@ -5,7 +5,7 @@ export const getVehicles = async () => {
         const response = await apiClient.get('/vehicles');
         return response.data;
     } catch (error) {
-        console.error('Error fetching vehicles:', error);
+        
         throw error;
     }
 };
@@ -15,7 +15,7 @@ export const getVehicleById = async (id) => {
         const response = await apiClient.get(`/vehicles/${id}`);
         return response.data;
     } catch (error) {
-        console.error('Error fetching vehicle by ID:', error);
+        
         throw error;
     }
 };
@@ -25,7 +25,7 @@ export const createVehicle = async (vehicleData) => {
         const response = await apiClient.post('/vehicles', vehicleData);
         return response.data;
     } catch (error) {
-        console.error('Error creating vehicle:', error);
+        
         throw error;
     }
 };
@@ -35,7 +35,7 @@ export const updateVehicle = async (id, vehicleData) => {
         const response = await apiClient.put(`/vehicles/${id}`, vehicleData);
         return response.data;
     } catch (error) {
-        console.error('Error updating vehicle:', error);
+        
         throw error;
     }
 };
@@ -44,7 +44,7 @@ export const deleteVehicle = async (id) => {
     try {
         await apiClient.delete(`/vehicles/${id}`);
     } catch (error) {
-        console.error('Error deleting vehicle:', error);
+        
         throw error;
     }
 }; 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from '../axiosConfig';
 import { toast } from 'react-toastify';
+import ProjectsForm from './ProjectsForm';
 import './Projects.css';
+import LoadingSpinner from '../components/LoadingSpinner';
+import * as projectService from '../services/projectService.ts';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 
 // Iconos
 import AddIcon from '@mui/icons-material/Add';
@@ -11,13 +13,68 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import PeopleIcon from '@mui/icons-material/People';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+
+// Coordenadas por defecto (Paderborn, Alemania)
+const DEFAULT_LOCATION = {
+    lat: 51.7189,
+    lng: 8.7575
+};
+
+const MapPreview = ({ location }) => {
+    if (!location) return null;
+
+    let lat, lng;
+
+    // Intentar parsear la ubicación en diferentes formatos
+    if (typeof location === 'string') {
+        // Si es una cadena, intentar dividir por coma
+        const coords = location.split(',').map(coord => parseFloat(coord.trim()));
+        if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+            [lat, lng] = coords;
+        }
+    } else if (location.lat && location.lng) {
+        // Si es un objeto con lat y lng
+        lat = parseFloat(location.lat);
+        lng = parseFloat(location.lng);
+    }
+
+    // Si no se pudieron obtener coordenadas válidas, mostrar un mensaje
+    if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+        return (
+            <div className="map-preview map-error">
+                <LocationOnIcon />
+                <p>Ubicación no disponible</p>
+            </div>
+        );
+    }
+
+    // Usar OpenStreetMap para la vista previa
+    const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`;
+
+    return (
+        <div className="map-preview">
+            <iframe
+                src={mapUrl}
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                aria-hidden="false"
+                tabIndex="0"
+                title="Ubicación del proyecto"
+            />
+            <div className="map-coordinates">
+                <LocationOnIcon />
+                <span>{lat.toFixed(4)}, {lng.toFixed(4)}</span>
+            </div>
+        </div>
+    );
+};
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
@@ -28,15 +85,15 @@ const Projects = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
     const [currentProject, setCurrentProject] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [projectToDelete, setProjectToDelete] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        location: '',
+        location: `${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}`,
         startDate: '',
         endDate: '',
-        manager: '',
-        status: 'activo',
-        team: [],
+        status: 'activo'
     });
 
     useEffect(() => {
@@ -46,11 +103,11 @@ const Projects = () => {
     const fetchProjects = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/api/projects');
-            setProjects(response.data);
+            const data = await projectService.getProjects();
+            setProjects(data);
             setLoading(false);
         } catch (error) {
-            console.error('Error al cargar proyectos:', error);
+
             toast.error('No se pudieron cargar los proyectos');
             setLoading(false);
         }
@@ -64,68 +121,21 @@ const Projects = () => {
         setSortConfig({ key, direction });
     };
 
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
+    const handleDeleteClick = (project) => {
+        setProjectToDelete(project);
+        setShowDeleteModal(true);
     };
 
-    const handleStatusFilter = (e) => {
-        setStatusFilter(e.target.value);
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-    };
-
-    const handleAddProject = async (e) => {
-        e.preventDefault();
+    const handleConfirmDelete = async () => {
         try {
-            await axios.post('/api/projects', formData);
-            toast.success('Proyecto creado exitosamente');
-            setShowAddModal(false);
-            setFormData({
-                name: '',
-                description: '',
-                location: '',
-                startDate: '',
-                endDate: '',
-                manager: '',
-                status: 'activo',
-                team: [],
-            });
+            await projectService.deleteProject(projectToDelete.id);
+            toast.success('Proyecto eliminado exitosamente');
             fetchProjects();
+            setShowDeleteModal(false);
+            setProjectToDelete(null);
         } catch (error) {
-            console.error('Error al crear proyecto:', error);
-            toast.error('No se pudo crear el proyecto');
-        }
-    };
 
-    const handleEditProject = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.put(`/api/projects/${currentProject._id}`, formData);
-            toast.success('Proyecto actualizado exitosamente');
-            setShowAddModal(false);
-            fetchProjects();
-        } catch (error) {
-            console.error('Error al actualizar proyecto:', error);
-            toast.error('No se pudo actualizar el proyecto');
-        }
-    };
-
-    const handleDeleteProject = async (id) => {
-        if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
-            try {
-                await axios.delete(`/api/projects/${id}`);
-                toast.success('Proyecto eliminado exitosamente');
-                fetchProjects();
-            } catch (error) {
-                console.error('Error al eliminar proyecto:', error);
-                toast.error('No se pudo eliminar el proyecto');
-            }
+            toast.error('No se pudo eliminar el proyecto');
         }
     };
 
@@ -138,13 +148,24 @@ const Projects = () => {
         setCurrentProject(project);
         setFormData({
             name: project.name,
-            description: project.description,
-            location: project.location,
-            startDate: project.startDate ? project.startDate.split('T')[0] : '',
-            endDate: project.endDate ? project.endDate.split('T')[0] : '',
-            manager: project.manager,
-            status: project.status,
-            team: project.team || [],
+            description: project.description || '',
+            location: project.location || '',
+            startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
+            endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+            status: project.status
+        });
+        setShowAddModal(true);
+    };
+
+    const handleAddNew = () => {
+        setCurrentProject(null);
+        setFormData({
+            name: '',
+            description: '',
+            location: `${DEFAULT_LOCATION.lat},${DEFAULT_LOCATION.lng}`,
+            startDate: '',
+            endDate: '',
+            status: 'activo'
         });
         setShowAddModal(true);
     };
@@ -152,7 +173,7 @@ const Projects = () => {
     // Filtrar proyectos
     const filteredProjects = projects.filter(project => {
         const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (project.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             project.location.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
@@ -198,232 +219,169 @@ const Projects = () => {
         }
     };
 
+    // Formatear estado en mayúsculas
+    const formatStatus = (status) => {
+        return status.toUpperCase();
+    };
+
+    if (loading) {
+        return <LoadingSpinner message="Cargando proyectos..." />;
+    }
+
     return (
         <div className="projects-container">
-            <div className="projects-header">
-                <h1>Gestión de Proyectos</h1>
-                <button
-                    className="add-project-button"
-                    onClick={() => {
-                        setCurrentProject(null);
-                        setFormData({
-                            name: '',
-                            description: '',
-                            location: '',
-                            startDate: '',
-                            endDate: '',
-                            manager: '',
-                            status: 'activo',
-                            team: [],
-                        });
-                        setShowAddModal(true);
-                    }}
-                >
-                    <AddIcon /> Nuevo Proyecto
-                </button>
-            </div>
-
-            <div className="search-filters-section">
-                <div className="search-box">
-                    <SearchIcon className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Buscar proyectos..."
-                        value={searchTerm}
-                        onChange={handleSearch}
-                    />
-                </div>
-
-                <div className="filters">
-                    <div className="filter">
-                        <FilterListIcon className="filter-icon" />
-                        <select value={statusFilter} onChange={handleStatusFilter}>
-                            <option value="all">Todos los estados</option>
-                            <option value="activo">Activos</option>
-                            <option value="completado">Completados</option>
-                            <option value="pendiente">Pendientes</option>
-                            <option value="cancelado">Cancelados</option>
-                        </select>
-                    </div>
-
-                    <div className="sort">
-                        <SortIcon className="sort-icon" />
-                        <select
-                            value={`${sortConfig.key}-${sortConfig.direction}`}
-                            onChange={(e) => {
-                                const [key, direction] = e.target.value.split('-');
-                                setSortConfig({ key, direction });
-                            }}
+            <div className="card">
+                <div className="card-header">
+                    <h2 className="card-title">Gestión de Proyectos</h2>
+                    <div className="header-buttons">
+                        <button
+                            className="add-project-button"
+                            onClick={handleAddNew}
                         >
-                            <option value="name-asc">Nombre (A-Z)</option>
-                            <option value="name-desc">Nombre (Z-A)</option>
-                            <option value="startDate-asc">Fecha inicio (antigua)</option>
-                            <option value="startDate-desc">Fecha inicio (reciente)</option>
-                            <option value="endDate-asc">Fecha fin (antigua)</option>
-                            <option value="endDate-desc">Fecha fin (reciente)</option>
-                        </select>
+                            <AddIcon /> Nuevo Proyecto
+                        </button>
                     </div>
                 </div>
+
+                <div className="search-filters-section">
+                    <div className="search-box">
+                        <SearchIcon className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Buscar proyectos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="filters">
+                        <div className="filter">
+                            <FilterListIcon className="filter-icon" />
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                                <option value="all">TODOS LOS ESTADOS</option>
+                                <option value="activo">ACTIVO</option>
+                                <option value="completado">COMPLETADO</option>
+                                <option value="pendiente">PENDIENTE</option>
+                                <option value="cancelado">CANCELADO</option>
+                            </select>
+                        </div>
+
+                        <div className="filter">
+                            <SortIcon className="filter-icon" />
+                            <select
+                                value={`${sortConfig.key}-${sortConfig.direction}`}
+                                onChange={(e) => {
+                                    const [key, direction] = e.target.value.split('-');
+                                    setSortConfig({ key, direction });
+                                }}
+                            >
+                                <option value="name-asc">Nombre (A-Z)</option>
+                                <option value="name-desc">Nombre (Z-A)</option>
+                                <option value="startDate-asc">Fecha inicio (antigua)</option>
+                                <option value="startDate-desc">Fecha inicio (reciente)</option>
+                                <option value="endDate-asc">Fecha fin (antigua)</option>
+                                <option value="endDate-desc">Fecha fin (reciente)</option>
+                                <option value="status-asc">Estado (A-Z)</option>
+                                <option value="status-desc">Estado (Z-A)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {sortedProjects.length === 0 ? (
+                    <div className="no-items">
+                        <p>No se encontraron proyectos con los filtros aplicados.</p>
+                    </div>
+                ) : (
+                    <div className="projects-grid">
+                        {sortedProjects.map((project) => (
+                            <div key={project.id} className="project-card">
+                                <div className="project-card-header">
+                                    <h3 className="project-name">{project.name}</h3>
+                                    <span className={`status-badge ${getStatusClass(project.status)}`}>
+                                        {formatStatus(project.status)}
+                                    </span>
+                                </div>
+
+                                <div className="project-card-body">
+                                    <p className="project-description">
+                                        {project.description || 'Sin descripción'}
+                                    </p>
+
+                                    {project.location && (
+                                        <MapPreview location={project.location} />
+                                    )}
+
+                                    <div className="project-info">
+                                        <div className="info-item">
+                                            <LocationOnIcon />
+                                            {project.location ? (
+                                                <a
+                                                    href={`https://www.google.com/maps?q=${project.location}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="location-link"
+                                                >
+                                                    Ver en mapa
+                                                </a>
+                                            ) : (
+                                                'Sin ubicación'
+                                            )}
+                                        </div>
+
+                                        <div className="info-item">
+                                            <CalendarTodayIcon />
+                                            <span>Inicio: {formatDate(project.startDate)}</span>
+                                        </div>
+
+                                        <div className="info-item">
+                                            <CalendarTodayIcon />
+                                            <span>Fin: {formatDate(project.endDate)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="project-card-actions">
+                                    <button
+                                        onClick={() => openViewModal(project)}
+                                        className="action-button view"
+                                        title="Ver detalles"
+                                    >
+                                        <VisibilityIcon />
+                                    </button>
+                                    <button
+                                        onClick={() => openEditModal(project)}
+                                        className="action-button edit"
+                                        title="Editar"
+                                    >
+                                        <EditIcon />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteClick(project)}
+                                        className="action-button delete"
+                                        title="Eliminar"
+                                    >
+                                        <DeleteIcon />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {loading ? (
-                <div className="loading-container">Cargando proyectos...</div>
-            ) : (
-                <div className="projects-grid">
-                    {sortedProjects.length === 0 ? (
-                        <div className="no-results">No se encontraron proyectos con los filtros actuales.</div>
-                    ) : (
-                        sortedProjects.map(project => (
-                            <div className="project-card" key={project._id}>
-                                <div className={`project-status ${getStatusClass(project.status)}`}>
-                                    {project.status}
-                                </div>
-                                <h3 className="project-name">{project.name}</h3>
-                                <div className="project-description">
-                                    {project.description.length > 120
-                                        ? `${project.description.substring(0, 120)}...`
-                                        : project.description}
-                                </div>
-                                <div className="project-details">
-                                    <div className="project-detail">
-                                        <LocationOnIcon className="detail-icon" />
-                                        <span>{project.location || 'Sin ubicación'}</span>
-                                    </div>
-                                    <div className="project-detail">
-                                        <CalendarTodayIcon className="detail-icon" />
-                                        <span>{formatDate(project.startDate)} - {formatDate(project.endDate)}</span>
-                                    </div>
-                                    <div className="project-detail">
-                                        <PeopleIcon className="detail-icon" />
-                                        <span>{project.team?.length || 0} miembros</span>
-                                    </div>
-                                </div>
-                                <div className="project-actions">
-                                    <button onClick={() => openViewModal(project)} className="view-button">
-                                        <VisibilityIcon /> Ver
-                                    </button>
-                                    <button onClick={() => openEditModal(project)} className="edit-button">
-                                        <EditIcon /> Editar
-                                    </button>
-                                    <button onClick={() => handleDeleteProject(project._id)} className="delete-button">
-                                        <DeleteIcon /> Eliminar
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            )}
-
-            {/* Modal para añadir/editar proyectos */}
-            {showAddModal && (
-                <div className="modal-backdrop">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h2>{currentProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}</h2>
-                            <button className="close-button" onClick={() => setShowAddModal(false)}>
-                                <CancelIcon />
-                            </button>
-                        </div>
-                        <form onSubmit={currentProject ? handleEditProject : handleAddProject}>
-                            <div className="form-group">
-                                <label htmlFor="name">Nombre del Proyecto *</label>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="description">Descripción *</label>
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label htmlFor="location">Ubicación</label>
-                                    <input
-                                        type="text"
-                                        id="location"
-                                        name="location"
-                                        value={formData.location}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label htmlFor="manager">Gerente de Proyecto</label>
-                                    <input
-                                        type="text"
-                                        id="manager"
-                                        name="manager"
-                                        value={formData.manager}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label htmlFor="startDate">Fecha de Inicio</label>
-                                    <input
-                                        type="date"
-                                        id="startDate"
-                                        name="startDate"
-                                        value={formData.startDate}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label htmlFor="endDate">Fecha de Finalización</label>
-                                    <input
-                                        type="date"
-                                        id="endDate"
-                                        name="endDate"
-                                        value={formData.endDate}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="status">Estado</label>
-                                <select
-                                    id="status"
-                                    name="status"
-                                    value={formData.status}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="activo">Activo</option>
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="completado">Completado</option>
-                                    <option value="cancelado">Cancelado</option>
-                                </select>
-                            </div>
-
-                            <div className="form-actions">
-                                <button type="button" onClick={() => setShowAddModal(false)} className="cancel-button">
-                                    Cancelar
-                                </button>
-                                <button type="submit" className="submit-button">
-                                    {currentProject ? 'Actualizar Proyecto' : 'Crear Proyecto'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Modal de formulario */}
+            <ProjectsForm
+                showModal={showAddModal}
+                setShowModal={setShowAddModal}
+                currentProject={currentProject}
+                fetchProjects={fetchProjects}
+                formData={formData}
+                setFormData={setFormData}
+            />
 
             {/* Modal para ver detalles del proyecto */}
             {showViewModal && currentProject && (
@@ -437,81 +395,72 @@ const Projects = () => {
                         </div>
                         <div className="project-view-content">
                             <div className="project-view-header">
-                                <h3>{currentProject.name}</h3>
-                                <div className={`project-view-status ${getStatusClass(currentProject.status)}`}>
-                                    {currentProject.status}
+                                <div className="project-title-section">
+                                    <h3>{currentProject.name}</h3>
+                                    <span className={`status-badge ${getStatusClass(currentProject.status)}`}>
+                                        {formatStatus(currentProject.status)}
+                                    </span>
+                                </div>
+                                <div className="project-dates">
+                                    <div className="date-item">
+                                        <CalendarTodayIcon />
+                                        <div>
+                                            <label>Fecha de Inicio</label>
+                                            <p>{formatDate(currentProject.startDate)}</p>
+                                        </div>
+                                    </div>
+                                    <div className="date-item">
+                                        <CalendarTodayIcon />
+                                        <div>
+                                            <label>Fecha de Finalización</label>
+                                            <p>{formatDate(currentProject.endDate)}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="project-view-section">
                                 <h4>Descripción</h4>
-                                <p>{currentProject.description}</p>
+                                <p className="project-description">
+                                    {currentProject.description || 'Sin descripción'}
+                                </p>
                             </div>
 
-                            <div className="project-view-columns">
-                                <div className="project-view-column">
-                                    <div className="project-view-item">
-                                        <LocationOnIcon className="view-icon" />
-                                        <div>
-                                            <h5>Ubicación</h5>
-                                            <p>{currentProject.location || 'No especificada'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="project-view-item">
-                                        <CalendarTodayIcon className="view-icon" />
-                                        <div>
-                                            <h5>Fecha de Inicio</h5>
-                                            <p>{formatDate(currentProject.startDate)}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="project-view-item">
-                                        <CalendarTodayIcon className="view-icon" />
-                                        <div>
-                                            <h5>Fecha de Finalización</h5>
-                                            <p>{formatDate(currentProject.endDate)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="project-view-column">
-                                    <div className="project-view-item">
-                                        <PeopleIcon className="view-icon" />
-                                        <div>
-                                            <h5>Gerente de Proyecto</h5>
-                                            <p>{currentProject.manager || 'No asignado'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="project-view-item">
-                                        <PeopleIcon className="view-icon" />
-                                        <div>
-                                            <h5>Equipo</h5>
-                                            <p>{currentProject.team?.length
-                                                ? `${currentProject.team.length} miembros`
-                                                : 'No hay miembros asignados'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="project-view-item">
-                                        <AssignmentIcon className="view-icon" />
-                                        <div>
-                                            <h5>Recursos Asignados</h5>
-                                            <p>{currentProject.resources?.length || 0} recursos</p>
-                                        </div>
-                                    </div>
+                            <div className="project-view-section">
+                                <h4>Ubicación</h4>
+                                <div className="location-section">
+                                    {currentProject.location ? (
+                                        <>
+                                            <MapPreview location={currentProject.location} />
+                                            <div className="location-details">
+                                                <a
+                                                    href={`https://www.google.com/maps?q=${currentProject.location}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="view-in-maps-button"
+                                                >
+                                                    <LocationOnIcon />
+                                                    Ver en Google Maps
+                                                </a>
+                                                <p className="coordinates">
+                                                    Coordenadas: {currentProject.location}
+                                                </p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <p className="no-location">No se ha especificado una ubicación</p>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="project-view-actions">
-                                <Link to={`/project-assignment/${currentProject._id}`} className="assignment-button">
-                                    <AssignmentIcon /> Gestionar Asignaciones
-                                </Link>
-                                <button onClick={() => {
-                                    setShowViewModal(false);
-                                    openEditModal(currentProject);
-                                }} className="edit-button">
+                            <div className="project-view-footer">
+                                <button
+                                    onClick={() => {
+                                        setShowViewModal(false);
+                                        openEditModal(currentProject);
+                                    }}
+                                    className="edit-button"
+                                >
                                     <EditIcon /> Editar Proyecto
                                 </button>
                             </div>
@@ -519,6 +468,17 @@ const Projects = () => {
                     </div>
                 </div>
             )}
+
+            <DeleteConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => {
+                    setShowDeleteModal(false);
+                    setProjectToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                title="Eliminar Proyecto"
+                message={`¿Estás seguro de que deseas eliminar el proyecto "${projectToDelete?.name}"? Esta acción no se puede deshacer.`}
+            />
         </div>
     );
 };

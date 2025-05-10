@@ -16,15 +16,16 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import InventoryList from './pages/InventoryList';
 import InventoryForm from './pages/InventoryForm';
-import MaintenanceHistory from './pages/MaintenanceHistory';
-import MaintenanceSchedule from './pages/MaintenanceSchedule';
-import ProjectAssignment from './pages/ProjectAssignment';
 import Projects from './pages/Projects';
+// import Reports from './pages/Reports'; // COMENTADO TEMPORALMENTE
 import VehicleList from './pages/VehicleList';
 import VehicleForm from './pages/VehicleForm';
 import NotFound from './pages/NotFound';
 import AccessDenied from './pages/AccessDenied';
 import Profile from './pages/Profile';
+import Categories from './pages/Categories';
+import Users from './pages/Users';
+import Statistics from './pages/Statistics';
 
 // Contextos
 import { AuthProvider } from './context/AuthContext';
@@ -56,6 +57,8 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/access-denied" element={<AccessDenied />} />
+            <Route path="/categories" element={<Categories />} />
+
 
             {/* Ruta principal (Dashboard) */}
             <Route 
@@ -83,7 +86,6 @@ function App() {
               element={
                 <ProtectedRoute 
                   element={<PageContainer><InventoryList /></PageContainer>}
-                  requiredPermission="canViewAllInventory"
                 />
               } 
             />
@@ -106,42 +108,24 @@ function App() {
               } 
             />
 
-            {/* Rutas de Mantenimiento */}
-            <Route 
-              path="/maintenance/history/:id" 
-              element={
-                <ProtectedRoute 
-                  element={<PageContainer><MaintenanceHistory /></PageContainer>}
-                  requiredPermission="canViewAllInventory"
-                />
-              } 
-            />
-            <Route 
-              path="/maintenance/schedule" 
-              element={
-                <ProtectedRoute 
-                  element={<PageContainer><MaintenanceSchedule /></PageContainer>}
-                  requiredPermission="canViewAllInventory"
-                />
-              } 
-            />
-
             {/* Rutas de Proyectos */}
             <Route 
               path="/projects" 
               element={
                 <ProtectedRoute 
                   element={<PageContainer><Projects /></PageContainer>}
-                  requiredPermission="canViewAllInventory"
+                  requiredPermission="canViewReports"
                 />
               } 
             />
+
+            {/* Ruta de Estadísticas */}
             <Route 
-              path="/project-assignment" 
+              path="/statistics" 
               element={
                 <ProtectedRoute 
-                  element={<PageContainer><ProjectAssignment /></PageContainer>}
-                  requiredPermission="canAssignVehicle"
+                  element={<PageContainer><Statistics /></PageContainer>}
+                  requiredPermission="canViewReports"
                 />
               } 
             />
@@ -152,7 +136,6 @@ function App() {
               element={
                 <ProtectedRoute 
                   element={<PageContainer><VehicleList /></PageContainer>}
-                  requiredPermission="canViewAllInventory"
                 />
               } 
             />
@@ -170,7 +153,6 @@ function App() {
               element={
                 <ProtectedRoute 
                   element={<PageContainer><VehicleForm /></PageContainer>}
-                  requiredPermission="canViewAllInventory"
                 />
               } 
             />
@@ -186,6 +168,12 @@ function App() {
 
             {/* Ruta para página no encontrada */}
             <Route path="*" element={<NotFound />} />
+
+            {/* Ruta para usuarios */}
+            <Route path="/users" element={<ProtectedRoute 
+                  element={<PageContainer><Users /></PageContainer>}
+                  requiredPermission="canEditAllUsers"
+                />} />
           </Routes>
         </PermissionsProvider>
       </AuthProvider>

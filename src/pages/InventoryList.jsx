@@ -4,6 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from '../axiosConfig';
 import './InventoryList.css';
+import LoadingSpinner from '../components/LoadingSpinner';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import EditButton from '../components/EditButton';
+import DeleteButton from '../components/DeleteButton';
+import { usePermissions } from '../context/PermissionsContext';
+import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
+import { useAuth } from '../context/AuthContext';
 
 // Iconos de Material UI
 import AddIcon from '@mui/icons-material/Add';
@@ -14,9 +21,14 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SortIcon from '@mui/icons-material/Sort';
 import CancelIcon from '@mui/icons-material/Cancel';
+import PersonIcon from '@mui/icons-material/Person';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import CloseIcon from '@mui/icons-material/Close';
 
 const InventoryList = () => {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const { hasPermission } = usePermissions();
     const [items, setItems] = useState([]);
     const [filteredItems, setFilteredItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -30,13 +42,21 @@ const InventoryList = () => {
     const [newCategory, setNewCategory] = useState('');
     const [newCategoryDescription, setNewCategoryDescription] = useState('');
     const [users, setUsers] = useState([]);
+    const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false);
+    const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+    // Estado para el modal de confirmación de eliminación
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        itemId: null,
+        itemName: ''
+    });
 
     const fetchCategories = async () => {
         try {
             const response = await axios.get('/categories');
             setCategories(response.data);
         } catch (error) {
-            console.error('Error al cargar categorías:', error);
+
             toast.error('No se pudieron cargar las categorías');
         }
     };
@@ -46,8 +66,10 @@ const InventoryList = () => {
             const response = await axios.get('/users');
             setUsers(response.data);
         } catch (error) {
-            console.error('Error al cargar usuarios:', error);
+
             toast.error('No se pudieron cargar los usuarios');
+        } finally {
+            setIsLoadingUsers(false);
         }
     };
 
@@ -58,95 +80,36 @@ const InventoryList = () => {
     }, []);
 
     const fetchInventory = async () => {
-        setIsLoading(true);
         try {
-            const [inventoryResponse, categoriesResponse] = await Promise.all([
-                axios.get('/inventory'),
-                axios.get('/categories')
-            ]);
+            setIsLoading(true);
+            const response = await axios.get('/inventory');
+            let items = response.data || [];
 
-            console.log('Datos de inventario recibidos:', inventoryResponse.data);
-
-            // Asegurar que los datos tienen la estructura esperada
-            const processedItems = inventoryResponse.data.map(item => {
-                // Verificar si el item tiene la estructura esperada
-                if (!item.name && !item.item_name) {
-                    console.warn('Item sin nombre encontrado:', item);
-                }
-                if (!item.code && !item.item_code) {
-                    console.warn('Item sin código encontrado:', item);
-                }
-
-                // Manejar el caso especial de vehículos
-                if (item.category === 'Vehículo') {
-                    console.log('==== DATOS DE VEHÍCULO RECIBIDOS (ORIGINAL) ====');
-                    console.log(JSON.stringify(item, null, 2));
-
-                    // Verificar todos los campos disponibles y sus valores
-                    console.log('==== PROPIEDADES DEL VEHÍCULO ====');
-                    Object.keys(item).forEach(key => {
-                        console.log(`${key}: ${JSON.stringify(item[key])}`);
+            // Si el usuario es técnico, filtrar solo los elementos asignados
+            if (currentUser?.role === 'tecnico') {
+                items = items.filter(item => {
+                    // Verificar si el usuario está en responsibleUsers
+                    const isInResponsibleUsers = item.responsibleUsers?.some(respUser => {
+                        const userId = typeof respUser === 'object' ? respUser.id : respUser;
+                        return userId === currentUser.id;
                     });
 
-                    console.log('de aca.', item)
+                    // Verificar si el usuario es el responsiblePerson
+                    const isResponsiblePerson = item.responsiblePerson === currentUser.fullName ||
+                        item.responsiblePerson === currentUser.username;
 
-                    // Crear un objeto con los campos que necesitamos, evitando errores de null/undefined
-                    const camposVehiculo = {
-                        carName: item.itemName || null,
-                        year: item.year || null,
-                        licensePlate: item.licensePlate || null,
-                        license_plate: item.license_plate || null,
-                        placa: item.placa || null,
-                        vehicleStatus: item.vehicleStatus || null,
-                        condition: item.condition || null,
-                        item_name: item.item_name || null,
-                        name: item.name || null,
-                        item_code: item.item_code || null,
-                        code: item.code || null
-                    };
+                    return isInResponsibleUsers || isResponsiblePerson;
+                });
+            }
 
-                    return {
-                        ...item,
-                        id: item.id || item._id,
-                        itemName: item.itemName,
-                        itemCode: item.itemCode || 0,
-                        category: item.category || 'Vehículo',
-                        quantity: item.quantity || 1,
-                        condition: item.condition || 'Desconocido',
-                        location: item.location || 'Sin ubicación',
-                        responsiblePerson: item.responsiblePerson || item.responsible_person || 'Sin asignar',
-                        acquisitionDate: item.acquisitionDate || null,
-                        lastMaintenanceDate: item.lastMaintenanceDate || null,
-                        nextMaintenanceDate: item.nextMaintenanceDate || null,
-                        notes: item.notes || null,
-                        imagePath: item.imagePath || null
-                    };
-                }
+            setItems(items);
+            setFilteredItems(items);
 
-                // Si los datos vienen en otro formato (name en lugar de item_name, etc.), normalizarlos
-                return {
-                    ...item,
-                    id: item.id || item._id,
-                    itemName: item.itemName || item.name || 'Sin nombre',
-                    itemCode: item.itemCode || item.code || 'Sin código',
-                    category: item.category || 'Sin categoría',
-                    quantity: item.quantity || 0,
-                    condition: item.condition || 'Desconocido',
-                    location: item.location || 'Sin ubicación',
-                    responsiblePerson: item.responsiblePerson || item.responsible_person || 'Sin asignar',
-                    acquisitionDate: item.acquisitionDate || null,
-                    lastMaintenanceDate: item.lastMaintenanceDate || null,
-                    nextMaintenanceDate: item.nextMaintenanceDate || null,
-                    notes: item.notes || null,
-                    imagePath: item.imagePath || null
-                };
-            });
-
-            setItems(processedItems);
-            setFilteredItems(processedItems);
-            setCategories(categoriesResponse.data);
+            // Extraer categorías únicas para el filtro
+            const uniqueCategories = [...new Set(items.map(item => item.category).filter(Boolean))];
+            setCategories(uniqueCategories);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error al cargar inventario:', error);
             toast.error('Error al cargar el inventario');
         } finally {
             setIsLoading(false);
@@ -201,17 +164,45 @@ const InventoryList = () => {
         setFilteredItems(result);
     }, [items, searchTerm, categoryFilter, sortField, sortDirection, selectedCondition]);
 
-    const handleDelete = async (id, itemName) => {
-        if (window.confirm(`¿Estás seguro de que deseas eliminar "${itemName}"?`)) {
-            try {
-                await axios.delete(`/inventory/${id}`);
-                toast.success('Item eliminado correctamente');
-                fetchInventory();
-            } catch (error) {
-                console.error('Error deleting item:', error);
-                toast.error('Error al eliminar el item');
+    const handleDelete = (id, itemName) => {
+        setDeleteModal({
+            isOpen: true,
+            itemId: id,
+            itemName
+        });
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await axios.delete(`/inventory/${deleteModal.itemId}`);
+            toast.success('Item eliminado correctamente');
+            fetchInventory();
+        } catch (error) {
+            console.error('Error al eliminar elemento:', error);
+            let errorMsg = 'Error al eliminar el elemento';
+
+            if (error.response?.data?.message) {
+                errorMsg = error.response.data.message.substring(0, 100) + (error.response.data.message.length > 100 ? '...' : '');
+            } else if (error.response?.data?.error) {
+                errorMsg = error.response.data.error.substring(0, 100) + (error.response.data.error.length > 100 ? '...' : '');
             }
+
+            toast.error(errorMsg);
+        } finally {
+            setDeleteModal({
+                isOpen: false,
+                itemId: null,
+                itemName: ''
+            });
         }
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModal({
+            isOpen: false,
+            itemId: null,
+            itemName: ''
+        });
     };
 
     const handleSort = (field) => {
@@ -257,7 +248,7 @@ const InventoryList = () => {
             setNewCategoryDescription('');
             fetchCategories();
         } catch (error) {
-            console.error('Error al agregar categoría:', error);
+
             if (error.response && error.response.data === "Ya existe una categoría con ese nombre") {
                 toast.error('Ya existe una categoría con ese nombre');
             } else {
@@ -266,12 +257,36 @@ const InventoryList = () => {
         }
     };
 
+    const renderResponsibleUsers = (item) => {
+        // Si el item tiene responsibleUsers, mostrarlos
+        if (item.responsibleUsers && item.responsibleUsers.length > 0) {
+            return (
+                <div className="responsible-users">
+                    {item.responsibleUsers.map((user, index) => {
+                        // Verificar si user es un objeto o solo un ID
+                        const userId = typeof user === 'object' ? user.id : user;
+                        const userData = users.find(u => u.id === userId);
+                        const userName = userData ?
+                            (userData.fullName || userData.name || userData.username) :
+                            (typeof user === 'object' ? user.name : 'Usuario desconocido');
+
+                        return (
+                            <span key={index} className="user-chip">
+                                <PersonIcon className="user-icon" />
+                                {userName}
+                            </span>
+                        );
+                    })}
+                </div>
+            );
+        }
+
+        // Si no hay responsibleUsers, mostrar responsiblePerson (campo anterior)
+        return item.responsiblePerson || 'Sin asignar';
+    };
+
     if (isLoading) {
-        return (
-            <div className="page-loading-spinner">
-                <p>Cargando inventario...</p>
-            </div>
-        );
+        return <LoadingSpinner message="Cargando inventario..." />;
     }
 
     return (
@@ -292,190 +307,134 @@ const InventoryList = () => {
                     </div>
                 </div>
 
-                <div className="filter-controls">
-                    <div className="search-box">
-                        <SearchIcon />
+                <div className="search-section">
+                    <div className="search-container">
+                        <SearchIcon className="search-icon" />
                         <input
                             type="text"
                             placeholder="Buscar por nombre, código, ubicación..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            className="search-input"
                         />
                     </div>
 
-                    <div className="filter-options">
-                        <div className="filter-group">
-                            <FilterListIcon />
-                            <select
-                                value={categoryFilter}
-                                onChange={(e) => setCategoryFilter(e.target.value)}
-                                className="filter-select"
-                            >
-                                <option value="">Todas las categorías</option>
-                                {categories.map((category) => (
-                                    <option key={category.id || category._id} value={category.name}>
-                                        {category.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="filter-group">
-                            <FilterListIcon />
-                            <select
-                                value={selectedCondition}
-                                onChange={(e) => setSelectedCondition(e.target.value)}
-                                className="filter-select"
-                            >
-                                <option value="">Todos los estados</option>
-                                <option value="Excelente">Excelente</option>
-                                <option value="Bueno">Bueno</option>
-                                <option value="Regular">Regular</option>
-                                <option value="Necesita Reparación">Necesita Reparación</option>
-                                <option value="Fuera de Servicio">Fuera de Servicio</option>
-                            </select>
-                        </div>
-
-                        <button
-                            className="btn btn-secondary btn-sm"
-                            onClick={resetFilters}
+                    <div className="filter-dropdown">
+                        <FilterListIcon className="filter-icon" />
+                        <select
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                            className="filter-select"
                         >
-                            Limpiar filtros
-                        </button>
+                            <option value="">Todas las categorías</option>
+                            {categories.map((category) => (
+                                <option key={category.id || category._id} value={category.name}>
+                                    {category.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
+
+                    <div className="filter-dropdown">
+                        <FilterListIcon className="filter-icon" />
+                        <select
+                            value={selectedCondition}
+                            onChange={(e) => setSelectedCondition(e.target.value)}
+                            className="filter-select"
+                        >
+                            <option value="">Todos los estados</option>
+                            <option value="Excelente">Excelente</option>
+                            <option value="Bueno">Bueno</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Necesita Reparación">Necesita Reparación</option>
+                            <option value="Fuera de Servicio">Fuera de Servicio</option>
+                        </select>
+                    </div>
+
+                    <button
+                        className="btn-secondary"
+                        onClick={resetFilters}
+                    >
+                        Limpiar filtros
+                    </button>
                 </div>
 
                 {filteredItems.length === 0 ? (
                     <div className="no-items">
-                        <p>No se encontraron items con los filtros aplicados.</p>
+                        {!hasPermission('canViewAllInventory') ? (
+                            <p>No tienes ningún item asignado. Contacta a un administrador para que te asigne elementos del inventario.</p>
+                        ) : (
+                            <p>No se encontraron items con los filtros aplicados.</p>
+                        )}
                     </div>
                 ) : (
-                    <div className="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Imagen</th>
-                                    <th className="sortable" onClick={() => handleSort('itemCode')}>
-                                        Código
-                                        {sortField === 'itemCode' && (
-                                            <SortIcon className={`sort-icon ${sortDirection}`} />
+                    <div className="items-cards-grid">
+                        {filteredItems.map((item) => (
+                            <div key={item.id} className="item-card">
+                                <div className="item-card-image">
+                                    {item.imagePath ? (
+                                        <img
+                                            src={getImageUrl(item.imagePath, IMAGE_TYPES.INVENTORY)}
+                                            alt={item.itemName}
+                                            className="item-image"
+                                        />
+                                    ) : (
+                                        <div className="item-image-placeholder">
+                                            <span>Sin imagen</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="item-card-content">
+                                    <div className="item-card-header">
+                                        <span className="item-code">{item.itemCode}</span>
+                                        <span className={`status-badge ${getStatusClass(item.condition)}`}>
+                                            {item.condition}
+                                        </span>
+                                    </div>
+                                    <h3 className="item-name">{item.itemName}</h3>
+                                    <div className="item-details">
+                                        <div className="item-detail">
+                                            <span className="detail-label">Categoría:</span>
+                                            <span className="detail-value">{item.category}</span>
+                                        </div>
+                                        <div className="item-detail">
+                                            <span className="detail-label">Cantidad:</span>
+                                            <span className="detail-value">{item.quantity}</span>
+                                        </div>
+                                        <div className="item-detail">
+                                            <span className="detail-label">Ubicación:</span>
+                                            <span className="detail-value">{item.location || 'No especificado'}</span>
+                                        </div>
+                                        <div className="detail-group">
+                                            <span className="detail-label">Responsables:</span>
+                                            {renderResponsibleUsers(item)}
+                                        </div>
+                                    </div>
+                                    <div className="item-card-actions">
+                                        {hasPermission('canAccessSettings') && (
+                                            <>
+                                                <EditButton itemId={item.id} />
+                                                <DeleteButton
+                                                    onDelete={handleDelete}
+                                                    itemId={item.id}
+                                                    itemName={item.itemName}
+                                                />
+                                            </>
                                         )}
-                                    </th>
-                                    <th className="sortable" onClick={() => handleSort('itemName')}>
-                                        Nombre
-                                        {sortField === 'itemName' && (
-                                            <SortIcon className={`sort-icon ${sortDirection}`} />
+                                        {/* Mostrar botón de mantenimiento solo para vehículos o equipos que lo requieran */}
+                                        {(item.category === 'Vehículo' || item.category === 'Maquinaria' || item.category === 'Equipo') && (
+                                            <button
+                                                className="btn-action maintain"
+                                                onClick={() => navigate(`/maintenance/history/${item.id}`)}
+                                                title="Historial de mantenimiento"
+                                            >
+                                                <BuildIcon />
+                                            </button>
                                         )}
-                                    </th>
-                                    <th className="sortable" onClick={() => handleSort('category')}>
-                                        Categoría
-                                        {sortField === 'category' && (
-                                            <SortIcon className={`sort-icon ${sortDirection}`} />
-                                        )}
-                                    </th>
-                                    <th className="sortable" onClick={() => handleSort('quantity')}>
-                                        Cantidad
-                                        {sortField === 'quantity' && (
-                                            <SortIcon className={`sort-icon ${sortDirection}`} />
-                                        )}
-                                    </th>
-                                    <th className="sortable" onClick={() => handleSort('condition')}>
-                                        Estado
-                                        {sortField === 'condition' && (
-                                            <SortIcon className={`sort-icon ${sortDirection}`} />
-                                        )}
-                                    </th>
-                                    <th className="sortable" onClick={() => handleSort('location')}>
-                                        Ubicación
-                                        {sortField === 'location' && (
-                                            <SortIcon className={`sort-icon ${sortDirection}`} />
-                                        )}
-                                    </th>
-                                    <th className="sortable" onClick={() => handleSort('responsiblePerson')}>
-                                        Responsable
-                                        {sortField === 'responsiblePerson' && (
-                                            <SortIcon className={`sort-icon ${sortDirection}`} />
-                                        )}
-                                    </th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredItems.map((item) => (
-                                    <tr key={item.id}>
-                                        <td>
-                                            <div className="item-image-container">
-                                                {item.imagePath ? (
-                                                    <img
-                                                        src={`${process.env.REACT_APP_API_URL}/uploads/inventory/${item.imagePath}`}
-                                                        alt={item.itemName}
-                                                        className="item-image"
-                                                    />
-                                                ) : (
-                                                    <div className="no-image-placeholder">
-                                                        Sin imagen
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>{item.itemCode}</td>
-                                        <td className="item-name">{item.itemName}</td>
-                                        <td>{item.category}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>
-                                            <span className={`status-badge ${getStatusClass(item.condition)}`}>
-                                                {item.condition}
-                                            </span>
-                                        </td>
-                                        <td>{item.location}</td>
-                                        <td>
-                                            {item.responsibleUsers ? (
-                                                <div className="responsible-users">
-                                                    {item.responsibleUsers.map(user => {
-                                                        const userData = users.find(u => u.id === user.id);
-                                                        return (
-                                                            <span key={user.id} className="user-chip">
-                                                                {userData ? `${userData.fullName}` : 'Usuario no encontrado'}
-                                                            </span>
-                                                        );
-                                                    })}
-                                                </div>
-                                            ) : (
-                                                item.responsiblePerson || 'Sin asignar'
-                                            )}
-                                        </td>
-                                        <td>
-                                            <div className="action-buttons">
-                                                <button
-                                                    className="btn-action edit"
-                                                    onClick={() => navigate(`/inventory/edit/${item.id}`)}
-                                                    title="Editar"
-                                                >
-                                                    <EditIcon />
-                                                </button>
-                                                <button
-                                                    className="btn-action delete"
-                                                    onClick={() => handleDelete(item.id, item.itemName)}
-                                                    title="Eliminar"
-                                                >
-                                                    <DeleteIcon />
-                                                </button>
-                                                {/* Mostrar botón de mantenimiento solo para vehículos o equipos que lo requieran */}
-                                                {(item.category === 'Vehículo' || item.category === 'Maquinaria' || item.category === 'Equipo') && (
-                                                    <button
-                                                        className="btn-action maintain"
-                                                        onClick={() => navigate(`/maintenance/history/${item.id}`)}
-                                                        title="Historial de mantenimiento"
-                                                    >
-                                                        <BuildIcon />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
@@ -526,6 +485,15 @@ const InventoryList = () => {
                     </div>
                 </div>
             )}
+
+            {/* Modal de confirmación de eliminación */}
+            <DeleteConfirmationModal
+                isOpen={deleteModal.isOpen}
+                onClose={closeDeleteModal}
+                onConfirm={confirmDelete}
+                itemName={deleteModal.itemName}
+                message={`¿Estás seguro de que deseas eliminar "${deleteModal.itemName}"?`}
+            />
         </div>
     );
 };

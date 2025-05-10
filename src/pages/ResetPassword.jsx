@@ -35,7 +35,7 @@ const ResetPassword = () => {
             setMessage('Se ha enviado un correo electrónico para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada.');
             setEmail('');
         } catch (err) {
-            console.error('Error al solicitar restablecimiento de contraseña:', err);
+            
             setError(err.response?.data?.message || 'Error al enviar el correo electrónico. Inténtalo de nuevo.');
         } finally {
             setLoading(false);
@@ -47,7 +47,7 @@ const ResetPassword = () => {
             <div className="reset-password-form-container">
                 <div className="reset-password-header">
                     <div className="panda-logo">
-                        🐼 <span>Panda Assets</span>
+                        <span>Utassets</span>
                     </div>
                     <h1>Restablecer Contraseña</h1>
                     <p className="reset-password-subtitle">

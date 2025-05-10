@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configurar la URL base de la API
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
-console.log('URL base de la API configurada:', API_URL);
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Crear instancia de axios con la URL base
 const instance = axios.create({
@@ -10,32 +10,64 @@ const instance = axios.create({
   timeout: 15000, // 15 segundos de timeout
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
+  // Solo usar withCredentials en producción o si realmente se necesita para cookies cruzadas
+  withCredentials: isProduction,
 });
 
 // Interceptor para añadir el token de autenticación y manejar headers
 instance.interceptors.request.use(
   (config) => {
-    console.log(`Enviando solicitud a: ${config.baseURL}${config.url}`, config.method);
+    if (!isProduction) {
+      console.log(`Enviando solicitud a: ${config.url}`);
+    }
     
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
-      console.log('Token incluido en la solicitud');
-    } else {
-      console.warn('No se encontró token de autenticación');
+      
+      // Verificar token expirado antes de enviar
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (payload.exp && payload.exp < currentTime) {
+          if (!isProduction) {
+            console.warn('Token expirado, redirigiendo al login');
+          }
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login?expired=true';
+          return Promise.reject(new Error('Token expirado'));
+        }
+      } catch (e) {
+        // Error al decodificar token, probablemente inválido
+        if (!isProduction) {
+          console.error('Error al decodificar token:', e);
+        }
+      }
     }
 
     // Si los datos son FormData, asegurarse de que el Content-Type sea multipart/form-data
     if (config.data instanceof FormData) {
       config.headers['Content-Type'] = 'multipart/form-data';
-      console.log('Configurando headers para FormData');
+    }
+    
+    // Sanitizar datos para prevenir XSS
+    if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+      config.data = JSON.parse(
+        JSON.stringify(config.data)
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+      );
     }
 
     return config;
   },
   (error) => {
-    console.error('Error en la configuración de la solicitud:', error);
+    if (!isProduction) {
+      console.error('Error en la configuración de la solicitud:', error);
+    }
     return Promise.reject(error);
   }
 );
@@ -43,32 +75,45 @@ instance.interceptors.request.use(
 // Interceptor para manejar errores de respuesta
 instance.interceptors.response.use(
   (response) => {
-    console.log(`Respuesta recibida de ${response.config.url}:`, response.status);
+    if (!isProduction) {
+      console.log(`Respuesta recibida de ${response.config.url} con estado: ${response.status}`);
+    }
     return response;
   },
   (error) => {
     if (error.response) {
       // La petición fue hecha y el servidor respondió con un código de estado
       // que no está en el rango 2xx
-      console.error(`Error en respuesta de ${error.config?.url}:`, {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data
-      });
+      if (!isProduction) {
+        console.error(`Error en respuesta de ${error.config?.url}:`, {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        });
+      }
       
       if (error.response.status === 401) {
         // Token expirado o inválido, redirigir a login
-        console.error('Error 401: Unauthorized - Sesión expirada o token inválido');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/login?session=expired';
+      } else if (error.response.status === 403) {
+        // Acceso prohibido, redirigir a una página de acceso denegado
+        window.location.href = '/forbidden';
       }
     } else if (error.request) {
       // La petición fue hecha pero no se recibió respuesta
-      console.error('Error de conexión, no se recibió respuesta:', error.request);
+      if (!isProduction) {
+        console.error('Error de conexión, no se recibió respuesta');
+      }
+      // Mostrar mensaje al usuario sobre problemas de conexión
+      const event = new CustomEvent('api-connection-error', { detail: { message: 'Error de conexión con el servidor' } });
+      window.dispatchEvent(event);
     } else {
       // Algo ocurrió en la configuración de la petición que provocó un error
-      console.error('Error en la configuración de la petición:', error.message);
+      if (!isProduction) {
+        console.error('Error en la configuración de la petición:', error.message);
+      }
     }
     return Promise.reject(error);
   }

@@ -4,6 +4,13 @@ import { toast } from 'react-toastify';
 import axiosInstance from '../axiosConfig';
 import './VehicleList.css';
 import { usePermissions } from '../context/PermissionsContext';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ViewButton from '../components/ViewButton';
+import EditButton from '../components/EditButton';
+import DeleteButton from '../components/DeleteButton';
+import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
+import { useAuth } from '../context/AuthContext';
 
 // Iconos de Material UI
 import AddIcon from '@mui/icons-material/Add';
@@ -11,11 +18,16 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import SortIcon from '@mui/icons-material/Sort';
+import PersonIcon from '@mui/icons-material/Person';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const VehicleList = () => {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const { hasPermission } = usePermissions();
     const [vehicles, setVehicles] = useState([]);
     const [filteredVehicles, setFilteredVehicles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -26,28 +38,48 @@ const VehicleList = () => {
     const [sortField, setSortField] = useState('');
     const [sortDirection, setSortDirection] = useState('asc');
     const [brands, setBrands] = useState([]);
-    const [fuelTypes, setFuelTypes] = useState(['Gasolina', 'Diésel', 'Eléctrico', 'Híbrido']);
-    const [vehicleStatuses, setVehicleStatuses] = useState(['Operativo', 'En Reparación', 'Fuera de Servicio']);
-    const { hasPermission } = usePermissions();
+    const [fuelTypes] = useState(['Gasolina', 'Diésel', 'Eléctrico', 'Híbrido']);
+    const [vehicleStatuses] = useState(['Operativo', 'En Reparación', 'Fuera de Servicio']);
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        vehicle: null
+    });
 
     useEffect(() => {
         fetchVehicles();
     }, []);
 
     const fetchVehicles = async () => {
-        setIsLoading(true);
         try {
+            setIsLoading(true);
             const response = await axiosInstance.get('/vehicles');
-            const vehiclesData = response.data;
-            console.log('vehiclesData', vehiclesData)
-            setVehicles(vehiclesData);
-            setFilteredVehicles(vehiclesData);
+            let vehicles = response.data || [];
+
+            // Si el usuario es técnico, filtrar solo los vehículos asignados
+            if (currentUser?.role === 'tecnico') {
+                vehicles = vehicles.filter(vehicle => {
+                    // Verificar si el usuario está en responsibleUsers
+                    const isInResponsibleUsers = vehicle.responsibleUsers?.some(respUser => {
+                        const userId = typeof respUser === 'object' ? respUser.id : respUser;
+                        return userId === currentUser.id;
+                    });
+
+                    // Verificar si el usuario es el responsiblePerson
+                    const isResponsiblePerson = vehicle.responsiblePerson === currentUser.fullName ||
+                        vehicle.responsiblePerson === currentUser.username;
+
+                    return isInResponsibleUsers || isResponsiblePerson;
+                });
+            }
+
+            setVehicles(vehicles);
+            setFilteredVehicles(vehicles);
 
             // Extraer marcas únicas para el filtro
-            const uniqueBrands = [...new Set(vehiclesData.map(vehicle => vehicle.brand))];
+            const uniqueBrands = [...new Set(vehicles.map(vehicle => vehicle.brand).filter(Boolean))];
             setBrands(uniqueBrands);
         } catch (error) {
-            console.error('Error fetching vehicles:', error);
+            console.error('Error al cargar vehículos:', error);
             toast.error('Error al cargar los vehículos');
         } finally {
             setIsLoading(false);
@@ -107,17 +139,42 @@ const VehicleList = () => {
         setFilteredVehicles(result);
     }, [vehicles, searchTerm, brandFilter, statusFilter, fuelTypeFilter, sortField, sortDirection]);
 
-    const handleDelete = async (inventoryId, vehicle) => {
-        if (window.confirm(`¿Estás seguro de que deseas eliminar el vehículo con placa "${vehicle.licensePlate}"?`)) {
-            try {
-                await axiosInstance.delete(`/vehicles/${vehicle.id}`);
-                toast.success('Vehículo eliminado correctamente');
-                fetchVehicles();
-            } catch (error) {
-                console.error('Error deleting vehicle:', error);
-                toast.error('Error al eliminar el vehículo');
+    const handleDelete = async (vehicle) => {
+        setDeleteModal({
+            isOpen: true,
+            vehicle: vehicle
+        });
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await axiosInstance.delete(`/vehicles/${deleteModal.vehicle.id}`);
+            toast.success('Vehículo eliminado correctamente');
+            fetchVehicles();
+        } catch (error) {
+            console.error('Error al eliminar vehículo:', error);
+            let errorMsg = 'Error al eliminar el vehículo';
+
+            if (error.response?.data?.message) {
+                errorMsg = error.response.data.message.substring(0, 100) + (error.response.data.message.length > 100 ? '...' : '');
+            } else if (error.response?.data?.error) {
+                errorMsg = error.response.data.error.substring(0, 100) + (error.response.data.error.length > 100 ? '...' : '');
             }
+
+            toast.error(errorMsg);
+        } finally {
+            setDeleteModal({
+                isOpen: false,
+                vehicle: null
+            });
         }
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModal({
+            isOpen: false,
+            vehicle: null
+        });
     };
 
     const handleSort = (field) => {
@@ -153,116 +210,201 @@ const VehicleList = () => {
         navigate('/vehicles/new');
     };
 
+    const getInsuranceStatus = (expiryDate) => {
+        if (!expiryDate) return '';
+
+        const today = new Date();
+        const expiry = new Date(expiryDate);
+        const oneMonthFromNow = new Date();
+        oneMonthFromNow.setMonth(today.getMonth() + 1);
+
+        if (expiry < today) {
+            return 'expired';
+        } else if (expiry <= oneMonthFromNow) {
+            return 'warning';
+        }
+        return 'valid';
+    };
+
     if (isLoading) {
-        return (
-            <div className="page-loading-spinner">
-                <p>Cargando vehículos...</p>
-            </div>
-        );
+        return <LoadingSpinner message="Cargando vehículos..." />;
     }
 
     return (
         <div className="vehicle-list-container">
-            <div className="vehicle-list-header">
-                <h1>Vehículos</h1>
-                {hasPermission('canCreateVehicle') && (
-                    <button className="add-vehicle-button" onClick={handleAddClick}>
-                        <AddIcon /> Nuevo Vehículo
-                    </button>
+            <div className="card">
+                <div className="vehicle-list-header">
+                    <h1>Vehículos</h1>
+                    {hasPermission('canCreateVehicle') && (
+                        <button className="add-vehicle-button" onClick={handleAddClick}>
+                            <AddIcon /> Nuevo Vehículo
+                        </button>
+                    )}
+                </div>
+
+                <div className="search-section">
+                    <div className="search-container">
+                        <SearchIcon className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Buscar por marca, modelo, placa..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
+
+                    <div className="filter-dropdown">
+                        <FilterListIcon className="filter-icon" />
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="filter-select"
+                        >
+                            <option value="">Todos los estados</option>
+                            {vehicleStatuses.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="filter-dropdown">
+                        <FilterListIcon className="filter-icon" />
+                        <select
+                            value={brandFilter}
+                            onChange={(e) => setBrandFilter(e.target.value)}
+                            className="filter-select"
+                        >
+                            <option value="">Todas las marcas</option>
+                            {brands.map(brand => (
+                                <option key={brand} value={brand}>{brand}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="filter-dropdown">
+                        <FilterListIcon className="filter-icon" />
+                        <select
+                            value={fuelTypeFilter}
+                            onChange={(e) => setFuelTypeFilter(e.target.value)}
+                            className="filter-select"
+                        >
+                            <option value="">Todos los combustibles</option>
+                            {fuelTypes.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                {filteredVehicles.length === 0 ? (
+                    <div className="no-vehicles-message">
+                        {!hasPermission('canViewAllInventory') ? (
+                            <p>No tienes ningún vehículo asignado. Contacta a un administrador para que te asigne vehículos.</p>
+                        ) : (
+                            <p>No se encontraron vehículos que coincidan con los criterios de búsqueda.</p>
+                        )}
+                    </div>
+                ) : (
+                    <div className="table-container">
+                        <table>
+                            <tbody>
+                                {filteredVehicles.map((vehicle) => (
+                                    <tr key={vehicle.id} className="vehicle-card-row">
+                                        <td className="vehicle-card-cell">
+                                            <div className="vehicle-card">
+                                                <div className="vehicle-image-container">
+                                                    <img
+                                                        src={vehicle.imagePath ? getImageUrl(vehicle.imagePath, IMAGE_TYPES.VEHICLES) : '/default-vehicle.jpg'}
+                                                        alt={`${vehicle.brand} ${vehicle.model}`}
+                                                        className="vehicle-image"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = '/default-vehicle.jpg';
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="vehicle-info">
+                                                    <div className="vehicle-primary-info">
+                                                        <h3>{vehicle.brand} {vehicle.model}</h3>
+                                                        <span className={`vehicle-status status-${getStatusClass(vehicle.vehicleStatus)}`}>
+                                                            {vehicle.vehicleStatus}
+                                                        </span>
+                                                    </div>
+                                                    <div className="vehicle-details">
+                                                        <div className="detail-row">
+                                                            <p><span className="detail-label">Placa:</span> {vehicle.licensePlate}</p>
+                                                            <p><span className="detail-label">Año:</span> {vehicle.year}</p>
+                                                        </div>
+                                                        <div className="detail-row">
+                                                            <p><span className="detail-label">Combustible:</span> {vehicle.fuelType}</p>
+                                                            <p><span className="detail-label">Kilometraje:</span> {vehicle.mileage ? `${vehicle.mileage} km` : 'No registrado'}</p>
+                                                        </div>
+                                                        {vehicle.insuranceExpiryDate && (
+                                                            <p className={`insurance-info insurance-${getInsuranceStatus(vehicle.insuranceExpiryDate)}`}>
+                                                                <span className="detail-label">Seguro vence:</span> {new Date(vehicle.insuranceExpiryDate).toLocaleDateString()}
+                                                            </p>
+                                                        )}
+                                                        {vehicle.technicalRevisionExpiryDate && (
+                                                            <p className={`insurance-info insurance-${getInsuranceStatus(vehicle.technicalRevisionExpiryDate)}`}>
+                                                                <span className="detail-label">TÜV vence:</span> {new Date(vehicle.technicalRevisionExpiryDate).toLocaleDateString()}
+                                                            </p>
+                                                        )}
+                                                        {vehicle.responsibleUsers && vehicle.responsibleUsers.length > 0 && (
+                                                            <div className="technicians-info">
+                                                                <span className="detail-label">Técnicos:</span>
+                                                                <div className="technicians-list">
+                                                                    {vehicle.responsibleUsers.map((user, index) => {
+                                                                        const userName = typeof user === 'object' ?
+                                                                            (user.fullName || `${user.name} ${user.last_name}`) :
+                                                                            'Usuario desconocido';
+                                                                        return (
+                                                                            <span key={index} className="technician-chip">
+                                                                                <PersonIcon className="technician-icon" />
+                                                                                {userName}
+                                                                            </span>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="vehicle-actions">
+                                                    <ViewButton itemId={vehicle.id} />
+
+                                                    {hasPermission('canEditVehicle') && (
+                                                        <EditButton
+                                                            itemId={vehicle.id}
+                                                            type="vehicle"
+                                                            className="action-button edit-button"
+                                                        />
+                                                    )}
+                                                    {hasPermission('canDeleteVehicle') && (
+                                                        <DeleteButton
+                                                            onDelete={() => handleDelete(vehicle)}
+                                                            itemId={vehicle.id}
+                                                            itemName={vehicle.name}
+                                                            className="action-button delete-button"
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
-            <div className="search-section">
-                <div className="search-container">
-                    <input
-                        type="text"
-                        placeholder="Buscar por marca, modelo, placa..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                    />
-                    <button onClick={resetFilters} className="search-button">
-                        <SearchIcon className="search-icon" />
-                    </button>
-                </div>
-                <div className="filter-dropdown">
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="filter-select"
-                    >
-                        <option value="">Todos los estados</option>
-                        <option value="Operativo">Operativo</option>
-                        <option value="En Reparación">En Reparación</option>
-                        <option value="Fuera de Servicio">Fuera de Servicio</option>
-                    </select>
-                </div>
-            </div>
-
-            {isLoading ? (
-                <div className="loading-section">
-                    <div className="page-loading-spinner"></div>
-                    <p>Cargando vehículos...</p>
-                </div>
-            ) : filteredVehicles.length === 0 ? (
-                <div className="no-vehicles-message">
-                    <p>No hay vehículos que coincidan con los criterios de búsqueda.</p>
-                </div>
-            ) : (
-                <div className="vehicle-list">
-                    {filteredVehicles.map((vehicle) => (
-                        <div key={vehicle.id} className="vehicle-card">
-                            <div className="vehicle-image-container">
-                                <img
-                                    src={vehicle.imagePath ? `${API_URL}/uploads/vehicles/${vehicle.imagePath}` : '/default-vehicle.jpg'}
-                                    alt={vehicle.brand}
-                                    className="vehicle-image"
-                                />
-                            </div>
-                            <div className="vehicle-info">
-                                <div className="vehicle-primary-info">
-                                    <h3>{vehicle.brand} {vehicle.model}</h3>
-                                    <span className={`vehicle-status status-${getStatusClass(vehicle.vehicleStatus)}`}>
-                                        {vehicle.vehicleStatus}
-                                    </span>
-                                </div>
-                                <div className="vehicle-details">
-                                    <p><span className="detail-label">Placa:</span> {vehicle.licensePlate}</p>
-                                    <p><span className="detail-label">Año:</span> {vehicle.year}</p>
-                                    <p><span className="detail-label">Último Servicio:</span> {vehicle.lastServiceDate}</p>
-                                </div>
-                            </div>
-                            <div className="vehicle-actions">
-                                <Link
-                                    to={`/vehicles/${vehicle.id}`}
-                                    className="action-button view-button"
-                                    title="Ver detalles"
-                                >
-                                    <VisibilityIcon />
-                                </Link>
-                                {hasPermission('canEditVehicle') && (
-                                    <Link
-                                        to={`/vehicles/edit/${vehicle.id}`}
-                                        className="action-button edit-button"
-                                        title="Editar"
-                                    >
-                                        <EditIcon />
-                                    </Link>
-                                )}
-                                {hasPermission('canDeleteVehicle') && (
-                                    <button
-                                        onClick={() => handleDelete(vehicle.id, vehicle)}
-                                        className="action-button delete-button"
-                                        title="Eliminar"
-                                    >
-                                        <DeleteIcon />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <DeleteConfirmationModal
+                isOpen={deleteModal.isOpen}
+                onClose={closeDeleteModal}
+                onConfirm={confirmDelete}
+                itemName={deleteModal.vehicle ? `${deleteModal.vehicle.brand} ${deleteModal.vehicle.model} - ${deleteModal.vehicle.licensePlate}` : ''}
+            />
         </div>
     );
 };

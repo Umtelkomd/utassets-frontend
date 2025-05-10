@@ -4,6 +4,10 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import axiosInstance from '../axiosConfig';
 import './InventoryForm.css';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
+import { useAuth } from '../context/AuthContext';
+import { usePermissions } from '../context/PermissionsContext';
 
 // Componentes de Material UI
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -15,10 +19,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
+const isProduction = process.env.NODE_ENV === 'production';
 
 const InventoryForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const { hasPermission } = usePermissions();
     const isEditing = !!id;
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [newCategory, setNewCategory] = useState('');
@@ -34,8 +41,6 @@ const InventoryForm = () => {
         condition: 'Bueno',
         location: '',
         acquisitionDate: null,
-        lastMaintenanceDate: null,
-        nextMaintenanceDate: null,
         responsibleUsers: [],
         notes: '',
         imagePath: null
@@ -53,7 +58,7 @@ const InventoryForm = () => {
             const response = await axios.get(`${API_URL}/categories`);
             setCategories(response.data);
         } catch (error) {
-            console.error('Error al cargar categorías:', error);
+
             toast.error('No se pudieron cargar las categorías');
         }
     };
@@ -63,7 +68,7 @@ const InventoryForm = () => {
             const response = await axiosInstance.get('/users');
             setUsers(response.data);
         } catch (error) {
-            console.error('Error al cargar usuarios:', error);
+
             toast.error('No se pudieron cargar los usuarios');
         }
     };
@@ -72,12 +77,15 @@ const InventoryForm = () => {
         fetchCategories();
         fetchUsers();
 
-        if (isEditing) {
+        if (isEditing && id) {
+
             const fetchItemData = async () => {
                 setIsLoading(true);
                 try {
                     const response = await axiosInstance.get(`/inventory/${id}`);
                     const item = response.data;
+
+                    console.log('item', item);
 
                     // Función para ajustar la fecha y mostrar el día correcto
                     const adjustDate = (dateStr) => {
@@ -92,14 +100,9 @@ const InventoryForm = () => {
                     };
 
                     // Asegurar que responsibleUsers sea un array de objetos con id
-                    const formattedResponsibleUsers = item.responsibleUsers?.map(user => {
-                        if (typeof user === 'object') {
-                            return user;
-                        } else {
-                            const userData = users.find(u => u.id === user);
-                            return userData || { id: user };
-                        }
-                    }) || [];
+                    const formattedResponsibleUsers = item.responsibleUsers?.map(user => ({
+                        id: typeof user === 'object' ? user.id : user
+                    })) || [];
 
                     setFormData({
                         itemName: item.itemName || '',
@@ -109,18 +112,16 @@ const InventoryForm = () => {
                         condition: item.condition || 'Bueno',
                         location: item.location || '',
                         acquisitionDate: adjustDate(item.acquisitionDate),
-                        lastMaintenanceDate: adjustDate(item.lastMaintenanceDate),
-                        nextMaintenanceDate: adjustDate(item.nextMaintenanceDate),
                         responsibleUsers: formattedResponsibleUsers,
                         notes: item.notes || '',
                         imagePath: item.imagePath || null
                     });
 
                     if (item.imagePath) {
-                        setImagePreview(`${API_URL}/uploads/inventory/${item.imagePath}`);
+                        setImagePreview(getImageUrl(item.imagePath, IMAGE_TYPES.INVENTORY));
                     }
                 } catch (error) {
-                    console.error('Error fetching item data:', error);
+
                     toast.error('Error al cargar los datos del item');
                     navigate('/inventory');
                 } finally {
@@ -130,7 +131,15 @@ const InventoryForm = () => {
 
             fetchItemData();
         }
-    }, [id, isEditing, navigate]);
+
+        // Si es un técnico y está creando un nuevo item, asignarlo automáticamente como responsable
+        if (!isEditing && currentUser?.role === 'tecnico') {
+            setFormData(prev => ({
+                ...prev,
+                responsibleUsers: [{ id: currentUser.id }]
+            }));
+        }
+    }, [id, isEditing, navigate, currentUser]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -143,6 +152,22 @@ const InventoryForm = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validar el tipo de archivo
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                toast.error('Por favor, selecciona una imagen en formato JPG o PNG');
+                e.target.value = ''; // Limpiar el input
+                return;
+            }
+
+            // Validar el tamaño (máximo 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+            if (file.size > maxSize) {
+                toast.error('La imagen no debe superar los 5MB');
+                e.target.value = ''; // Limpiar el input
+                return;
+            }
+
             setSelectedFile(file);
             setFormData(prev => ({ ...prev, imagePath: file }));
             const reader = new FileReader();
@@ -170,8 +195,9 @@ const InventoryForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validar el formulario
         if (!validateForm()) {
-            toast.error('Por favor, completa todos los campos requeridos');
+            toast.error('Por favor, corrige los errores del formulario');
             return;
         }
 
@@ -184,38 +210,44 @@ const InventoryForm = () => {
             Object.keys(formData).forEach(key => {
                 if (key === 'imagePath' && formData[key] instanceof File) {
                     formDataToSend.append('image', formData[key]);
+                } else if (key === 'responsibleUsers') {
+                    // Enviar los usuarios responsables como un array JSON
+                    formDataToSend.append('responsibleUsers', JSON.stringify(formData[key]));
                 } else if (formData[key] !== null && formData[key] !== '') {
-                    if (key === 'responsibleUsers') {
-                        // Enviar cada usuario individualmente
-                        formData[key].forEach((user, index) => {
-                            formDataToSend.append(`responsibleUsers[${index}]`, JSON.stringify(user));
-                        });
-                    } else {
-                        formDataToSend.append(key, formData[key]);
-                    }
+                    formDataToSend.append(key, formData[key]);
                 }
             });
 
             if (isEditing) {
-                console.log(formData, 'show')
                 await axiosInstance.put(`/inventory/${id}`, formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 });
-                toast.success('Item actualizado correctamente');
+                toast.success('Elemento actualizado correctamente');
             } else {
                 await axiosInstance.post('/inventory', formDataToSend, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 });
-                toast.success('Item añadido correctamente');
+                toast.success('Elemento creado correctamente');
             }
+
             navigate('/inventory');
         } catch (error) {
-            console.error('Error submitting form:', error);
-            toast.error(`Error al ${isEditing ? 'actualizar' : 'añadir'} el item`);
+            console.error('Error al guardar elemento:', error);
+            let errorMsg = 'Error al guardar el elemento';
+
+            if (error.response?.data?.message) {
+                errorMsg = error.response.data.message.substring(0, 100) + (error.response.data.message.length > 100 ? '...' : '');
+            } else if (error.response?.data?.error) {
+                errorMsg = error.response.data.error.substring(0, 100) + (error.response.data.error.length > 100 ? '...' : '');
+            } else if (error.message) {
+                errorMsg = error.message.substring(0, 100) + (error.message.length > 100 ? '...' : '');
+            }
+
+            toast.error(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -234,7 +266,7 @@ const InventoryForm = () => {
             setNewCategoryDescription('');
             fetchCategories();
         } catch (error) {
-            console.error('Error al agregar categoría:', error);
+
             if (error.response && error.response.data.message === "Ya existe una categoría con ese nombre") {
                 toast.error('Ya existe una categoría con ese nombre');
             } else {
@@ -264,11 +296,7 @@ const InventoryForm = () => {
     };
 
     if (isLoading && isEditing) {
-        return (
-            <div className="page-loading-spinner">
-                <p>Cargando datos...</p>
-            </div>
-        );
+        return <LoadingSpinner message="Cargando datos..." />;
     }
 
     const removeUser = (userId) => {
@@ -410,80 +438,76 @@ const InventoryForm = () => {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="lastMaintenanceDate">Último Mantenimiento</label>
-                            <input
-                                type="date"
-                                id="lastMaintenanceDate"
-                                name="lastMaintenanceDate"
-                                className="form-control"
-                                value={formData.lastMaintenanceDate || ''}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="nextMaintenanceDate">Próximo Mantenimiento</label>
-                            <input
-                                type="date"
-                                id="nextMaintenanceDate"
-                                name="nextMaintenanceDate"
-                                className="form-control"
-                                value={formData.nextMaintenanceDate || ''}
-                                onChange={handleInputChange}
-                            />
-                        </div>
-
-                        <div className="form-group">
                             <label htmlFor="responsibleUsers">Técnicos Responsables*</label>
-                            <div className={`users-select-container ${errors.responsibleUsers ? 'error' : ''}`}>
-                                <div
-                                    className="users-select-input"
-                                    onClick={() => setIsUsersDropdownOpen(!isUsersDropdownOpen)}
-                                >
-                                    <div className="selected-users">
-                                        {formData.responsibleUsers.length > 0 ? (
-                                            formData.responsibleUsers.map(user => {
+                            {currentUser?.role === 'tecnico' && !isEditing ? (
+                                <div className="users-select-container">
+                                    <div className="users-select-input disabled">
+                                        <div className="selected-users">
+                                            {formData.responsibleUsers.map(user => {
                                                 const userData = users.find(u => u.id === user.id);
                                                 return (
                                                     <span key={user.id} className="user-chip">
                                                         {userData ? (userData.fullName) : 'Usuario no encontrado'}
-                                                        <button
-                                                            type="button"
-                                                            className="remove-user"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                removeUser(user.id);
-                                                            }}
-                                                        >
-                                                            <CloseIcon />
-                                                        </button>
                                                     </span>
                                                 );
-                                            })
-                                        ) : (
-                                            <span className="placeholder">Seleccione técnicos responsables</span>
+                                            })}
+                                        </div>
+                                    </div>
+                                    <small className="form-help">Como técnico, serás automáticamente asignado como responsable</small>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={`users-select-container ${errors.responsibleUsers ? 'error' : ''}`}>
+                                        <div
+                                            className="users-select-input"
+                                            onClick={() => setIsUsersDropdownOpen(!isUsersDropdownOpen)}
+                                        >
+                                            <div className="selected-users">
+                                                {formData.responsibleUsers.length > 0 ? (
+                                                    formData.responsibleUsers.map(user => {
+                                                        const userData = users.find(u => u.id === user.id);
+                                                        return (
+                                                            <span key={user.id} className="user-chip">
+                                                                {userData ? (userData.fullName) : 'Usuario no encontrado'}
+                                                                <button
+                                                                    type="button"
+                                                                    className="remove-user"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        removeUser(user.id);
+                                                                    }}
+                                                                >
+                                                                    <CloseIcon />
+                                                                </button>
+                                                            </span>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <span className="placeholder">Seleccione técnicos responsables</span>
+                                                )}
+                                            </div>
+                                            <ArrowDropDownIcon className="dropdown-icon" />
+                                        </div>
+
+                                        {isUsersDropdownOpen && (
+                                            <div className="users-dropdown">
+                                                {users.map(user => (
+                                                    <div
+                                                        key={user.id}
+                                                        className={`user-option ${formData.responsibleUsers.some(u => u.id === user.id) ? 'selected' : ''}`}
+                                                        onClick={() => toggleUserSelection(user.id)}
+                                                    >
+                                                        <PersonIcon className="user-icon" />
+                                                        <span>{user.fullName || `${user.name} ${user.last_name}`}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
-                                    <ArrowDropDownIcon className="dropdown-icon" />
-                                </div>
-
-                                {isUsersDropdownOpen && (
-                                    <div className="users-dropdown">
-                                        {users.map(user => (
-                                            <div
-                                                key={user.id}
-                                                className={`user-option ${formData.responsibleUsers.some(u => u.id === user.id) ? 'selected' : ''}`}
-                                                onClick={() => toggleUserSelection(user.id)}
-                                            >
-                                                <PersonIcon className="user-icon" />
-                                                <span>{user.fullName || `${user.name} ${user.last_name}`}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            {errors.responsibleUsers && <div className="error-message">{errors.responsibleUsers}</div>}
-                            <small className="vehicle-form-help">Puedes seleccionar múltiples técnicos responsables</small>
+                                    {errors.responsibleUsers && <div className="error-message">{errors.responsibleUsers}</div>}
+                                    <small className="vehicle-form-help">Puedes seleccionar múltiples técnicos responsables</small>
+                                </>
+                            )}
                         </div>
 
                         <div className="form-group full-width">
