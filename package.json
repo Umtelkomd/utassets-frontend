@@ -36,12 +36,9 @@
   "scripts": {
     "start": "react-scripts start",
     "start:secure": "set HTTPS=true&&set SSL_CRT_FILE=localhost.pem&&set SSL_KEY_FILE=localhost-key.pem&&react-scripts start",
-    "prebuild": "node create-env.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "optimize": "node optimize.js",
-    "build:prod": "npm run prebuild && npm run optimize && react-scripts build",
     "deploy": "bash deploy.sh",
     "postinstall": "cp -f hooks/pre-commit .git/hooks/ 2>/dev/null || exit 0 && chmod +x .git/hooks/pre-commit 2>/dev/null || exit 0",
     "lint": "eslint src",

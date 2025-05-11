@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configurar la URL base de la API
-const API_URL = process.env.REACT_APP_API_URL || 'https://utassets-backend.onrender.com';
+const API_URL = process.env.REACT_APP_API_URL || 'https://utassets-backend.onrender.com/api';
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Crear instancia de axios con la URL base
