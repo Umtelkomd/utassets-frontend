@@ -4,7 +4,8 @@ import config from '../config';
 
 // Crear una instancia de Axios con la URL base
 const apiClient = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || config.apiUrl,
+    // baseURL: process.env.REACT_APP_API_URL || config.apiUrl,
+    baseURL: 'https://utassets-backend.onrender.com/api',
     headers: {
         'Content-Type': 'application/json',
     },
