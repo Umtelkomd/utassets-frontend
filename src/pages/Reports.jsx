@@ -162,7 +162,7 @@ const Reports = () => {
                 setReports(data);
                 setLoading(false);
             } catch (error) {
-                console.error('Error al cargar los reportes:', error);
+                
                 toast.error('No se pudieron cargar los reportes del backend');
 
                 // Preguntar al usuario si desea usar el modo de fallback
@@ -176,7 +176,7 @@ const Reports = () => {
                 setLoading(false);
             }
         } catch (error) {
-            console.error('Error general:', error);
+            
             toast.error('No se pudieron cargar los reportes');
             setLoading(false);
         }
@@ -211,21 +211,21 @@ const Reports = () => {
             try {
                 vehiclesData = await vehicleService.getVehicles();
             } catch (error) {
-                console.error('Error al cargar vehículos:', error);
+                
                 toast.error('No se pudieron cargar los vehículos');
             }
 
             try {
                 inventoryData = await inventoryService.getInventory();
             } catch (error) {
-                console.error('Error al cargar inventario:', error);
+                
                 toast.error('No se pudo cargar el inventario');
             }
 
             setVehicles(vehiclesData);
             setInventory(inventoryData);
         } catch (error) {
-            console.error('Error general al cargar items:', error);
+            
             toast.error('No se pudieron cargar los elementos disponibles');
         }
     };
@@ -281,7 +281,7 @@ const Reports = () => {
             setNewComment('');
             toast.success('Comentario añadido con éxito');
         } catch (error) {
-            console.error('Error al añadir comentario:', error);
+            
             toast.error('Error al añadir el comentario');
         }
     };
@@ -325,7 +325,7 @@ const Reports = () => {
             setShowActionMenu(false);
             toast.success(`Estado actualizado a ${getStatusText(status)}`);
         } catch (error) {
-            console.error('Error al actualizar estado:', error);
+            
             toast.error('Error al actualizar el estado');
         }
     };
@@ -371,7 +371,7 @@ const Reports = () => {
                 setCurrentReport(null);
             }
         } catch (error) {
-            console.error('Error al eliminar reporte:', error);
+            
             toast.error('No se pudo eliminar el reporte');
         }
     };
@@ -390,7 +390,7 @@ const Reports = () => {
             setCurrentReport(detailedReport);
             setShowDetailModal(true);
         } catch (error) {
-            console.error('Error al abrir detalle del reporte:', error);
+            
             toast.error('Error al cargar el detalle del reporte');
 
             // Si falla, intentar con el reporte que ya tenemos
@@ -432,7 +432,7 @@ const Reports = () => {
                 reportData.relatedItemType = formData.relatedItemType;
             }
 
-            console.log("Datos del formulario a enviar:", reportData);
+            
 
             let newReport;
 
@@ -466,7 +466,7 @@ const Reports = () => {
                     newReport = await reportService.createReport(reportData);
                     toast.success('Reporte creado exitosamente');
                 } catch (error) {
-                    console.error('Error específico al crear reporte:', error);
+                    
 
                     // Si falla la creación, preguntar si desea cambiar a modo fallback
                     if (window.confirm('No se pudo crear el reporte en el servidor. ¿Desea utilizar el modo de demostración?')) {
@@ -508,7 +508,7 @@ const Reports = () => {
                 setReports(prevReports => [newReport, ...prevReports]);
             }
         } catch (error) {
-            console.error('Error general al crear reporte:', error);
+            
             toast.error(`Error al crear el reporte: ${error.message || 'Error desconocido'}`);
         }
     };

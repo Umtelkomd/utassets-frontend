@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './ResetPassword.css';
+import config from '../config';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
+const API_URL = process.env.REACT_APP_API_URL || config.apiUrl;
 
 const ResetPassword = () => {
     const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ const ResetPassword = () => {
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            setError('Por favor, introduce un correo electrónico válido.');
+            setError('Por favor, introduces un correo electrónico válido.');
             return;
         }
 
@@ -35,7 +36,7 @@ const ResetPassword = () => {
             setMessage('Se ha enviado un correo electrónico para restablecer tu contraseña. Por favor, revisa tu bandeja de entrada.');
             setEmail('');
         } catch (err) {
-            
+
             setError(err.response?.data?.message || 'Error al enviar el correo electrónico. Inténtalo de nuevo.');
         } finally {
             setLoading(false);

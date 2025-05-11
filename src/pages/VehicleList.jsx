@@ -79,7 +79,7 @@ const VehicleList = () => {
             const uniqueBrands = [...new Set(vehicles.map(vehicle => vehicle.brand).filter(Boolean))];
             setBrands(uniqueBrands);
         } catch (error) {
-            console.error('Error al cargar vehículos:', error);
+            
             toast.error('Error al cargar los vehículos');
         } finally {
             setIsLoading(false);
@@ -152,7 +152,7 @@ const VehicleList = () => {
             toast.success('Vehículo eliminado correctamente');
             fetchVehicles();
         } catch (error) {
-            console.error('Error al eliminar vehículo:', error);
+            
             let errorMsg = 'Error al eliminar el vehículo';
 
             if (error.response?.data?.message) {

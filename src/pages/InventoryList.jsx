@@ -109,7 +109,7 @@ const InventoryList = () => {
             const uniqueCategories = [...new Set(items.map(item => item.category).filter(Boolean))];
             setCategories(uniqueCategories);
         } catch (error) {
-            console.error('Error al cargar inventario:', error);
+            
             toast.error('Error al cargar el inventario');
         } finally {
             setIsLoading(false);
@@ -178,7 +178,7 @@ const InventoryList = () => {
             toast.success('Item eliminado correctamente');
             fetchInventory();
         } catch (error) {
-            console.error('Error al eliminar elemento:', error);
+            
             let errorMsg = 'Error al eliminar el elemento';
 
             if (error.response?.data?.message) {

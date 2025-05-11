@@ -8,6 +8,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
+import config from '../config';
 
 // Componentes de Material UI
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -18,7 +19,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
+const API_URL = process.env.REACT_APP_API_URL || config.apiUrl;
 const isProduction = process.env.NODE_ENV === 'production';
 
 const InventoryForm = () => {
@@ -85,7 +86,7 @@ const InventoryForm = () => {
                     const response = await axiosInstance.get(`/inventory/${id}`);
                     const item = response.data;
 
-                    console.log('item', item);
+                    
 
                     // Función para ajustar la fecha y mostrar el día correcto
                     const adjustDate = (dateStr) => {
@@ -236,7 +237,7 @@ const InventoryForm = () => {
 
             navigate('/inventory');
         } catch (error) {
-            console.error('Error al guardar elemento:', error);
+            
             let errorMsg = 'Error al guardar el elemento';
 
             if (error.response?.data?.message) {

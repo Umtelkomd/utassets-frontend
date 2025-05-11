@@ -158,7 +158,7 @@ const Register = () => {
                 });
             }
         } catch (error) {
-            console.error('Error en el registro:', error);
+            
             toast.error(error.message || 'Error al procesar el registro. Por favor, intenta nuevamente.', {
                 position: 'top-right',
                 autoClose: 5000

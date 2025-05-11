@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
           setCurrentUser(parsedUser);
         }
       } catch (error) {
-        console.error('Error al parsear usuario almacenado:', error);
+        
         localStorage.removeItem('user');
       }
     }
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: userWithRole };
     } catch (error) {
-      console.error('Error en login:', error);
+      
       return { 
         success: false, 
         error: error.response?.data?.message || 'Error al iniciar sesión'
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         }
       });
 
-      console.log('Respuesta del servidor:', response.data);
+      
 
       const { user, token } = response.data;
 
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: userWithRole };
     } catch (error) {
-      console.error('Error detallado en registro:', error.response?.data || error);
+      
       return { 
         success: false, 
         error: error.response?.data?.message || 'Error al registrar usuario'

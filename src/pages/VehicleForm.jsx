@@ -6,6 +6,8 @@ import './VehicleForm.css';
 import { usePermissions } from '../context/PermissionsContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import config from '../config';
 
 // Componentes de Material UI
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -15,9 +17,8 @@ import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutli
 import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/Person';
 import CloseIcon from '@mui/icons-material/Close';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
+const API_URL = process.env.REACT_APP_API_URL || config.apiUrl;
 
 const VehicleForm = () => {
     const { id } = useParams();
@@ -51,7 +52,7 @@ const VehicleForm = () => {
 
         // Si estamos en una ruta de inventario, guardar el contexto
         if (currentPath.includes('/inventory/') || currentPath.includes('/inventory/edit/')) {
-            console.log('Detectada navegación desde inventario');
+            
             localStorage.setItem('fromInventory', 'true');
         }
 
@@ -150,7 +151,7 @@ const VehicleForm = () => {
                     const response = await axiosInstance.get(`/vehicles/${id}`);
                     const vehicle = response.data;
 
-                    console.log('vehicle', vehicle);
+                    
 
 
                     // Función para ajustar la fecha y mostrar el día correcto
@@ -350,7 +351,7 @@ const VehicleForm = () => {
 
             navigate('/vehicles');
         } catch (error) {
-            console.error('Error completo:', error);
+            
             let errorMsg = 'Error al guardar el vehículo';
 
             if (error.response?.data?.message) {

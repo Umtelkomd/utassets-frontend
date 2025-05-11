@@ -112,7 +112,7 @@ const Dashboard = () => {
                 }
 
                 // Debug: Imprimir estados encontrados y conteos
-                console.log('Estados de inventario:', itemsByCondition);
+                
 
                 const locationsWithItems = [...new Set(items.map(item => item.location).filter(Boolean))];
                 const itemsByLocation = locationsWithItems.map(location => {
