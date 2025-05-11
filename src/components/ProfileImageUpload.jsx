@@ -99,7 +99,7 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                 {currentUser?.imagePath ? (
                     <>
                         <img
-                            src={currentUser.imagePath}
+                            src={getImageUrl(currentUser.imagePath, IMAGE_TYPES.USERS)}
                             alt={currentUser.fullName}
                             className="profile-image"
                             onError={(e) => {
