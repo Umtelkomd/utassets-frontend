@@ -1,8 +1,8 @@
 import axios from 'axios';
+import config from './config';
 
-// Configurar la URL base de la API
-// const API_URL = process.env.REACT_APP_API_URL || 'https://utassets-backend.onrender.com/api';
-const API_URL = 'https://utassets-backend.onrender.com/api';
+// Configurar la URL base de la API usando config.js
+const API_URL = config.apiUrl;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Crear instancia de axios con la URL base
@@ -23,7 +23,8 @@ instance.interceptors.request.use(
       console.log(`Enviando solicitud a: ${config.url}`);
     }
     
-    const token = localStorage.getItem('token');
+    // Intentar obtener token de ambas posibles claves (para compatibilidad)
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
       
@@ -37,6 +38,7 @@ instance.interceptors.request.use(
             console.warn('Token expirado, redirigiendo al login');
           }
           localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
           localStorage.removeItem('user');
           window.location.href = '/login?expired=true';
           return Promise.reject(new Error('Token expirado'));
@@ -96,6 +98,7 @@ instance.interceptors.response.use(
       if (error.response.status === 401) {
         // Token expirado o inválido, redirigir a login
         localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         window.location.href = '/login?session=expired';
       } else if (error.response.status === 403) {
