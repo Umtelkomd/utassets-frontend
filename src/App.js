@@ -47,7 +47,7 @@ const PageContainer = ({ children }) => (
 
 function App() {
   return (
-    <Router>
+    <Router basename='/utassets'>
       <AuthProvider>
         <PermissionsProvider>
           <ToastContainer position="bottom-right" />
