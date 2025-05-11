@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../axiosConfig';
+import uploadService from '../services/uploadService';
 import './VehicleForm.css';
 import { usePermissions } from '../context/PermissionsContext';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -52,7 +53,7 @@ const VehicleForm = () => {
 
         // Si estamos en una ruta de inventario, guardar el contexto
         if (currentPath.includes('/inventory/') || currentPath.includes('/inventory/edit/')) {
-            
+
             localStorage.setItem('fromInventory', 'true');
         }
 
@@ -151,7 +152,7 @@ const VehicleForm = () => {
                     const response = await axiosInstance.get(`/vehicles/${id}`);
                     const vehicle = response.data;
 
-                    
+
 
 
                     // Función para ajustar la fecha y mostrar el día correcto
@@ -319,51 +320,42 @@ const VehicleForm = () => {
         setIsLoading(true);
 
         try {
-            const formDataToSend = new FormData();
-
-            // Agregar todos los campos del formulario al FormData
-            Object.keys(formData).forEach(key => {
-                if (key === 'imagePath' && formData[key] instanceof File) {
-                    formDataToSend.append('image', formData[key]);
-                } else if (key === 'responsibleUsers') {
-                    // Convertir el array de objetos a JSON string
-                    formDataToSend.append(key, JSON.stringify(formData[key]));
-                } else if (formData[key] !== null && formData[key] !== '') {
-                    formDataToSend.append(key, formData[key]);
+            // Si hay una imagen seleccionada, subirla primero a Hostinger
+            let imageUrl = null;
+            if (formData.imagePath instanceof File) {
+                try {
+                    imageUrl = await uploadService.uploadImage(formData.imagePath, 'vehicles');
+                } catch (error) {
+                    console.error('Error al subir la imagen:', error);
+                    toast.error('Error al subir la imagen. Por favor, inténtelo de nuevo.');
+                    setIsLoading(false);
+                    return;
                 }
-            });
+            }
+
+            // Preparar los datos para enviar al backend
+            const vehicleData = {
+                ...formData,
+                imagePath: imageUrl || formData.imagePath
+            };
+
+            // Eliminar el archivo de la solicitud ya que ya se subió por separado
+            if (vehicleData.imagePath instanceof File) {
+                delete vehicleData.imagePath;
+            }
 
             if (isEditing) {
-                await axiosInstance.put(`/vehicles/${id}`, formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                await axiosInstance.put(`/vehicles/${id}`, vehicleData);
                 toast.success('Vehículo actualizado correctamente');
             } else {
-                await axiosInstance.post('/vehicles', formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                await axiosInstance.post('/vehicles', vehicleData);
                 toast.success('Vehículo creado correctamente');
             }
 
             navigate('/vehicles');
         } catch (error) {
-            
-            let errorMsg = 'Error al guardar el vehículo';
-
-            if (error.response?.data?.message) {
-                // Limitar el mensaje de error a 100 caracteres
-                errorMsg = error.response.data.message.substring(0, 100) + (error.response.data.message.length > 100 ? '...' : '');
-            } else if (error.response?.data?.error) {
-                errorMsg = error.response.data.error.substring(0, 100) + (error.response.data.error.length > 100 ? '...' : '');
-            } else if (error.message) {
-                errorMsg = error.message.substring(0, 100) + (error.message.length > 100 ? '...' : '');
-            }
-
-            toast.error(errorMsg);
+            console.error('Error al guardar el vehículo:', error);
+            toast.error('Error al guardar el vehículo. Por favor, inténtelo de nuevo.');
         } finally {
             setIsLoading(false);
         }

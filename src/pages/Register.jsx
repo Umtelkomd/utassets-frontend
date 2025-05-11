@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './Register.css';
+import axios from '../axiosConfig';
+import uploadService from '../services/uploadService';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -113,57 +115,49 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (isSubmitting) return;
         if (!validateForm()) {
-            toast.error('Por favor, corrige los errores del formulario');
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            const formDataToSend = new FormData();
-
-            // Asegurarnos de que todos los campos requeridos estén presentes
-            if (!formData.email || !formData.password || !formData.firstName || !formData.lastName || !formData.birthDate) {
-                throw new Error('Todos los campos son requeridos');
+            // Si hay una imagen seleccionada, subirla primero a Hostinger
+            let imageUrl = null;
+            if (formData.imagePath instanceof File) {
+                try {
+                    imageUrl = await uploadService.uploadImage(formData.imagePath, 'users');
+                } catch (error) {
+                    console.error('Error al subir la imagen:', error);
+                    toast.error('Error al subir la imagen. Por favor, inténtelo de nuevo.');
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
-            // Agregar cada campo al FormData
-            formDataToSend.append('email', formData.email.trim());
-            formDataToSend.append('password', formData.password);
-            formDataToSend.append('fullName', `${formData.firstName} ${formData.lastName}`);
-            formDataToSend.append('birthDate', formData.birthDate);
-            formDataToSend.append('username', formData.email.split('@')[0]);
+            // Preparar los datos para enviar al backend
+            const userData = {
+                ...formData,
+                imagePath: imageUrl
+            };
 
-            if (formData.imagePath) {
-                formDataToSend.append('image', formData.imagePath);
+            // Eliminar campos que no deben enviarse al backend
+            delete userData.confirmPassword;
+            if (userData.imagePath instanceof File) {
+                delete userData.imagePath;
             }
 
-            const response = await register(formDataToSend);
+            const response = await axios.post('/auth/register', userData);
 
-            if (response.success) {
-                toast.success('¡Registro exitoso! Bienvenido a UT Assets', {
-                    position: 'top-right',
-                    autoClose: 3000
-                });
-                navigate('/');
-            } else {
-                setErrors({
-                    general: response.error
-                });
-
-                toast.error(response.error, {
-                    position: 'top-right',
-                    autoClose: 5000
-                });
-            }
+            toast.success('Registro exitoso. Por favor inicia sesión.');
+            navigate('/login');
         } catch (error) {
-
-            toast.error(error.message || 'Error al procesar el registro. Por favor, intenta nuevamente.', {
-                position: 'top-right',
-                autoClose: 5000
-            });
+            console.error('Error al registrar usuario:', error);
+            if (error.response?.data?.message) {
+                toast.error(`Error: ${error.response.data.message}`);
+            } else {
+                toast.error('Error al registrar usuario. Por favor, inténtelo de nuevo.');
+            }
         } finally {
             setIsSubmitting(false);
         }

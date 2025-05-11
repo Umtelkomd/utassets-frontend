@@ -2,8 +2,8 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import './ProfileImageUpload.css';
-import { getImageUrl, IMAGE_TYPES, getBaseUrl } from '../utils/imageUtils';
-import config from '../config';
+import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
+import uploadService from '../services/uploadService';
 import { toast } from 'react-toastify';
 
 // Iconos
@@ -29,20 +29,20 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
 
         try {
             setIsUploading(true);
-            const formData = new FormData();
-            formData.append('image', file);
 
-            const response = await axios.put(`/users/${currentUser.id}/image`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            // Subir la imagen al servidor de Hostinger
+            const imageUrl = await uploadService.uploadImage(file, IMAGE_TYPES.USERS);
+
+            // Actualizar el perfil del usuario en el backend
+            const response = await axios.put(`/users/${currentUser.id}/image`, {
+                imagePath: imageUrl
             });
 
             if (updateUserProfile) {
                 // Actualizar el perfil del usuario con la nueva imagen
                 const updatedUser = {
                     ...currentUser,
-                    imagePath: response.data.imagePath || null
+                    imagePath: imageUrl || null
                 };
 
                 await updateUserProfile(updatedUser);
@@ -50,10 +50,10 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
 
             toast.success('Imagen de perfil actualizada correctamente');
             if (onImageUpdate) {
-                onImageUpdate(response.data.imagePath);
+                onImageUpdate(imageUrl);
             }
         } catch (error) {
-
+            console.error('Error al subir imagen:', error);
             toast.error('Error al subir la imagen');
         } finally {
             setIsUploading(false);
@@ -63,6 +63,13 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
     const handleDeleteImage = async () => {
         try {
             setIsUploading(true);
+
+            // Eliminar la imagen del servidor de Hostinger
+            if (currentUser?.imagePath) {
+                await uploadService.deleteImage(currentUser.imagePath);
+            }
+
+            // Actualizar el perfil del usuario en el backend
             await axios.delete(`/users/${currentUser.id}/image`);
 
             if (updateUserProfile) {
@@ -79,21 +86,12 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                 onImageUpdate(null);
             }
         } catch (error) {
-
+            console.error('Error al eliminar imagen:', error);
             toast.error('Error al eliminar la imagen');
         } finally {
             setIsUploading(false);
         }
     };
-
-    // Construir la URL base sin /api usando la función getBaseUrl que ya está importada
-    const baseUrl = getBaseUrl();
-    const imageUrl = currentUser?.imagePath
-        ? `${baseUrl}/uploads/users/${currentUser.imagePath}`
-        : null;
-
-
-
 
     return (
         <div className="profile-image-container">
@@ -101,11 +99,10 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                 {currentUser?.imagePath ? (
                     <>
                         <img
-                            src={getImageUrl(currentUser.imagePath, IMAGE_TYPES.USERS)}
+                            src={currentUser.imagePath}
                             alt={currentUser.fullName}
                             className="profile-image"
                             onError={(e) => {
-
                                 e.target.src = ''; // Esto hará que se muestre el ícono por defecto
                             }}
                         />

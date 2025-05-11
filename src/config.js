@@ -13,7 +13,14 @@ const config = {
   
   // Otras configuraciones
   appName: 'UTAssets',
-  isProduction: process.env.NODE_ENV === 'production',
+  isProduction: false, // Forzar modo desarrollo para mostrar logs
+  
+  // Configuración de debug
+  debug: {
+    showAllLogs: true,
+    logApiCalls: true,
+    logErrors: true
+  }
 };
 
 export default config;

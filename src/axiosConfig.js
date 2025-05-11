@@ -3,7 +3,8 @@ import config from './config';
 
 // Configurar la URL base de la API usando config.js
 const API_URL = config.apiUrl;
-const isProduction = process.env.NODE_ENV === 'production';
+// const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = false; // Forzar mostrar logs siempre
 
 // Crear instancia de axios con la URL base
 const instance = axios.create({
@@ -17,9 +18,8 @@ const instance = axios.create({
 // Interceptor para añadir el token de autenticación y manejar headers
 instance.interceptors.request.use(
   (config) => {
-    if (!isProduction) {
-      console.log(`Enviando solicitud a: ${config.url}`);
-    }
+    // Mostrar siempre la solicitud en consola
+    console.log(`Enviando solicitud a: ${config.url}`, config);
     
     // Intentar obtener token de ambas posibles claves (para compatibilidad)
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -32,9 +32,7 @@ instance.interceptors.request.use(
         const currentTime = Math.floor(Date.now() / 1000);
         
         if (payload.exp && payload.exp < currentTime) {
-          if (!isProduction) {
-            console.warn('Token expirado, redirigiendo al login');
-          }
+          console.warn('Token expirado, redirigiendo al login');
           localStorage.removeItem('token');
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
@@ -43,9 +41,7 @@ instance.interceptors.request.use(
         }
       } catch (e) {
         // Error al decodificar token, probablemente inválido
-        if (!isProduction) {
-          console.error('Error al decodificar token:', e);
-        }
+        console.error('Error al decodificar token:', e);
       }
     }
 
@@ -66,9 +62,7 @@ instance.interceptors.request.use(
     return config;
   },
   (error) => {
-    if (!isProduction) {
-      console.error('Error en la configuración de la solicitud:', error);
-    }
+    console.error('Error en la configuración de la solicitud:', error);
     return Promise.reject(error);
   }
 );
@@ -76,29 +70,21 @@ instance.interceptors.request.use(
 // Interceptor para manejar errores de respuesta
 instance.interceptors.response.use(
   (response) => {
-    if (!isProduction) {
-      console.log(`Respuesta recibida de ${response.config.url} con estado: ${response.status}`);
-    }
+    console.log(`Respuesta recibida de ${response.config.url} con estado: ${response.status}`, response);
     return response;
   },
   (error) => {
     // Mostrar información detallada sobre el error para debug
-    if (!isProduction) {
-      console.error('Error completo:', error);
-      
-      if (error.response) {
-        console.error(`Error en respuesta de ${error.config?.url}:`, {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data,
-          headers: error.response.headers
-        });
-      } else if (error.request) {
-        console.error('Error de solicitud (sin respuesta):', error.request);
-      }
-    }
+    console.error('Error completo:', error);
     
     if (error.response) {
+      console.error(`Error en respuesta de ${error.config?.url}:`, {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+      
       // La petición fue hecha y el servidor respondió con un código de estado
       // que no está en el rango 2xx
       
@@ -114,17 +100,14 @@ instance.interceptors.response.use(
       }
     } else if (error.request) {
       // La petición fue hecha pero no se recibió respuesta
-      if (!isProduction) {
-        console.error('Error de conexión, no se recibió respuesta');
-      }
+      console.error('Error de conexión, no se recibió respuesta:', error.request);
+      
       // Mostrar mensaje al usuario sobre problemas de conexión
       const event = new CustomEvent('api-connection-error', { detail: { message: 'Error de conexión con el servidor' } });
       window.dispatchEvent(event);
     } else {
       // Algo ocurrió en la configuración de la petición que provocó un error
-      if (!isProduction) {
-        console.error('Error en la configuración de la petición:', error.message);
-      }
+      console.error('Error en la configuración de la petición:', error.message);
     }
     return Promise.reject(error);
   }

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import axiosInstance from '../axiosConfig';
+import uploadService from '../services/uploadService';
 import './InventoryForm.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
@@ -86,7 +87,7 @@ const InventoryForm = () => {
                     const response = await axiosInstance.get(`/inventory/${id}`);
                     const item = response.data;
 
-                    
+
 
                     // Función para ajustar la fecha y mostrar el día correcto
                     const adjustDate = (dateStr) => {
@@ -196,7 +197,6 @@ const InventoryForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validar el formulario
         if (!validateForm()) {
             toast.error('Por favor, corrige los errores del formulario');
             return;
@@ -205,50 +205,42 @@ const InventoryForm = () => {
         setIsLoading(true);
 
         try {
-            const formDataToSend = new FormData();
-
-            // Agregar todos los campos del formulario al FormData
-            Object.keys(formData).forEach(key => {
-                if (key === 'imagePath' && formData[key] instanceof File) {
-                    formDataToSend.append('image', formData[key]);
-                } else if (key === 'responsibleUsers') {
-                    // Enviar los usuarios responsables como un array JSON
-                    formDataToSend.append('responsibleUsers', JSON.stringify(formData[key]));
-                } else if (formData[key] !== null && formData[key] !== '') {
-                    formDataToSend.append(key, formData[key]);
+            // Si hay una imagen seleccionada, subirla primero a Hostinger
+            let imageUrl = null;
+            if (formData.imagePath instanceof File) {
+                try {
+                    imageUrl = await uploadService.uploadImage(formData.imagePath, 'inventory');
+                } catch (error) {
+                    console.error('Error al subir la imagen:', error);
+                    toast.error('Error al subir la imagen. Por favor, inténtelo de nuevo.');
+                    setIsLoading(false);
+                    return;
                 }
-            });
+            }
+
+            // Preparar los datos para enviar al backend
+            const inventoryData = {
+                ...formData,
+                imagePath: imageUrl || formData.imagePath
+            };
+
+            // Eliminar el archivo de la solicitud ya que ya se subió por separado
+            if (inventoryData.imagePath instanceof File) {
+                delete inventoryData.imagePath;
+            }
 
             if (isEditing) {
-                await axiosInstance.put(`/inventory/${id}`, formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                toast.success('Elemento actualizado correctamente');
+                await axiosInstance.put(`/inventory/${id}`, inventoryData);
+                toast.success('Item actualizado correctamente');
             } else {
-                await axiosInstance.post('/inventory', formDataToSend, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                toast.success('Elemento creado correctamente');
+                await axiosInstance.post('/inventory', inventoryData);
+                toast.success('Item creado correctamente');
             }
 
             navigate('/inventory');
         } catch (error) {
-            
-            let errorMsg = 'Error al guardar el elemento';
-
-            if (error.response?.data?.message) {
-                errorMsg = error.response.data.message.substring(0, 100) + (error.response.data.message.length > 100 ? '...' : '');
-            } else if (error.response?.data?.error) {
-                errorMsg = error.response.data.error.substring(0, 100) + (error.response.data.error.length > 100 ? '...' : '');
-            } else if (error.message) {
-                errorMsg = error.message.substring(0, 100) + (error.message.length > 100 ? '...' : '');
-            }
-
-            toast.error(errorMsg);
+            console.error('Error al guardar el item:', error);
+            toast.error('Error al guardar el item. Por favor, inténtelo de nuevo.');
         } finally {
             setIsLoading(false);
         }
