@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: userWithRole };
     } catch (error) {
-      
+      console.log(error)
       return { 
         success: false, 
         error: error.response?.data?.message || 'Error al iniciar sesión'

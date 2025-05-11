@@ -12,8 +12,6 @@ const instance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Solo usar withCredentials en producción o si realmente se necesita para cookies cruzadas
-  withCredentials: isProduction,
 });
 
 // Interceptor para añadir el token de autenticación y manejar headers
@@ -84,16 +82,25 @@ instance.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response) {
-      // La petición fue hecha y el servidor respondió con un código de estado
-      // que no está en el rango 2xx
-      if (!isProduction) {
+    // Mostrar información detallada sobre el error para debug
+    if (!isProduction) {
+      console.error('Error completo:', error);
+      
+      if (error.response) {
         console.error(`Error en respuesta de ${error.config?.url}:`, {
           status: error.response.status,
           statusText: error.response.statusText,
-          data: error.response.data
+          data: error.response.data,
+          headers: error.response.headers
         });
+      } else if (error.request) {
+        console.error('Error de solicitud (sin respuesta):', error.request);
       }
+    }
+    
+    if (error.response) {
+      // La petición fue hecha y el servidor respondió con un código de estado
+      // que no está en el rango 2xx
       
       if (error.response.status === 401) {
         // Token expirado o inválido, redirigir a login
