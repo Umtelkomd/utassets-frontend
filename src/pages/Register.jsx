@@ -10,6 +10,7 @@ const Register = () => {
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
+        fullName: '',
         birthDate: '',
         email: '',
         password: '',
@@ -98,10 +99,21 @@ const Register = () => {
                 }));
             }
         } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value
-            }));
+            setFormData(prev => {
+                const updatedData = {
+                    ...prev,
+                    [name]: value
+                };
+
+                // Actualizar fullName cuando cambie firstName o lastName
+                if (name === 'firstName' || name === 'lastName') {
+                    updatedData.fullName = name === 'firstName'
+                        ? value + ' ' + prev.lastName
+                        : prev.firstName + ' ' + value;
+                }
+
+                return updatedData;
+            });
         }
 
         if (errors[name]) {
