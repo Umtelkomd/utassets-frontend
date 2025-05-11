@@ -70,6 +70,7 @@ const Register = () => {
     };
 
     const handleChange = (e) => {
+        console.log(process.env.REACT_APP_API_URL);
         const { name, value, files } = e.target;
 
         if (name === 'imagePath') {
@@ -158,7 +159,7 @@ const Register = () => {
                 });
             }
         } catch (error) {
-            
+
             toast.error(error.message || 'Error al procesar el registro. Por favor, intenta nuevamente.', {
                 position: 'top-right',
                 autoClose: 5000

@@ -38,8 +38,10 @@ import './App.css';
 const PageContainer = ({ children }) => (
   <div className="app-container">
     <Navbar />
+    
     <main className="main-content">
       {children}
+      
     </main>
     <Footer />
   </div>

@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // Obtener la URL base de las variables de entorno
-const baseURL = process.env.REACT_APP_API_URL || '';
-
+// const baseURL = process.env.REACT_APP_API_URL || '';
+const baseURL = 'https://utassets-backend.onrender.com/api';
 // No necesitamos añadir /api manualmente ya que viene en la variable de entorno
 console.log('URL base configurada para API:', baseURL);
 

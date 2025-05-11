@@ -2,14 +2,14 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import './ProfileImageUpload.css';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
+import { getImageUrl, IMAGE_TYPES, getBaseUrl } from '../utils/imageUtils';
 import config from '../config';
+import { toast } from 'react-toastify';
 
 // Iconos
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { toast } from 'react-toastify';
 
 const ProfileImageUpload = ({ onImageUpdate }) => {
     const { currentUser, updateUserProfile } = useAuth();
@@ -53,7 +53,7 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                 onImageUpdate(response.data.imagePath);
             }
         } catch (error) {
-            
+
             toast.error('Error al subir la imagen');
         } finally {
             setIsUploading(false);
@@ -79,21 +79,21 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                 onImageUpdate(null);
             }
         } catch (error) {
-            
+
             toast.error('Error al eliminar la imagen');
         } finally {
             setIsUploading(false);
         }
     };
 
-    // Construir la URL base sin /api
-    const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || config.apiUrl.replace('/api', '');
+    // Construir la URL base sin /api usando la función getBaseUrl que ya está importada
+    const baseUrl = getBaseUrl();
     const imageUrl = currentUser?.imagePath
         ? `${baseUrl}/uploads/users/${currentUser.imagePath}`
         : null;
 
-    
-    
+
+
 
     return (
         <div className="profile-image-container">
@@ -105,7 +105,7 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                             alt={currentUser.fullName}
                             className="profile-image"
                             onError={(e) => {
-                                
+
                                 e.target.src = ''; // Esto hará que se muestre el ícono por defecto
                             }}
                         />
