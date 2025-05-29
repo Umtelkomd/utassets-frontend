@@ -40,6 +40,14 @@
     background-color: rgba(76, 175, 80, 0.1);
 }
 
+.btn-action.view {
+    color: #4caf50;
+}
+
+.btn-action.view:hover {
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
 /* Estilos específicos para VehicleList */
 .action-button {
     display: inline-flex;

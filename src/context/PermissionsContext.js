@@ -26,6 +26,17 @@ const rolePermissions = {
     createVehicleAssignment: true,
     updateVehicleAssignment: true,
     deleteVehicleAssignment: true,
+    view_rentals: true,
+    create_rental: true,
+    edit_rental: true,
+    canCreateHousing: true,
+    canEditHousing: true,
+    canDeleteHousing: true,
+    canViewAllHousing: true,
+    canCreateRental: true,
+    canEditRental: true,
+    canDeleteRental: true,
+    canViewAllRentals: true,
   },
   tecnico: {
     canCreateVehicle: false,
@@ -46,7 +57,11 @@ const rolePermissions = {
     createVehicleAssignment: false,
     updateVehicleAssignment: false,
     deleteVehicleAssignment: false,
-  }
+    canCreateHousing: false,
+    canEditHousing: false,
+    canDeleteHousing: false,
+    canViewAllHousing: false,
+      }
 };
 
 // Proveedor del contexto de permisos

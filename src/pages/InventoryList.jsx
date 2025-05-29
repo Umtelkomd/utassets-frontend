@@ -9,7 +9,6 @@ import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import EditButton from '../components/EditButton';
 import DeleteButton from '../components/DeleteButton';
 import { usePermissions } from '../context/PermissionsContext';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
 
 // Iconos de Material UI
@@ -109,7 +108,7 @@ const InventoryList = () => {
             const uniqueCategories = [...new Set(items.map(item => item.category).filter(Boolean))];
             setCategories(uniqueCategories);
         } catch (error) {
-            
+
             toast.error('Error al cargar el inventario');
         } finally {
             setIsLoading(false);
@@ -178,7 +177,7 @@ const InventoryList = () => {
             toast.success('Item eliminado correctamente');
             fetchInventory();
         } catch (error) {
-            
+
             let errorMsg = 'Error al eliminar el elemento';
 
             if (error.response?.data?.message) {
@@ -372,9 +371,9 @@ const InventoryList = () => {
                         {filteredItems.map((item) => (
                             <div key={item.id} className="item-card">
                                 <div className="item-card-image">
-                                    {item.imagePath ? (
+                                    {item.photoUrl ? (
                                         <img
-                                            src={getImageUrl(item.imagePath, IMAGE_TYPES.INVENTORY)}
+                                            src={item.photoUrl}
                                             alt={item.itemName}
                                             className="item-image"
                                         />

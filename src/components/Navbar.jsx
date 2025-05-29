@@ -4,28 +4,31 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import './Navbar.css';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 
 // Iconos
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
-import HomeIcon from '@mui/icons-material/Home';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import BuildIcon from '@mui/icons-material/Build';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import BusinessIcon from '@mui/icons-material/Business';
-import CategoryIcon from '@mui/icons-material/Category';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import PeopleIcon from '@mui/icons-material/People';
-import InsightsIcon from '@mui/icons-material/Insights';
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import {
+    Menu as MenuIcon,
+    Close as CloseIcon,
+    Home as HomeIcon,
+    DirectionsCar as DirectionsCarIcon,
+    Inventory as InventoryIcon,
+    Build as BuildIcon,
+    Assignment as AssignmentIcon,
+    AccountCircle as AccountCircleIcon,
+    ExitToApp as ExitToAppIcon,
+    KeyboardArrowDown as KeyboardArrowDownIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
+    Dashboard as DashboardIcon,
+    Business as BusinessIcon,
+    Category as CategoryIcon,
+    Schedule as ScheduleIcon,
+    AssignmentTurnedIn as AssignmentTurnedInIcon,
+    People as PeopleIcon,
+    Insights as InsightsIcon,
+    ReportProblem as ReportProblemIcon,
+    CalendarMonth as CalendarMonthIcon,
+    Home
+} from '@mui/icons-material';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -133,6 +136,30 @@ const Navbar = () => {
                                 <InventoryIcon className="dropdown-icon" />
                                 <span>Inventario</span>
                             </Link>
+                            <Link
+                                to="/housing"
+                                className={`dropdown-item ${isActive('/housing') ? 'active' : ''}`}
+                                onClick={() => {
+                                    closeMenu();
+                                    setAssetsMenuOpen(false);
+                                }}
+                            >
+                                <HomeIcon className="dropdown-icon" />
+                                <span>Viviendas</span>
+                            </Link>
+                            {hasPermission('canViewAllRentals') && (
+                                <Link
+                                    to="/rentals"
+                                    className={`dropdown-item ${isActive('/rentals') ? 'active' : ''}`}
+                                    onClick={() => {
+                                        closeMenu();
+                                        setAssetsMenuOpen(false);
+                                    }}
+                                >
+                                    <CalendarMonthIcon className="dropdown-icon" />
+                                    <span>Alquileres</span>
+                                </Link>
+                            )}
                         </div>
                     )}
                 </div>
@@ -148,31 +175,6 @@ const Navbar = () => {
                         <span>Proyectos</span>
                     </Link>
                 )}
-
-                {/* Enlace a Reportes - COMENTADO TEMPORALMENTE HASTA QUE SE COMPLETE EL DESARROLLO
-                <Link
-                    to="/reports"
-                    className={`navbar-item ${isActive('/reports') ? 'active' : ''}`}
-                    onClick={closeMenu}
-                >
-                    <ReportProblemIcon className="nav-icon" />
-                    <span>Reportes</span>
-                </Link>
-                */}
-
-                {/* Enlace a Estadísticas */}
-                {/*
-                {hasPermission('canViewReports') && (
-                    <Link
-                        to="/statistics"
-                        className={`navbar-item ${isActive('/statistics') ? 'active' : ''}`}
-                        onClick={closeMenu}
-                    >
-                        <InsightsIcon className="nav-icon" />
-                        <span>Estadísticas</span>
-                    </Link>
-                )}
-                */}
 
                 {/* Opción de Usuarios - Solo para administradores */}
                 {hasPermission('canAccessSettings') && (
@@ -191,9 +193,9 @@ const Navbar = () => {
                 <div className="profile-dropdown">
                     <div className="profile-trigger" onClick={toggleProfile}>
                         <div className="avatar">
-                            {currentUser?.imagePath ? (
+                            {currentUser?.photoUrl ? (
                                 <img
-                                    src={getImageUrl(currentUser.imagePath, IMAGE_TYPES.USERS)}
+                                    src={currentUser.photoUrl}
                                     alt={currentUser.fullName}
                                     className="user-avatar"
                                 />

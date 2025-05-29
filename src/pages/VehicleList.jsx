@@ -9,7 +9,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ViewButton from '../components/ViewButton';
 import EditButton from '../components/EditButton';
 import DeleteButton from '../components/DeleteButton';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
 
 // Iconos de Material UI
@@ -79,7 +78,7 @@ const VehicleList = () => {
             const uniqueBrands = [...new Set(vehicles.map(vehicle => vehicle.brand).filter(Boolean))];
             setBrands(uniqueBrands);
         } catch (error) {
-            
+
             toast.error('Error al cargar los vehículos');
         } finally {
             setIsLoading(false);
@@ -93,12 +92,15 @@ const VehicleList = () => {
         // Aplicar filtro de búsqueda
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
-            result = result.filter(vehicle =>
-                vehicle.licensePlate.toLowerCase().includes(term) ||
-                vehicle.brand.toLowerCase().includes(term) ||
-                vehicle.model.toLowerCase().includes(term) ||
-                (vehicle.vin && vehicle.vin.toLowerCase().includes(term))
-            );
+            result = result.filter(vehicle => {
+                const searchTerm = term.toLowerCase();
+                return (
+                    vehicle.brand.toLowerCase().includes(searchTerm) ||
+                    vehicle.model.toLowerCase().includes(searchTerm) ||
+                    vehicle.licensePlate.toLowerCase().includes(searchTerm) ||
+                    (vehicle.color && vehicle.color.toLowerCase().includes(searchTerm))
+                );
+            });
         }
 
         // Aplicar filtro de marca
@@ -152,7 +154,7 @@ const VehicleList = () => {
             toast.success('Vehículo eliminado correctamente');
             fetchVehicles();
         } catch (error) {
-            
+
             let errorMsg = 'Error al eliminar el vehículo';
 
             if (error.response?.data?.message) {
@@ -314,15 +316,15 @@ const VehicleList = () => {
                                         <td className="vehicle-card-cell">
                                             <div className="vehicle-card">
                                                 <div className="vehicle-image-container">
-                                                    <img
-                                                        src={vehicle.imagePath ? getImageUrl(vehicle.imagePath, IMAGE_TYPES.VEHICLES) : '/default-vehicle.jpg'}
-                                                        alt={`${vehicle.brand} ${vehicle.model}`}
-                                                        className="vehicle-image"
-                                                        onError={(e) => {
-                                                            e.target.onerror = null;
-                                                            e.target.src = '/default-vehicle.jpg';
-                                                        }}
-                                                    />
+                                                    {vehicle.photoUrl ? (
+                                                        <img
+                                                            src={vehicle.photoUrl}
+                                                            alt={`${vehicle.brand} ${vehicle.model}`}
+                                                            className="vehicle-image"
+                                                        />
+                                                    ) : (
+                                                        <div className="no-image">Sin imagen</div>
+                                                    )}
                                                 </div>
                                                 <div className="vehicle-info">
                                                     <div className="vehicle-primary-info">
@@ -338,7 +340,8 @@ const VehicleList = () => {
                                                         </div>
                                                         <div className="detail-row">
                                                             <p><span className="detail-label">Combustible:</span> {vehicle.fuelType}</p>
-                                                            <p><span className="detail-label">Kilometraje:</span> {vehicle.mileage ? `${vehicle.mileage} km` : 'No registrado'}</p>
+                                                            <p><span className="detail-label">Kilometraje:</span> {vehicle.mileage !== null && vehicle.mileage !== undefined ? `${vehicle.mileage} km` : 'No registrado'}
+                                                            </p>
                                                         </div>
                                                         {vehicle.insuranceExpiryDate && (
                                                             <p className={`insurance-info insurance-${getInsuranceStatus(vehicle.insuranceExpiryDate)}`}>

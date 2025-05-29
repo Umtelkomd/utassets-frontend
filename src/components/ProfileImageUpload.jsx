@@ -2,8 +2,6 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import './ProfileImageUpload.css';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
-import uploadService from '../services/uploadService';
 import { toast } from 'react-toastify';
 
 // Iconos
@@ -30,28 +28,27 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
         try {
             setIsUploading(true);
 
-            // Subir la imagen al servidor de Hostinger
-            const imageUrl = await uploadService.uploadImage(file, IMAGE_TYPES.USERS);
+            // Subir la imagen al servidor
+            const formDataImage = new FormData();
+            formDataImage.append('image', file);
+            formDataImage.append('entityType', 'users');
+
+            const uploadResponse = await axios.post('/upload', formDataImage);
+            const imageUrl = uploadResponse.data.url;
 
             // Actualizar el perfil del usuario en el backend
-            const response = await axios.put(`/users/${currentUser.id}/image`, {
-                imagePath: imageUrl
-            });
-
-            if (updateUserProfile) {
-                // Actualizar el perfil del usuario con la nueva imagen
-                const updatedUser = {
+            if (currentUser?.id) {
+                const updatedUser = await updateUserProfile({
                     ...currentUser,
-                    imagePath: imageUrl || null
-                };
+                    photoUrl: imageUrl
+                });
 
-                await updateUserProfile(updatedUser);
+                if (onImageUpdate) {
+                    onImageUpdate(imageUrl);
+                }
             }
 
             toast.success('Imagen de perfil actualizada correctamente');
-            if (onImageUpdate) {
-                onImageUpdate(imageUrl);
-            }
         } catch (error) {
             console.error('Error al subir imagen:', error);
             toast.error('Error al subir la imagen');
@@ -65,8 +62,8 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
             setIsUploading(true);
 
             // Eliminar la imagen del servidor de Hostinger
-            if (currentUser?.imagePath) {
-                await uploadService.deleteImage(currentUser.imagePath);
+            if (currentUser?.photoUrl) {
+                // await uploadService.deleteImage(currentUser.photoUrl);
             }
 
             // Actualizar el perfil del usuario en el backend
@@ -76,7 +73,7 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                 // Actualizar el perfil del usuario eliminando la imagen
                 const updatedUser = {
                     ...currentUser,
-                    imagePath: null
+                    photoUrl: null
                 };
                 await updateUserProfile(updatedUser);
             }
@@ -96,10 +93,10 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
     return (
         <div className="profile-image-container">
             <div className="profile-image-wrapper">
-                {currentUser?.imagePath ? (
+                {currentUser?.photoUrl ? (
                     <>
                         <img
-                            src={getImageUrl(currentUser.imagePath, IMAGE_TYPES.USERS)}
+                            src={currentUser.photoUrl}
                             alt={currentUser.fullName}
                             className="profile-image"
                             onError={(e) => {
@@ -122,7 +119,7 @@ const ProfileImageUpload = ({ onImageUpdate }) => {
                     <span>Cambiar foto</span>
                 </button>
 
-                {currentUser?.imagePath && (
+                {currentUser?.photoUrl && (
                     <button
                         className="delete-button"
                         onClick={handleDeleteImage}

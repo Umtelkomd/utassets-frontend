@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
 import './Dashboard.css';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
+import Calendar from '../components/Calendar';
+import { getRentals } from '../services/rentalService';
 
 // Importar correctamente los iconos
 import {
@@ -26,7 +27,9 @@ import {
     ThumbUp as ThumbUpIcon,
     Warning as WarningIcon,
     Block as BlockIcon,
-    HelpOutline as HelpOutlineIcon
+    HelpOutline as HelpOutlineIcon,
+    Home as HomeIcon,
+    CalendarToday as CalendarTodayIcon
 } from '@mui/icons-material';
 
 const Dashboard = () => {
@@ -48,20 +51,23 @@ const Dashboard = () => {
         recentUsers: []
     });
     const [isLoading, setIsLoading] = useState(true);
+    const [rentals, setRentals] = useState([]);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             setIsLoading(true);
             try {
-                const [inventoryResponse, vehiclesResponse, usersResponse] = await Promise.all([
+                const [inventoryResponse, vehiclesResponse, usersResponse, rentalsResponse] = await Promise.all([
                     axiosInstance.get('/inventory'),
                     axiosInstance.get('/vehicles'),
-                    axiosInstance.get('/users')
+                    axiosInstance.get('/users'),
+                    getRentals()
                 ]);
 
                 let items = inventoryResponse.data || [];
                 let vehicles = vehiclesResponse.data || [];
                 const users = usersResponse.data || [];
+                const rentalsData = rentalsResponse || [];
 
                 // Si el usuario es técnico, filtrar solo los elementos asignados
                 if (!hasPermission('canViewAllInventory')) {
@@ -112,7 +118,7 @@ const Dashboard = () => {
                 }
 
                 // Debug: Imprimir estados encontrados y conteos
-                
+
 
                 const locationsWithItems = [...new Set(items.map(item => item.location).filter(Boolean))];
                 const itemsByLocation = locationsWithItems.map(location => {
@@ -164,6 +170,9 @@ const Dashboard = () => {
                     totalUsers: users.length,
                     recentUsers: users.slice(0, 5)
                 });
+
+                // Establecer los datos de alquileres
+                setRentals(rentalsData);
             } catch (error) {
 
             } finally {
@@ -305,6 +314,10 @@ const Dashboard = () => {
                     <DirectionsCarIcon />
                     <span>Ver Vehículos</span>
                 </Link>
+                <Link to="/housing" className="quick-action">
+                    <HomeIcon />
+                    <span>Ver Viviendas</span>
+                </Link>
                 {hasPermission('canAccessSettings') && (
                     <Link to="/users" className="quick-action">
                         <PersonIcon />
@@ -434,36 +447,20 @@ const Dashboard = () => {
                             </>
                         )}
 
-                        {/* Distribución por categoría */}
-                        {stats.itemsByCategory && stats.itemsByCategory.length > 0 && (
-                            <div className="dashboard-card category-distribution">
+                        {/* Calendario de Alquileres */}
+                        {hasPermission('canViewAllRentals') && (
+                            <div className="dashboard-card rental-calendar-section">
                                 <div className="card-header">
                                     <h3>
-                                        <CategoryIcon />
-                                        Distribución por Categoría
+                                        <CalendarTodayIcon />
+                                        Calendario de Alquileres
                                     </h3>
+                                    <Link to="/rentals" className="view-all-link">
+                                        Ver todos
+                                    </Link>
                                 </div>
-                                <div className="category-visualization">
-                                    <div className="category-cards">
-                                        {stats.itemsByCategory.map((category, index) => (
-                                            <div
-                                                key={category.category || index}
-                                                className="category-card"
-                                                style={{
-                                                    '--category-color': getCategoryColor(index),
-                                                    '--index': index
-                                                }}
-                                            >
-                                                <div className="category-card-content">
-                                                    <h4 className="category-card-name">{category.category || 'Sin Categoría'}</h4>
-                                                    <div className="category-card-count">
-                                                        <span className="count-value">{category.count}</span>
-                                                        <span className="count-label">items</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                <div className="calendar-container">
+                                    <Calendar rentals={rentals} />
                                 </div>
                             </div>
                         )}
@@ -601,9 +598,9 @@ const Dashboard = () => {
                                     {stats.recentItems.map((item) => (
                                         <div className="item-card" key={item._id || `item-${item.code}`}>
                                             <div className="item-card-image">
-                                                {item.imagePath ? (
+                                                {item.photoUrl ? (
                                                     <img
-                                                        src={getImageUrl(item.imagePath, IMAGE_TYPES.INVENTORY)}
+                                                        src={item.photoUrl}
                                                         alt={item.itemName}
                                                         className="item-image"
                                                     />
@@ -648,9 +645,9 @@ const Dashboard = () => {
                                     {stats.recentVehicles.map((vehicle) => (
                                         <div className="item-card" key={vehicle._id || vehicle.licensePlate}>
                                             <div className="item-card-image">
-                                                {vehicle.imagePath ? (
+                                                {vehicle.photoUrl ? (
                                                     <img
-                                                        src={getImageUrl(vehicle.imagePath, IMAGE_TYPES.VEHICLES)}
+                                                        src={vehicle.photoUrl}
                                                         alt={`${vehicle.brand} ${vehicle.model}`}
                                                         className="vehicle-image"
                                                     />

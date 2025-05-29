@@ -3,10 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import axiosInstance from '../axiosConfig';
-import uploadService from '../services/uploadService';
 import './InventoryForm.css';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import config from '../config';
@@ -21,13 +19,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const API_URL = process.env.REACT_APP_API_URL || config.apiUrl;
-const isProduction = process.env.NODE_ENV === 'production';
 
 const InventoryForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    const { hasPermission } = usePermissions();
     const isEditing = !!id;
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [newCategory, setNewCategory] = useState('');
@@ -45,7 +41,7 @@ const InventoryForm = () => {
         acquisitionDate: null,
         responsibleUsers: [],
         notes: '',
-        imagePath: null
+        photoUrl: null
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -116,11 +112,11 @@ const InventoryForm = () => {
                         acquisitionDate: adjustDate(item.acquisitionDate),
                         responsibleUsers: formattedResponsibleUsers,
                         notes: item.notes || '',
-                        imagePath: item.imagePath || null
+                        photoUrl: item.photoUrl || null
                     });
 
-                    if (item.imagePath) {
-                        setImagePreview(getImageUrl(item.imagePath, IMAGE_TYPES.INVENTORY));
+                    if (item.photoUrl) {
+                        setImagePreview(item.photoUrl);
                     }
                 } catch (error) {
 
@@ -171,7 +167,7 @@ const InventoryForm = () => {
             }
 
             setSelectedFile(file);
-            setFormData(prev => ({ ...prev, imagePath: file }));
+            setFormData(prev => ({ ...prev, photoUrl: file }));
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
@@ -205,35 +201,42 @@ const InventoryForm = () => {
         setIsLoading(true);
 
         try {
-            // Si hay una imagen seleccionada, subirla primero a Hostinger
-            let imageUrl = null;
-            if (formData.imagePath instanceof File) {
-                try {
-                    imageUrl = await uploadService.uploadImage(formData.imagePath, 'inventory');
-                } catch (error) {
-                    console.error('Error al subir la imagen:', error);
-                    toast.error('Error al subir la imagen. Por favor, inténtelo de nuevo.');
-                    setIsLoading(false);
+            // Crear un FormData para enviar todos los datos
+            const formDataToSend = new FormData();
+
+            // Agregar la imagen si existe
+            if (formData.photoUrl instanceof File) {
+                formDataToSend.append('image', formData.photoUrl);
+            }
+
+
+            // Agregar todos los campos del vehículo
+            Object.keys(formData).forEach(key => {
+                if (key === 'photoUrl' && formData[key] instanceof File) {
+                    // La imagen ya se agregó como 'image'
                     return;
                 }
-            }
-
-            // Preparar los datos para enviar al backend
-            const inventoryData = {
-                ...formData,
-                imagePath: imageUrl || formData.imagePath
-            };
-
-            // Eliminar el archivo de la solicitud ya que ya se subió por separado
-            if (inventoryData.imagePath instanceof File) {
-                delete inventoryData.imagePath;
-            }
+                if (key === 'responsibleUsers') {
+                    // Enviar los usuarios completos como JSON string
+                    const usersToSend = formData[key].map(user => ({
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        fullName: user.fullName,
+                        role: user.role,
+                        isActive: user.isActive
+                    }));
+                    formDataToSend.append(key, JSON.stringify(usersToSend));
+                } else {
+                    formDataToSend.append(key, formData[key]);
+                }
+            });
 
             if (isEditing) {
-                await axiosInstance.put(`/inventory/${id}`, inventoryData);
+                await axiosInstance.put(`/inventory/${id}`, formDataToSend);
                 toast.success('Item actualizado correctamente');
             } else {
-                await axiosInstance.post('/inventory', inventoryData);
+                await axiosInstance.post('/inventory', formDataToSend);
                 toast.success('Item creado correctamente');
             }
 
@@ -286,6 +289,8 @@ const InventoryForm = () => {
                 };
             }
         });
+        // Cerrar el dropdown después de seleccionar un usuario
+        setIsUsersDropdownOpen(false);
     };
 
     if (isLoading && isEditing) {
@@ -517,7 +522,7 @@ const InventoryForm = () => {
                         </div>
 
                         <div className="form-group image-upload-group">
-                            <label htmlFor="imagePath">Imagen del Item</label>
+                            <label htmlFor="photoUrl">Imagen del Item</label>
                             <div className="image-upload">
                                 <label htmlFor="item-image" className="upload-button">
                                     {imagePreview ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
@@ -525,13 +530,13 @@ const InventoryForm = () => {
                                 <input
                                     type="file"
                                     id="item-image"
-                                    name="imagePath"
+                                    name="photoUrl"
                                     accept="image/*"
                                     onChange={handleFileChange}
                                     className="hidden-input"
                                 />
                                 <span className="file-name">
-                                    {selectedFile ? selectedFile.name : (formData.imagePath ? 'Imagen actual' : 'Ningún archivo seleccionado')}
+                                    {selectedFile ? selectedFile.name : (formData.photoUrl ? 'Imagen actual' : 'Ningún archivo seleccionado')}
                                 </span>
                             </div>
                             {imagePreview && (

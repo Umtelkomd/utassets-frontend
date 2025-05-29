@@ -171,7 +171,6 @@ input, select, textarea {
   border-radius: var(--border-radius);
   font-size: var(--font-size-base);
   transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
-  min-height: 44px; /* Tamaño mínimo para elementos táctiles */
 }
 
 input:focus, select:focus, textarea:focus {

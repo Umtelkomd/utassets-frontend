@@ -3,21 +3,21 @@ import apiClient from '../utils/axiosConfig';
 export interface Vehicle {
     id?: string;
     _id?: string;
-    item_name: string;
-    item_code: string;
-    category: string;
-    quantity: number;
-    condition: string;
-    location: string;
-    responsible_person: string;
     brand: string;
     model: string;
     year: number;
-    license_plate: string;
-    fuel_type: string;
-    last_maintenance: string;
-    next_maintenance: string;
-    notes: string;
+    licensePlate: string;
+    color?: string | null;
+    vehicleStatus: string;
+    mileage?: number | null;
+    fuelType: string;
+    insuranceExpiryDate?: Date | null;
+    technicalRevisionExpiryDate?: Date | null;
+    notes?: string | null;
+    imagePath?: string | null;
+    responsibleUsers?: any[];
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export const getVehicles = async (): Promise<Vehicle[]> => {

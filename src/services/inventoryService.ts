@@ -1,23 +1,16 @@
+import axios from 'axios';
+import { API_BASE_URL } from '../config/constants';
 import apiClient from '../utils/axiosConfig';
 
+const INVENTORY_ENDPOINT = `${API_BASE_URL}/inventory`;
+
 export interface InventoryItem {
-    id?: string;
-    _id?: string;
-    item_name: string;
-    item_code: string;
+    id: number;
+    itemName: string;
     category: string;
-    quantity: number;
-    condition: string;
-    location: string;
-    responsible_person: string;
-    brand?: string;
-    model?: string;
-    year?: number;
-    license_plate?: string;
-    fuel_type?: string;
-    last_maintenance?: string;
-    next_maintenance?: string;
-    notes?: string;
+    description?: string;
+    dailyCost: number;
+    status: string;
 }
 
 export interface Category {
@@ -26,20 +19,22 @@ export interface Category {
     description?: string;
 }
 
-export const getInventoryItems = async (): Promise<InventoryItem[]> => {
+export const getInventory = async () => {
     try {
-        const response = await apiClient.get<InventoryItem[]>('/inventory');
+        const response = await axios.get(INVENTORY_ENDPOINT);
         return response.data;
     } catch (error) {
+        console.error('Error al obtener items del inventario:', error);
         throw error;
     }
 };
 
-export const getInventoryItemById = async (id: string): Promise<InventoryItem> => {
+export const getInventoryItemById = async (id: number) => {
     try {
-        const response = await apiClient.get<InventoryItem>(`/inventory/${id}`);
+        const response = await axios.get(`${INVENTORY_ENDPOINT}/${id}`);
         return response.data;
     } catch (error) {
+        console.error(`Error al obtener item ${id}:`, error);
         throw error;
     }
 };

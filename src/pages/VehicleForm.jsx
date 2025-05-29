@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../axiosConfig';
-import uploadService from '../services/uploadService';
 import './VehicleForm.css';
 import { usePermissions } from '../context/PermissionsContext';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import config from '../config';
 
@@ -18,8 +16,6 @@ import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutli
 import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/Person';
 import CloseIcon from '@mui/icons-material/Close';
-
-const API_URL = process.env.REACT_APP_API_URL || config.apiUrl;
 
 const VehicleForm = () => {
     const { id } = useParams();
@@ -120,17 +116,13 @@ const VehicleForm = () => {
     const initialFormState = {
         brand: '',
         model: '',
-        year: new Date().getFullYear(),
         licensePlate: '',
-        vin: '',
-        color: '',
+        mileage: 0,
+        year: new Date().getFullYear(),
         vehicleStatus: 'Operativo',
-        mileage: '',
         fuelType: 'Gasolina',
-        insuranceExpiryDate: null,
-        technicalRevisionExpiryDate: null,
         notes: '',
-        imagePath: null,
+        photoUrl: null,
         responsibleUsers: []
     };
 
@@ -178,20 +170,19 @@ const VehicleForm = () => {
                         model: vehicle.model || '',
                         year: vehicle.year || new Date().getFullYear(),
                         licensePlate: vehicle.licensePlate || '',
-                        vin: vehicle.vin || '',
                         color: vehicle.color || '',
                         vehicleStatus: vehicle.vehicleStatus || 'Operativo',
-                        mileage: vehicle.mileage || '',
+                        mileage: vehicle.mileage || 0,
                         fuelType: vehicle.fuelType || 'Gasolina',
                         insuranceExpiryDate: adjustDate(vehicle.insuranceExpiryDate),
                         technicalRevisionExpiryDate: adjustDate(vehicle.technicalRevisionExpiryDate),
                         notes: vehicle.notes || '',
-                        imagePath: vehicle.imagePath || null,
+                        photoUrl: vehicle.photoUrl || null,
                         responsibleUsers: formattedResponsibleUsers
                     });
 
-                    if (vehicle.imagePath) {
-                        setImagePreview(getImageUrl(vehicle.imagePath, IMAGE_TYPES.VEHICLES));
+                    if (vehicle.photoUrl) {
+                        setImagePreview(vehicle.photoUrl);
                     }
                 } catch (error) {
 
@@ -268,7 +259,7 @@ const VehicleForm = () => {
             }
 
             setSelectedFile(file);
-            setFormData(prev => ({ ...prev, imagePath: file }));
+            setFormData(prev => ({ ...prev, photoUrl: file }));
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
@@ -320,35 +311,49 @@ const VehicleForm = () => {
         setIsLoading(true);
 
         try {
-            // Si hay una imagen seleccionada, subirla primero a Hostinger
-            let imageUrl = null;
-            if (formData.imagePath instanceof File) {
-                try {
-                    imageUrl = await uploadService.uploadImage(formData.imagePath, 'vehicles');
-                } catch (error) {
-                    console.error('Error al subir la imagen:', error);
-                    toast.error('Error al subir la imagen. Por favor, inténtelo de nuevo.');
-                    setIsLoading(false);
+            // Crear un FormData para enviar todos los datos
+            const formDataToSend = new FormData();
+
+            // Agregar la imagen si existe
+            if (formData.photoUrl instanceof File) {
+                formDataToSend.append('image', formData.photoUrl);
+            }
+
+            // Agregar todos los campos del vehículo
+            Object.keys(formData).forEach(key => {
+                if (key === 'photoUrl' && formData[key] instanceof File) {
+                    // La imagen ya se agregó como 'image'
                     return;
                 }
-            }
-
-            // Preparar los datos para enviar al backend
-            const vehicleData = {
-                ...formData,
-                imagePath: imageUrl || formData.imagePath
-            };
-
-            // Eliminar el archivo de la solicitud ya que ya se subió por separado
-            if (vehicleData.imagePath instanceof File) {
-                delete vehicleData.imagePath;
-            }
+                if (key === 'responsibleUsers') {
+                    // Enviar los usuarios completos como JSON string
+                    const usersToSend = formData[key].map(user => ({
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        fullName: user.fullName,
+                        role: user.role,
+                        isActive: user.isActive
+                    }));
+                    formDataToSend.append(key, JSON.stringify(usersToSend));
+                } else {
+                    formDataToSend.append(key, formData[key]);
+                }
+            });
 
             if (isEditing) {
-                await axiosInstance.put(`/vehicles/${id}`, vehicleData);
+                await axiosInstance.put(`/vehicles/${id}`, formDataToSend, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
                 toast.success('Vehículo actualizado correctamente');
             } else {
-                await axiosInstance.post('/vehicles', vehicleData);
+                await axiosInstance.post('/vehicles', formDataToSend, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
                 toast.success('Vehículo creado correctamente');
             }
 
@@ -376,6 +381,7 @@ const VehicleForm = () => {
         setFormData(prev => {
             const currentUsers = prev.responsibleUsers || [];
             const isSelected = currentUsers.some(user => user.id === userId);
+            const selectedUser = users.find(u => u.id === userId);
 
             if (isSelected) {
                 return {
@@ -385,10 +391,12 @@ const VehicleForm = () => {
             } else {
                 return {
                     ...prev,
-                    responsibleUsers: [...currentUsers, { id: userId }]
+                    responsibleUsers: [...currentUsers, selectedUser]
                 };
             }
         });
+        // Cerrar el dropdown después de seleccionar un usuario
+        setIsUsersDropdownOpen(false);
     };
 
     const removeUser = (userId) => {
@@ -427,8 +435,8 @@ const VehicleForm = () => {
                                 <div className="image-container">
                                     {imagePreview ? (
                                         <img src={imagePreview} alt="Vista previa del vehículo" />
-                                    ) : formData.imagePath ? (
-                                        <img src={getImageUrl(formData.imagePath, IMAGE_TYPES.VEHICLES)} alt="Imagen actual del vehículo" />
+                                    ) : formData.photoUrl ? (
+                                        <img src={formData.photoUrl} alt="Imagen actual del vehículo" />
                                     ) : (
                                         <div className="no-image">
                                             <DirectionsCarIcon />
@@ -445,13 +453,13 @@ const VehicleForm = () => {
                                         <input
                                             type="file"
                                             id="vehicle-image"
-                                            name="imagePath"
+                                            name="photoUrl"
                                             accept="image/*"
                                             onChange={handleFileChange}
                                             className="hidden-input"
                                         />
                                         <span className="file-name">
-                                            {selectedFile ? selectedFile.name : (formData.imagePath ? 'Imagen actual' : 'Ningún archivo seleccionado')}
+                                            {selectedFile ? selectedFile.name : (formData.photoUrl ? 'Imagen actual' : 'Ningún archivo seleccionado')}
                                         </span>
                                     </div>
                                 )}
@@ -526,20 +534,6 @@ const VehicleForm = () => {
 
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label htmlFor="vin">VIN/Número de Chasis</label>
-                                        <input
-                                            type="text"
-                                            id="vin"
-                                            name="vin"
-                                            value={formData.vin}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            disabled={isViewing}
-                                            readOnly={isViewing}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
                                         <label htmlFor="color">Color</label>
                                         <input
                                             type="text"
@@ -552,9 +546,7 @@ const VehicleForm = () => {
                                             readOnly={isViewing}
                                         />
                                     </div>
-                                </div>
 
-                                <div className="form-row">
                                     <div className="form-group">
                                         <label htmlFor="vehicleStatus">Estado*</label>
                                         <select
@@ -571,7 +563,9 @@ const VehicleForm = () => {
                                         </select>
                                         {errors.vehicleStatus && <div className="error-message">{errors.vehicleStatus}</div>}
                                     </div>
+                                </div>
 
+                                <div className="form-row">
                                     <div className="form-group">
                                         <label htmlFor="mileage">Kilometraje</label>
                                         <input
@@ -581,14 +575,12 @@ const VehicleForm = () => {
                                             value={formData.mileage}
                                             onChange={handleInputChange}
                                             className="form-control"
-                                            min="0"
+                                            min={0}
                                             disabled={isViewing}
                                             readOnly={isViewing}
                                         />
                                     </div>
-                                </div>
 
-                                <div className="form-row">
                                     <div className="form-group">
                                         <label htmlFor="fuelType">Tipo de Combustible</label>
                                         <select
@@ -604,7 +596,9 @@ const VehicleForm = () => {
                                             ))}
                                         </select>
                                     </div>
+                                </div>
 
+                                <div className="form-row">
                                     <div className="form-group">
                                         <label htmlFor="insuranceExpiryDate">Vencimiento de Seguro</label>
                                         <input
@@ -618,9 +612,7 @@ const VehicleForm = () => {
                                             readOnly={isViewing}
                                         />
                                     </div>
-                                </div>
 
-                                <div className="form-row">
                                     <div className="form-group">
                                         <label htmlFor="technicalRevisionExpiryDate">Vencimiento TÜV</label>
                                         <input
@@ -634,23 +626,30 @@ const VehicleForm = () => {
                                             readOnly={isViewing}
                                         />
                                     </div>
+                                </div>
 
+                                <div className="form-row">
                                     <div className="form-group">
                                         <label htmlFor="responsibleUsers">Técnicos Responsables</label>
                                         {isViewing ? (
-                                            <div className="technicians-info">
-                                                <div className="technicians-list">
-                                                    {formData.responsibleUsers.map((user, index) => {
-                                                        const userData = users.find(u => u.id === user.id);
-                                                        return (
-                                                            <span key={index} className="technician-chip">
-                                                                <PersonIcon className="technician-icon" />
-                                                                {userData ? (userData.fullName) : 'Usuario no encontrado'}
-                                                            </span>
-                                                        );
-                                                    })}
+                                            Array.isArray(formData.responsibleUsers) && formData.responsibleUsers.length > 0 && (
+                                                <div className="technicians-info">
+                                                    <span className="detail-label">Técnicos:</span>
+                                                    <div className="technicians-list">
+                                                        {formData.responsibleUsers.map((user, index) => {
+                                                            const userName = typeof user === 'object' ?
+                                                                (user.fullName || `${user.name} ${user.last_name}`) :
+                                                                'Usuario desconocido';
+                                                            return (
+                                                                <span key={index} className="technician-chip">
+                                                                    <PersonIcon className="technician-icon" />
+                                                                    {userName}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )
                                         ) : (
                                             <>
                                                 <div className="users-select-container">

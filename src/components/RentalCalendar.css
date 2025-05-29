@@ -1,0 +1,375 @@
+.rental-calendar {
+    background: white;
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.calendar-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.calendar-title h3 {
+    margin: 0;
+    color: #1d1d1f;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.calendar-icon {
+    color: #007aff;
+    font-size: 1.1rem !important;
+}
+
+.rental-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rental-period {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+    color: white;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 122, 255, 0.3);
+}
+
+.period-text {
+    font-size: 0.7rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.period-duration {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.calendar-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0;
+}
+
+.nav-button {
+    background: #f6f6f6;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6e6e73;
+}
+
+.nav-button:hover {
+    background: #007aff;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 1px 4px rgba(0, 122, 255, 0.3);
+}
+
+.nav-button svg {
+    font-size: 1rem !important;
+}
+
+.month-year {
+    margin: 0;
+    color: #1d1d1f;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.calendar-grid {
+    margin-bottom: 0.5rem;
+}
+
+.day-names {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5px;
+    margin-bottom: 2px;
+}
+
+.day-name {
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #6e6e73;
+    padding: 0.2rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5px;
+}
+
+.calendar-day {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f9f9f9;
+    border: 1px solid transparent;
+    min-height: 18px;
+}
+
+.calendar-day.other-month {
+    opacity: 0.3;
+}
+
+.calendar-day.today {
+    border: 1px solid #007aff;
+    font-weight: 700;
+}
+
+.day-number {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #1d1d1f;
+    z-index: 2;
+    position: relative;
+}
+
+/* Estilos para días de alquiler */
+.calendar-day.start {
+    background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+    color: white;
+    box-shadow: 0 1px 4px rgba(52, 199, 89, 0.4);
+    transform: scale(1.02);
+}
+
+.calendar-day.start .day-number {
+    color: white;
+    font-weight: 700;
+}
+
+.calendar-day.rental {
+    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+    color: white;
+    box-shadow: 0 1px 2px rgba(0, 122, 255, 0.3);
+}
+
+.calendar-day.rental .day-number {
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.end {
+    background: linear-gradient(135deg, #ff3b30 0%, #ff6b6b 100%);
+    color: white;
+    box-shadow: 0 1px 4px rgba(255, 59, 48, 0.4);
+    transform: scale(1.02);
+}
+
+.calendar-day.end .day-number {
+    color: white;
+    font-weight: 700;
+}
+
+.day-indicator {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.day-indicator svg {
+    font-size: 6px !important;
+    color: white;
+}
+
+.start-indicator {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.end-indicator {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.calendar-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-top: 0.4rem;
+    border-top: 1px solid #f2f2f7;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    color: #6e6e73;
+    font-weight: 500;
+}
+
+.legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.start-color {
+    background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+}
+
+.rental-color {
+    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+}
+
+.end-color {
+    background: linear-gradient(135deg, #ff3b30 0%, #ff6b6b 100%);
+}
+
+/* Animaciones más sutiles */
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 2px rgba(0, 122, 255, 0);
+    }
+}
+
+.calendar-day.start,
+.calendar-day.end {
+    animation: pulseGlow 4s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .rental-calendar {
+        padding: 0.5rem;
+    }
+    
+    .calendar-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        gap: 0.4rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .rental-period {
+        align-items: center;
+    }
+    
+    .calendar-navigation {
+        margin-bottom: 0.5rem;
+    }
+    
+    .calendar-grid {
+        margin-bottom: 0.5rem;
+    }
+    
+    .calendar-legend {
+        gap: 0.75rem;
+        padding-top: 0.4rem;
+    }
+    
+    .legend-item {
+        font-size: 0.65rem;
+    }
+    
+    .day-name {
+        font-size: 0.55rem;
+        padding: 0.15rem 0;
+    }
+    
+    .calendar-day {
+        min-height: 16px;
+        border-radius: 3px;
+    }
+    
+    .day-number {
+        font-size: 0.65rem;
+    }
+    
+    .nav-button {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .nav-button svg {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Estilos para mensajes de error */
+.error-message {
+    color: #dc3545;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+/* Estilos adicionales para formularios */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #1d1d1f;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.days-info {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.days-count {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #f2f2f7 0%, #e5e5ea 100%);
+    color: #1d1d1f;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid #d1d1d6;
+} 

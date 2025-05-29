@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -17,15 +17,24 @@ import Dashboard from './pages/Dashboard';
 import InventoryList from './pages/InventoryList';
 import InventoryForm from './pages/InventoryForm';
 import Projects from './pages/Projects';
-// import Reports from './pages/Reports'; // COMENTADO TEMPORALMENTE
+import Reports from './pages/Reports'; // COMENTADO TEMPORALMENTE
 import VehicleList from './pages/VehicleList';
 import VehicleForm from './pages/VehicleForm';
+import HousingList from './pages/HousingList';
+import HousingForm from './pages/HousingForm';
 import NotFound from './pages/NotFound';
 import AccessDenied from './pages/AccessDenied';
 import Profile from './pages/Profile';
 import Categories from './pages/Categories';
 import Users from './pages/Users';
 import Statistics from './pages/Statistics';
+import RentalList from './pages/RentalList';
+import RentalForm from './pages/RentalForm';
+import RentalView from './pages/RentalView';
+import RentalTypeSelection from './pages/RentalTypeSelection';
+import VehicleRentalForm from './pages/VehicleRentalForm';
+import HousingRentalForm from './pages/HousingRentalForm';
+import InventoryRentalForm from './pages/InventoryRentalForm';
 
 // Contextos
 import { AuthProvider } from './context/AuthContext';
@@ -60,7 +69,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/access-denied" element={<AccessDenied />} />
             <Route path="/categories" element={<Categories />} />
-
+            <Route path="/reports" element={<Reports />} />
 
             {/* Ruta principal (Dashboard) */}
             <Route 
@@ -106,6 +115,107 @@ function App() {
                 <ProtectedRoute 
                   element={<PageContainer><InventoryForm /></PageContainer>}
                   requiredPermission="canEditInventory"
+                />
+              } 
+            />
+
+            {/* Rutas de Alquileres */}
+            <Route 
+              path="/rentals" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><RentalList /></PageContainer>}
+                  requiredPermission="view_rentals"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/new" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><RentalTypeSelection /></PageContainer>}
+                  requiredPermission="create_rental"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/new/item" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><InventoryRentalForm /></PageContainer>}
+                  requiredPermission="canCreateRental"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/new/vehicle" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><VehicleRentalForm /></PageContainer>}
+                  requiredPermission="canCreateRental"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/new/housing" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><HousingRentalForm /></PageContainer>}
+                  requiredPermission="canCreateRental"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/edit/housing/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><HousingRentalForm /></PageContainer>}
+                  requiredPermission="canEditRental"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/edit/vehicle/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><VehicleRentalForm /></PageContainer>}
+                  requiredPermission="canEditRental"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/edit/item/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><InventoryRentalForm /></PageContainer>}
+                  requiredPermission="canEditRental"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/view/housing/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><RentalView /></PageContainer>}
+                  requiredPermission="view_rentals"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/view/vehicle/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><RentalView /></PageContainer>}
+                  requiredPermission="view_rentals"
+                />
+              } 
+            />
+            <Route 
+              path="/rentals/view/item/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><RentalView /></PageContainer>}
+                  requiredPermission="view_rentals"
                 />
               } 
             />
@@ -164,6 +274,42 @@ function App() {
                 <ProtectedRoute 
                   element={<PageContainer><VehicleForm /></PageContainer>}
                   requiredPermission="canEditVehicle"
+                />
+              } 
+            />
+
+            {/* Rutas de Viviendas */}
+            <Route 
+              path="/housing" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><HousingList /></PageContainer>}
+                />
+              } 
+            />
+            <Route 
+              path="/housing/new" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><HousingForm /></PageContainer>}
+                  requiredPermission="canCreateHousing"
+                />
+              } 
+            />
+            <Route 
+              path="/housing/view/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><HousingForm /></PageContainer>}
+                />
+              } 
+            />
+            <Route 
+              path="/housing/edit/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><HousingForm /></PageContainer>}
+                  requiredPermission="canEditHousing"
                 />
               } 
             />

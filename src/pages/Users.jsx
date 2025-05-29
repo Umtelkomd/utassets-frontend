@@ -16,7 +16,7 @@ import './Users.css';
 import { toast } from 'react-toastify';
 import UserEditForm from '../components/UserEditForm';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 
 const initialFormState = {
     username: '',
@@ -35,6 +35,11 @@ const Users = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [formData, setFormData] = useState(initialFormState);
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        userId: null,
+        userName: ''
+    });
 
     const selectedUser = useMemo(() =>
         users.find(user => user.id === selectedUserId),
@@ -82,22 +87,28 @@ const Users = () => {
             toast.success('Persona actualizada correctamente');
             fetchUsers();
         } catch (error) {
-
             toast.error('Error al actualizar la persona');
         }
     };
 
-    const handleDeleteUser = async (userId) => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar esta persona?')) {
-            try {
-                await axiosInstance.delete(`/users/${userId}`);
-                toast.success('Persona eliminada correctamente');
-                fetchUsers();
-            } catch (error) {
-
-                toast.error('Error al eliminar la persona');
-            }
+    const confirmDelete = async () => {
+        try {
+            await axiosInstance.delete(`/users/${deleteModal.userId}`);
+            toast.success('Persona eliminada correctamente');
+            fetchUsers();
+        } catch (error) {
+            toast.error('Error al eliminar la persona');
+        } finally {
+            closeDeleteModal();
         }
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModal({
+            isOpen: false,
+            userId: null,
+            userName: ''
+        });
     };
 
     const handleOpenEditModal = (user) => {
@@ -112,16 +123,15 @@ const Users = () => {
         setFormData(initialFormState);
     };
 
-    const handleImageUpdate = async (imagePath) => {
+    const handleImageUpdate = async (photoUrl) => {
         try {
             setUsers(prevUsers => prevUsers.map(user => {
                 if (user.id === selectedUserId) {
-                    return { ...user, imagePath };
+                    return { ...user, photoUrl };
                 }
                 return user;
             }));
         } catch (error) {
-
             toast.error('Error al actualizar la imagen');
         }
     };
@@ -188,9 +198,9 @@ const Users = () => {
                                 </div>
 
                                 <div className="user-card-avatar">
-                                    {user.imagePath ? (
+                                    {user.photoUrl ? (
                                         <img
-                                            src={getImageUrl(user.imagePath, IMAGE_TYPES.USERS)}
+                                            src={user.photoUrl}
                                             alt={user.fullName}
                                             className="user-image"
                                         />
@@ -221,7 +231,7 @@ const Users = () => {
                                     </button>
                                     <button
                                         className="delete-btn"
-                                        onClick={() => handleDeleteUser(user.id)}
+                                        onClick={() => setDeleteModal({ isOpen: true, userId: user.id, userName: user.fullName })}
                                     >
                                         <DeleteIcon />
                                     </button>
@@ -355,6 +365,17 @@ const Users = () => {
                         />
                     </div>
                 </div>
+            )}
+
+            {deleteModal.isOpen && (
+                <DeleteConfirmationModal
+                    isOpen={deleteModal.isOpen}
+                    onClose={closeDeleteModal}
+                    onConfirm={confirmDelete}
+                    itemName={deleteModal.userName}
+                    title="Confirmar Eliminación de Persona"
+                    message={`¿Estás seguro de que deseas eliminar a "${deleteModal.userName}"?`}
+                />
             )}
         </div>
     );

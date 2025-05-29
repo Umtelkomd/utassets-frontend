@@ -4,7 +4,6 @@ import './ProfileImageUpload.css';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { toast } from 'react-toastify';
-import { getImageUrl, IMAGE_TYPES } from '../utils/imageUtils';
 
 const UserImageDelete = ({ currentUser, onImageUpdate }) => {
     const handleDeleteImage = async () => {
@@ -22,9 +21,9 @@ const UserImageDelete = ({ currentUser, onImageUpdate }) => {
     return (
         <div className="profile-image-container">
             <div className="profile-image-wrapper">
-                {currentUser?.imagePath ? (
+                {currentUser?.photoUrl ? (
                     <img
-                        src={getImageUrl(currentUser.imagePath, IMAGE_TYPES.USERS)}
+                        src={currentUser.photoUrl}
                         alt={currentUser.fullName}
                         className="user-image"
                     />
@@ -33,7 +32,7 @@ const UserImageDelete = ({ currentUser, onImageUpdate }) => {
                 )}
             </div>
 
-            {currentUser?.imagePath && (
+            {currentUser?.photoUrl && (
                 <div className="profile-image-actions">
                     <button
                         className="delete-button"

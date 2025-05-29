@@ -93,7 +93,6 @@
   font-size: 0.9rem;
   transition: all 0.3s ease;
   background: white;
-  height: 40px;
 }
 
 .inventory-list-page .search-input:focus {

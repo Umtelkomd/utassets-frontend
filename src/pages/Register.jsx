@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './Register.css';
 import axios from '../axiosConfig';
-import uploadService from '../services/uploadService';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -15,7 +14,7 @@ const Register = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        imagePath: null
+        photoUrl: null
     });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
@@ -64,8 +63,8 @@ const Register = () => {
             newErrors.confirmPassword = 'Las contraseñas no coinciden';
         }
 
-        if (formData.imagePath && formData.imagePath.size > 5 * 1024 * 1024) {
-            newErrors.imagePath = 'La imagen no debe superar los 5MB';
+        if (formData.photoUrl && formData.photoUrl.size > 5 * 1024 * 1024) {
+            newErrors.photoUrl = 'La imagen no debe superar los 5MB';
         }
 
         setErrors(newErrors);
@@ -76,26 +75,26 @@ const Register = () => {
         console.log(process.env.REACT_APP_API_URL);
         const { name, value, files } = e.target;
 
-        if (name === 'imagePath') {
+        if (name === 'photoUrl') {
             const file = files[0];
             if (file) {
                 if (file.size > 5 * 1024 * 1024) {
                     setErrors(prev => ({
                         ...prev,
-                        imagePath: 'La imagen no debe superar los 5MB'
+                        photoUrl: 'La imagen no debe superar los 5MB'
                     }));
                     return;
                 }
                 if (!file.type.startsWith('image/')) {
                     setErrors(prev => ({
                         ...prev,
-                        imagePath: 'El archivo debe ser una imagen'
+                        photoUrl: 'El archivo debe ser una imagen'
                     }));
                     return;
                 }
                 setFormData(prev => ({
                     ...prev,
-                    imagePath: file
+                    photoUrl: file
                 }));
             }
         } else {
@@ -134,11 +133,16 @@ const Register = () => {
         setIsSubmitting(true);
 
         try {
-            // Si hay una imagen seleccionada, subirla primero a Hostinger
+            // Si hay una imagen, subirla primero
             let imageUrl = null;
-            if (formData.imagePath instanceof File) {
+            if (formData.photoUrl instanceof File) {
+                const formDataImage = new FormData();
+                formDataImage.append('image', formData.photoUrl);
+                formDataImage.append('entityType', 'users');
+
                 try {
-                    imageUrl = await uploadService.uploadImage(formData.imagePath, 'users');
+                    const uploadResponse = await axios.post('/upload', formDataImage);
+                    imageUrl = uploadResponse.data.url;
                 } catch (error) {
                     console.error('Error al subir la imagen:', error);
                     toast.error('Error al subir la imagen. Por favor, inténtelo de nuevo.');
@@ -147,29 +151,31 @@ const Register = () => {
                 }
             }
 
-            // Preparar los datos para enviar al backend
-            const userData = {
-                ...formData,
-                imagePath: imageUrl
-            };
+            // Crear un FormData para enviar los datos
+            const submitData = new FormData();
 
-            // Eliminar campos que no deben enviarse al backend
-            delete userData.confirmPassword;
-            if (userData.imagePath instanceof File) {
-                delete userData.imagePath;
+            // Agregar los campos del formulario
+            submitData.append('username', formData.email); // Usamos el email como username
+            submitData.append('email', formData.email);
+            submitData.append('password', formData.password);
+            submitData.append('fullName', formData.fullName);
+            submitData.append('birthDate', formData.birthDate);
+            if (imageUrl) {
+                submitData.append('photoUrl', imageUrl);
             }
 
-            const response = await axios.post('/auth/register', userData);
+            // Enviar la petición al backend
+            const response = await axios.post('/auth/register', submitData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             toast.success('Registro exitoso. Por favor inicia sesión.');
             navigate('/login');
         } catch (error) {
-            console.error('Error al registrar usuario:', error);
-            if (error.response?.data?.message) {
-                toast.error(`Error: ${error.response.data.message}`);
-            } else {
-                toast.error('Error al registrar usuario. Por favor, inténtelo de nuevo.');
-            }
+            console.error('Error en el registro:', error);
+            toast.error(error.response?.data?.message || 'Error en el registro');
         } finally {
             setIsSubmitting(false);
         }
@@ -205,7 +211,7 @@ const Register = () => {
                 </div>
                 <div className="register-form-container">
                     <h2>Registro</h2>
-                    <form className="register-form" onSubmit={handleSubmit} noValidate>
+                    <form className="register-form" onSubmit={handleSubmit} noValidate encType="multipart/form-data">
                         {errors.general && (
                             <div className="error-message general-error">
                                 {errors.general}
@@ -335,20 +341,20 @@ const Register = () => {
                             )}
                         </div>
                         <div className="form-group">
-                            <label htmlFor="imagePath">Foto de Perfil (Opcional)</label>
+                            <label htmlFor="photoUrl">Foto de Perfil (Opcional)</label>
                             <input
                                 type="file"
-                                id="imagePath"
-                                name="imagePath"
+                                id="photoUrl"
+                                name="photoUrl"
                                 onChange={handleChange}
                                 disabled={isSubmitting}
                                 accept="image/*"
-                                aria-invalid={!!errors.imagePath}
-                                aria-describedby={errors.imagePath ? "imagePath-error" : undefined}
+                                aria-invalid={!!errors.photoUrl}
+                                aria-describedby={errors.photoUrl ? "photoUrl-error" : undefined}
                             />
-                            {errors.imagePath && (
-                                <span className="error-message" id="imagePath-error">
-                                    {errors.imagePath}
+                            {errors.photoUrl && (
+                                <span className="error-message" id="photoUrl-error">
+                                    {errors.photoUrl}
                                 </span>
                             )}
                         </div>

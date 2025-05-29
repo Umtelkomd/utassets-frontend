@@ -10,19 +10,32 @@ const DeleteConfirmationModal = ({
     isOpen,
     onClose,
     onConfirm,
-    itemName,
+    title = 'Confirmar Eliminación',
+    itemName = '',
     message
 }) => {
     if (!isOpen) return null;
 
-    const defaultMessage = `¿Estás seguro de eliminar "${itemName}"?`;
+    const handleConfirm = () => {
+        if (typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    };
+
+    const handleClose = () => {
+        if (typeof onClose === 'function') {
+            onClose();
+        }
+    };
+
+    const defaultMessage = itemName ? `¿Estás seguro de eliminar "${itemName}"?` : '¿Estás seguro de que deseas eliminar este elemento?';
 
     return (
         <div className="modal-overlay">
             <div className="modal-content delete-modal">
                 <div className="modal-header">
-                    <h2>Confirmar Eliminación</h2>
-                    <button className="close-button" onClick={onClose}>
+                    <h2>{title}</h2>
+                    <button className="close-button" onClick={handleClose}>
                         <CloseIcon />
                     </button>
                 </div>
@@ -36,10 +49,10 @@ const DeleteConfirmationModal = ({
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn-secondary" onClick={onClose}>
+                    <button className="btn-secondary" onClick={handleClose}>
                         Cancelar
                     </button>
-                    <button className="btn-danger" onClick={onConfirm}>
+                    <button className="btn-danger" onClick={handleConfirm}>
                         <DeleteIcon sx={{ mr: 1 }} /> Eliminar
                     </button>
                 </div>

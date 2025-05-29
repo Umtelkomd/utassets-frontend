@@ -150,8 +150,8 @@ const Projects = () => {
             name: project.name,
             description: project.description || '',
             location: project.location || '',
-            startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
-            endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+            startDate: formatDateForInput(project.startDate),
+            endDate: formatDateForInput(project.endDate),
             status: project.status
         });
         setShowAddModal(true);
@@ -201,6 +201,17 @@ const Projects = () => {
             month: '2-digit',
             year: 'numeric'
         });
+    };
+
+    const formatDateForInput = (dateString) => {
+        if (!dateString) return '';
+
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
     };
 
     // Obtener clase de estado
