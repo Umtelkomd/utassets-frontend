@@ -19,8 +19,7 @@
  * @property {string} endDate
  */
 
-import axios from 'axios';
-import { API_BASE_URL } from '../config/constants';
+import apiClient from '../axiosConfig';
 
 export const RentalType = {
     ITEM: 'item',
@@ -28,14 +27,12 @@ export const RentalType = {
     HOUSING: 'housing'
 };
 
-const RENTAL_ENDPOINT = `${API_BASE_URL}/rentals`;
-
 /**
  * @returns {Promise<RentalItem[]>}
  */
 export const getRentals = async () => {
     try {
-        const response = await axios.get(RENTAL_ENDPOINT);
+        const response = await apiClient.get('/rentals');
         return response.data;
     } catch (error) {
         console.error('Error al obtener alquileres:', error);
@@ -49,7 +46,7 @@ export const getRentals = async () => {
  */
 export const getRentalById = async (id) => {
     try {
-        const response = await axios.get(`${RENTAL_ENDPOINT}/${id}`);
+        const response = await apiClient.get(`/rentals/${id}`);
         return response.data;
     } catch (error) {
         console.error(`Error al obtener alquiler ${id}:`, error);
@@ -63,7 +60,7 @@ export const getRentalById = async (id) => {
  */
 export const createRental = async (rentalData) => {
     try {
-        const response = await axios.post(RENTAL_ENDPOINT, rentalData);
+        const response = await apiClient.post('/rentals', rentalData);
         return response.data;
     } catch (error) {
         console.error('Error al crear alquiler:', error);
@@ -78,7 +75,7 @@ export const createRental = async (rentalData) => {
  */
 export const updateRental = async (id, rentalData) => {
     try {
-        const response = await axios.put(`${RENTAL_ENDPOINT}/${id}`, rentalData);
+        const response = await apiClient.put(`/rentals/${id}`, rentalData);
         return response.data;
     } catch (error) {
         console.error(`Error al actualizar alquiler ${id}:`, error);
@@ -92,7 +89,7 @@ export const updateRental = async (id, rentalData) => {
  */
 export const deleteRental = async (id) => {
     try {
-        await axios.delete(`${RENTAL_ENDPOINT}/${id}`);
+        await apiClient.delete(`/rentals/${id}`);
     } catch (error) {
         console.error(`Error al eliminar alquiler ${id}:`, error);
         throw error;
@@ -105,7 +102,7 @@ export const deleteRental = async (id) => {
  */
 export const getRentalsByItemId = async (itemId) => {
     try {
-        const response = await axios.get(`${RENTAL_ENDPOINT}/item/${itemId}`);
+        const response = await apiClient.get(`/rentals/item/${itemId}`);
         return response.data;
     } catch (error) {
         console.error(`Error al obtener alquileres del ítem ${itemId}:`, error);
@@ -120,7 +117,7 @@ export const getRentalsByItemId = async (itemId) => {
  */
 export const getRentalsByDateRange = async (startDate, endDate) => {
     try {
-        const response = await axios.get(`${RENTAL_ENDPOINT}/date-range`, {
+        const response = await apiClient.get('/rentals/date-range', {
             params: { startDate, endDate }
         });
         return response.data;
@@ -136,7 +133,7 @@ export const getRentalsByDateRange = async (startDate, endDate) => {
  */
 export const getRentalsByType = async (type) => {
     try {
-        const response = await axios.get(`${RENTAL_ENDPOINT}/type/${type}`);
+        const response = await apiClient.get(`/rentals/type/${type}`);
         return response.data;
     } catch (error) {
         console.error(`Error al obtener alquileres de tipo ${type}:`, error);
@@ -150,7 +147,7 @@ export const getRentalsByType = async (type) => {
  */
 export const getRentalsByObject = async (objectId) => {
     try {
-        const response = await axios.get(`${RENTAL_ENDPOINT}/object/${objectId}`);
+        const response = await apiClient.get(`/rentals/object/${objectId}`);
         return response.data;
     } catch (error) {
         console.error(`Error al obtener alquileres del objeto ${objectId}:`, error);
@@ -166,7 +163,7 @@ export const getRentalsByObject = async (objectId) => {
  */
 export const checkAvailability = async (itemId, startDate, endDate) => {
     try {
-        const response = await axios.get(`${RENTAL_ENDPOINT}/availability`, {
+        const response = await apiClient.get('/rentals/availability', {
             params: {
                 itemId,
                 startDate,
@@ -186,7 +183,7 @@ export const checkAvailability = async (itemId, startDate, endDate) => {
  */
 export const getRentalFields = async (type) => {
     try {
-        const response = await axios.get(`${RENTAL_ENDPOINT}/fields`, {
+        const response = await apiClient.get('/rentals/fields', {
             params: { type }
         });
         return response.data;

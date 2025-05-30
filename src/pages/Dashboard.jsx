@@ -595,8 +595,8 @@ const Dashboard = () => {
                                     </Link>
                                 </div>
                                 <div className="items-cards-grid">
-                                    {stats.recentItems.map((item) => (
-                                        <div className="item-card" key={item._id || `item-${item.code}`}>
+                                    {stats.recentItems.map((item, index) => (
+                                        <div className="item-card" key={item._id || item.code || `item-${index}`}>
                                             <div className="item-card-image">
                                                 {item.photoUrl ? (
                                                     <img
@@ -642,8 +642,8 @@ const Dashboard = () => {
                                     </Link>
                                 </div>
                                 <div className="items-cards-grid">
-                                    {stats.recentVehicles.map((vehicle) => (
-                                        <div className="item-card" key={vehicle._id || vehicle.licensePlate}>
+                                    {stats.recentVehicles.map((vehicle, index) => (
+                                        <div className="item-card" key={vehicle._id || vehicle.licensePlate || `vehicle-${index}`}>
                                             <div className="item-card-image">
                                                 {vehicle.photoUrl ? (
                                                     <img

@@ -147,22 +147,21 @@ const Navbar = () => {
                                 <HomeIcon className="dropdown-icon" />
                                 <span>Viviendas</span>
                             </Link>
-                            {hasPermission('canViewAllRentals') && (
-                                <Link
-                                    to="/rentals"
-                                    className={`dropdown-item ${isActive('/rentals') ? 'active' : ''}`}
-                                    onClick={() => {
-                                        closeMenu();
-                                        setAssetsMenuOpen(false);
-                                    }}
-                                >
-                                    <CalendarMonthIcon className="dropdown-icon" />
-                                    <span>Alquileres</span>
-                                </Link>
-                            )}
                         </div>
                     )}
                 </div>
+
+                {/* Alquileres - Solo para administradores */}
+                {hasPermission('canViewAllRentals') && (
+                    <Link
+                        to="/rentals"
+                        className={`navbar-item ${isActive('/rentals') ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        <CalendarMonthIcon className="nav-icon" />
+                        <span>Alquileres</span>
+                    </Link>
+                )}
 
                 {/* Enlace directo a Proyectos */}
                 {hasPermission('canViewReports') && (
