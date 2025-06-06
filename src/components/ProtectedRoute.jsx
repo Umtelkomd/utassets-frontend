@@ -2,17 +2,26 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
-import LoadingSpinner from './LoadingSpinner';
+import Loading from './Loading';
 
 // Componente para proteger rutas basado en permisos
 const ProtectedRoute = ({ element, requiredPermission }) => {
-    const { currentUser, isAuthInitialized } = useAuth();
+    const { currentUser, isAuthInitialized, isValidatingToken } = useAuth();
     const { hasPermission } = usePermissions();
     const location = useLocation();
 
-    // Mientras se está verificando la autenticación, mostrar un loader o nada
-    if (!isAuthInitialized) {
-        return <LoadingSpinner message="Verificando permisos..." />;
+    // Mientras se está verificando la autenticación o validando el token, mostrar loading
+    if (!isAuthInitialized || isValidatingToken) {
+        return (
+            <Loading
+                message={
+                    isValidatingToken
+                        ? "Validando sesión..."
+                        : "Verificando permisos..."
+                }
+                size="large"
+            />
+        );
     }
 
     // Si no hay usuario, redirigir al login

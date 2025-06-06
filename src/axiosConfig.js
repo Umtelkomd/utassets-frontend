@@ -15,34 +15,54 @@ const instance = axios.create({
   },
 });
 
+// Función para verificar si el token está expirado
+const isTokenExpired = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp && payload.exp < currentTime;
+  } catch (e) {
+    console.error('Error al decodificar token:', e);
+    return true; // Si no se puede decodificar, considerar expirado
+  }
+};
+
+// Función para hacer logout automático
+const performAutoLogout = (reason = 'expired') => {
+  console.warn(`Realizando logout automático: ${reason}`);
+  localStorage.removeItem('token');
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('user');
+  
+  // Disparar evento personalizado para notificar a otros componentes
+  window.dispatchEvent(new CustomEvent('auto-logout', { 
+    detail: { reason, message: 'Sesión expirada. Por favor, inicia sesión nuevamente.' }
+  }));
+  
+  // Redirigir solo si no estamos ya en login
+  if (!window.location.pathname.includes('/login')) {
+    window.location.href = `/login?${reason}=true`;
+  }
+};
+
 // Interceptor para añadir el token de autenticación y manejar headers
 instance.interceptors.request.use(
   (config) => {
     // Mostrar siempre la solicitud en consola
-    console.log(`Enviando solicitud a: ${config.url}`, config);
+    if (!isProduction) {
+      console.log(`Enviando solicitud a: ${config.url}`, config);
+    }
     
     // Intentar obtener token de ambas posibles claves (para compatibilidad)
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-      
-      // Verificar token expirado antes de enviar
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const currentTime = Math.floor(Date.now() / 1000);
-        
-        if (payload.exp && payload.exp < currentTime) {
-          console.warn('Token expirado, redirigiendo al login');
-          localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          window.location.href = '/login?expired=true';
-          return Promise.reject(new Error('Token expirado'));
-        }
-      } catch (e) {
-        // Error al decodificar token, probablemente inválido
-        console.error('Error al decodificar token:', e);
+      // Verificar si el token está expirado antes de enviar la request
+      if (isTokenExpired(token)) {
+        performAutoLogout('expired');
+        return Promise.reject(new Error('Token expirado'));
       }
+      
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
 
     // Si los datos son FormData, asegurarse de que el Content-Type sea multipart/form-data
@@ -70,47 +90,93 @@ instance.interceptors.request.use(
 // Interceptor para manejar errores de respuesta
 instance.interceptors.response.use(
   (response) => {
-    console.log(`Respuesta recibida de ${response.config.url} con estado: ${response.status}`, response);
+    if (!isProduction) {
+      console.log(`Respuesta recibida de ${response.config.url} con estado: ${response.status}`, response);
+    }
     return response;
   },
   (error) => {
     // Mostrar información detallada sobre el error para debug
-    console.error('Error completo:', error);
+    if (!isProduction) {
+      console.error('Error completo:', error);
+    }
     
     if (error.response) {
-      console.error(`Error en respuesta de ${error.config?.url}:`, {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data,
-        headers: error.response.headers
-      });
+      if (!isProduction) {
+        console.error(`Error en respuesta de ${error.config?.url}:`, {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+      }
       
-      // La petición fue hecha y el servidor respondió con un código de estado
-      // que no está en el rango 2xx
-      
-      if (error.response.status === 401) {
-        // Token expirado o inválido, redirigir a login
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login?session=expired';
-      } else if (error.response.status === 403) {
-        // Acceso prohibido, redirigir a una página de acceso denegado
-        window.location.href = '/forbidden';
+      // Manejar diferentes códigos de error
+      switch (error.response.status) {
+        case 401:
+          // Token expirado, inválido o no autorizado
+          const errorMessage = error.response.data?.message || 'No autorizado';
+          if (errorMessage.toLowerCase().includes('token') || 
+              errorMessage.toLowerCase().includes('expired') ||
+              errorMessage.toLowerCase().includes('invalid')) {
+            performAutoLogout('invalid');
+          } else {
+            performAutoLogout('unauthorized');
+          }
+          break;
+          
+        case 403:
+          // Acceso prohibido - usuario sin permisos suficientes
+          console.warn('Acceso prohibido - permisos insuficientes');
+          window.dispatchEvent(new CustomEvent('access-forbidden', { 
+            detail: { message: 'No tienes permisos para realizar esta acción' }
+          }));
+          break;
+          
+        case 404:
+          // Recurso no encontrado
+          console.warn('Recurso no encontrado:', error.config?.url);
+          break;
+          
+        case 500:
+          // Error interno del servidor
+          console.error('Error interno del servidor');
+          window.dispatchEvent(new CustomEvent('server-error', { 
+            detail: { message: 'Error interno del servidor. Intenta nuevamente.' }
+          }));
+          break;
+          
+        default:
+          // Otros errores HTTP
+          if (!isProduction) {
+            console.error(`Error HTTP ${error.response.status}:`, error.response.data);
+          }
       }
     } else if (error.request) {
       // La petición fue hecha pero no se recibió respuesta
       console.error('Error de conexión, no se recibió respuesta:', error.request);
       
       // Mostrar mensaje al usuario sobre problemas de conexión
-      const event = new CustomEvent('api-connection-error', { detail: { message: 'Error de conexión con el servidor' } });
-      window.dispatchEvent(event);
+      window.dispatchEvent(new CustomEvent('api-connection-error', { 
+        detail: { message: 'Error de conexión con el servidor. Verifica tu conexión a internet.' }
+      }));
     } else {
       // Algo ocurrió en la configuración de la petición que provocó un error
       console.error('Error en la configuración de la petición:', error.message);
     }
+    
     return Promise.reject(error);
   }
 );
+
+// Función para verificar la validez del token con el servidor
+export const validateTokenWithServer = async () => {
+  try {
+    const response = await instance.get('/auth/me');
+    return { isValid: true, user: response.data };
+  } catch (error) {
+    return { isValid: false, error: error.response?.data?.message || 'Token inválido' };
+  }
+};
 
 export default instance; 

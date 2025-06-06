@@ -1,5 +1,5 @@
 // URL base de la API
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://utassets-backend.onrender.com/api';
 
 // Otros endpoints
 export const AUTH_ENDPOINT = `${API_BASE_URL}/auth`;

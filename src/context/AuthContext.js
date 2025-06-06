@@ -1,27 +1,156 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import axiosInstance from '../axiosConfig';
+import axiosInstance, { validateTokenWithServer } from '../axiosConfig';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthInitialized, setIsAuthInitialized] = useState(false);
+  const [isValidatingToken, setIsValidatingToken] = useState(false);
 
-  useEffect(() => {
+  // Función para hacer logout limpio
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+  };
+
+  // Función para validar token existente con el servidor
+  const validateExistingToken = async () => {
+    const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+
+    if (!storedToken || !storedUser) {
+      setIsAuthInitialized(true);
+      return;
+    }
+
+    try {
+      setIsValidatingToken(true);
+      const parsedUser = JSON.parse(storedUser);
+      
+      // Validar con el servidor
+      const validation = await validateTokenWithServer();
+      
+      if (validation.isValid) {
+        // Token válido, restaurar usuario
+        if (parsedUser && typeof parsedUser === 'object') {
+          setCurrentUser(parsedUser);
+        }
+      } else {
+        // Token inválido, limpiar storage
+        console.warn('Token almacenado es inválido, limpiando sesión');
+        logout();
+      }
+    } catch (error) {
+      console.error('Error al validar token almacenado:', error);
+      // En caso de error de conexión, mantener la sesión pero marcar como no validada
       try {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser === 'object') {
           setCurrentUser(parsedUser);
         }
-      } catch (error) {
-        
-        localStorage.removeItem('user');
+      } catch (parseError) {
+        logout();
       }
+    } finally {
+      setIsValidatingToken(false);
+      setIsAuthInitialized(true);
     }
-    setIsAuthInitialized(true);
+  };
+
+  // Efecto principal de inicialización
+  useEffect(() => {
+    validateExistingToken();
   }, []);
+
+  // Manejar eventos de logout automático del interceptor
+  useEffect(() => {
+    const handleAutoLogout = (event) => {
+      const { reason, message } = event.detail;
+      console.log(`Logout automático detectado: ${reason}`);
+      
+      logout();
+      
+      // Mostrar notificación al usuario
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    };
+
+    const handleAccessForbidden = (event) => {
+      const { message } = event.detail;
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: 4000,
+      });
+    };
+
+    const handleServerError = (event) => {
+      const { message } = event.detail;
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: 4000,
+      });
+    };
+
+    const handleConnectionError = (event) => {
+      const { message } = event.detail;
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: 4000,
+      });
+    };
+
+    // Escuchar eventos del interceptor
+    window.addEventListener('auto-logout', handleAutoLogout);
+    window.addEventListener('access-forbidden', handleAccessForbidden);
+    window.addEventListener('server-error', handleServerError);
+    window.addEventListener('api-connection-error', handleConnectionError);
+
+    return () => {
+      window.removeEventListener('auto-logout', handleAutoLogout);
+      window.removeEventListener('access-forbidden', handleAccessForbidden);
+      window.removeEventListener('server-error', handleServerError);
+      window.removeEventListener('api-connection-error', handleConnectionError);
+    };
+  }, []);
+
+  // Verificación periódica del token (cada 1 hora)
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const tokenCheckInterval = setInterval(async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        logout();
+        return;
+      }
+
+      try {
+        const validation = await validateTokenWithServer();
+        if (!validation.isValid) {
+          console.warn('Token expirado en verificación periódica');
+          logout();
+          toast.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', {
+            position: 'top-right',
+            autoClose: 5000,
+          });
+        }
+      } catch (error) {
+        // En caso de error de red, no hacer logout automático
+        console.warn('Error en verificación periódica del token:', error);
+      }
+    }, 60 * 60 * 1000); // 1 hora (cambiado de 5 minutos)
+
+    return () => clearInterval(tokenCheckInterval);
+  }, [currentUser]);
 
   const login = async (userData) => {
     try {
@@ -92,12 +221,6 @@ export const AuthProvider = ({ children }) => {
       };
     }
   };
-  
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setCurrentUser(null);
-  };
 
   const updateUserProfile = async (userData) => {
     try {
@@ -129,13 +252,35 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Función para verificar manualmente el token
+  const checkTokenValidity = async () => {
+    try {
+      setIsValidatingToken(true);
+      const validation = await validateTokenWithServer();
+      
+      if (!validation.isValid) {
+        logout();
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error al verificar token:', error);
+      return false;
+    } finally {
+      setIsValidatingToken(false);
+    }
+  };
+
   const value = {
     currentUser,
     isAuthInitialized,
+    isValidatingToken,
     login,
     register,
     logout,
-    updateUserProfile
+    updateUserProfile,
+    checkTokenValidity
   };
 
   return (

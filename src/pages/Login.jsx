@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../pages/Login.css';
 
@@ -14,6 +14,40 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Manejar parámetros de URL para mostrar mensajes apropiados
+    useEffect(() => {
+        const urlParams = new URLSearchParams(location.search);
+
+        if (urlParams.get('expired') === 'true') {
+            toast.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
+        } else if (urlParams.get('invalid') === 'true') {
+            toast.error('Sesión inválida. Por favor, inicia sesión nuevamente.', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
+        } else if (urlParams.get('unauthorized') === 'true') {
+            toast.error('Acceso no autorizado. Por favor, inicia sesión.', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
+        } else if (urlParams.get('session') === 'expired') {
+            toast.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
+        }
+
+        // Limpiar los parámetros de la URL sin recargar la página
+        if (urlParams.toString()) {
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+        }
+    }, [location.search]);
 
     const validateForm = () => {
         const newErrors = {};
