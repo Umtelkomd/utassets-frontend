@@ -114,15 +114,21 @@ instance.interceptors.response.use(
       // Manejar diferentes códigos de error
       switch (error.response.status) {
         case 401:
-          // Token expirado, inválido o no autorizado
-          const errorMessage = error.response.data?.message || 'No autorizado';
-          if (errorMessage.toLowerCase().includes('token') || 
-              errorMessage.toLowerCase().includes('expired') ||
-              errorMessage.toLowerCase().includes('invalid')) {
-            performAutoLogout('invalid');
-          } else {
-            performAutoLogout('unauthorized');
+          // Solo realizar logout automático si NO es una solicitud de login
+          const isLoginRequest = error.config?.url?.includes('/auth/login');
+          
+          if (!isLoginRequest) {
+            // Token expirado, inválido o no autorizado
+            const errorMessage = error.response.data?.message || 'No autorizado';
+            if (errorMessage.toLowerCase().includes('token') || 
+                errorMessage.toLowerCase().includes('expired') ||
+                errorMessage.toLowerCase().includes('invalid')) {
+              performAutoLogout('invalid');
+            } else {
+              performAutoLogout('unauthorized');
+            }
           }
+          // Si es una solicitud de login, dejar que el componente maneje el error
           break;
           
         case 403:

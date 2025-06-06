@@ -28,6 +28,7 @@ import Profile from './pages/Profile';
 import Categories from './pages/Categories';
 import Users from './pages/Users';
 import Statistics from './pages/Statistics';
+import Vacations from './pages/Vacations';
 import RentalList from './pages/RentalList';
 import RentalForm from './pages/RentalForm';
 import RentalView from './pages/RentalView';
@@ -321,6 +322,12 @@ function App() {
             <Route path="/users" element={<ProtectedRoute 
                   element={<PageContainer><Users /></PageContainer>}
                   requiredPermission="canEditAllUsers"
+                />} />
+
+            {/* Ruta para vacaciones */}
+            <Route path="/vacations" element={<ProtectedRoute 
+                  element={<PageContainer><Vacations /></PageContainer>}
+                  requiredPermission="canManageVacations"
                 />} />
           </Routes>
         </PermissionsProvider>

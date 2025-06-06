@@ -37,6 +37,7 @@ const rolePermissions = {
     canEditRental: true,
     canDeleteRental: true,
     canViewAllRentals: true,
+    canManageVacations: true,
   },
   tecnico: {
     canCreateVehicle: false,
@@ -61,6 +62,7 @@ const rolePermissions = {
     canEditHousing: false,
     canDeleteHousing: false,
     canViewAllHousing: false,
+    canManageVacations: false,
       }
 };
 

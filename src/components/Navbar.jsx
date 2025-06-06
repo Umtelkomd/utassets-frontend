@@ -27,6 +27,7 @@ import {
     Insights as InsightsIcon,
     ReportProblem as ReportProblemIcon,
     CalendarMonth as CalendarMonthIcon,
+    BeachAccess as BeachAccessIcon,
     Home
 } from '@mui/icons-material';
 
@@ -184,6 +185,18 @@ const Navbar = () => {
                     >
                         <PeopleIcon className="nav-icon" />
                         <span>Personal</span>
+                    </Link>
+                )}
+
+                {/* Opción de Vacaciones - Solo para administradores */}
+                {hasPermission('canManageVacations') && (
+                    <Link
+                        to="/vacations"
+                        className={`navbar-item ${isActive('/vacations') ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        <BeachAccessIcon className="nav-icon" />
+                        <span>Vacaciones</span>
                     </Link>
                 )}
             </div>

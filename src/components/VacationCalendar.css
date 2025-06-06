@@ -1,0 +1,477 @@
+.vacation-calendar-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    margin: 0 auto 2rem auto;
+    overflow: hidden;
+    max-width: 900px;
+    width: 100%;
+}
+
+/* Header del calendario */
+.vacation-calendar-container .vacation-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.vacation-calendar-container .vacation-calendar-navigation {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.vacation-calendar-container .vacation-calendar-nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 12px;
+    background: #f8f9fa;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vacation-calendar-container .vacation-calendar-nav-button:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.vacation-calendar-container .vacation-calendar-current-month {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.vacation-calendar-container .vacation-calendar-current-month h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.vacation-calendar-container .vacation-calendar-today-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #007bff;
+    border-radius: 8px;
+    background: transparent;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.vacation-calendar-container .vacation-calendar-today-button:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Leyenda */
+.vacation-calendar-container .vacation-calendar-legend {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.vacation-calendar-container .vacation-calendar-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.vacation-calendar-container .vacation-calendar-legend-bubble {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.vacation-calendar-container .vacation-calendar-legend-bubble.vacation-calendar-rest-day {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.vacation-calendar-container .vacation-calendar-legend-bubble.vacation-calendar-extra-work {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+/* Grid del calendario */
+.vacation-calendar-container .vacation-calendar-grid {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+
+.vacation-calendar-container .vacation-calendar-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f8f9fa;
+}
+
+.vacation-calendar-container .vacation-calendar-day-header {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vacation-calendar-container .vacation-calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.vacation-calendar-container .vacation-calendar-day {
+    min-height: 80px;
+    padding: 0.5rem;
+    border: 1px solid #e9ecef;
+    background: white;
+    position: relative;
+    transition: background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.vacation-calendar-container .vacation-calendar-day:hover {
+    background: #f8f9fa;
+}
+
+.vacation-calendar-container .vacation-calendar-day.vacation-calendar-clickable {
+    cursor: pointer;
+}
+
+.vacation-calendar-container .vacation-calendar-day.vacation-calendar-clickable:hover {
+    background: #e3f2fd;
+}
+
+.vacation-calendar-container .vacation-calendar-day.vacation-calendar-other-month {
+    background: #f8f9fa;
+    color: #adb5bd;
+}
+
+.vacation-calendar-container .vacation-calendar-day.vacation-calendar-today {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-color: #2196f3;
+    position: relative;
+}
+
+.vacation-calendar-container .vacation-calendar-day.vacation-calendar-today::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #2196f3, #1976d2);
+}
+
+.vacation-calendar-container .vacation-calendar-day-number {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.vacation-calendar-container .vacation-calendar-day.vacation-calendar-other-month .vacation-calendar-day-number {
+    color: #adb5bd;
+}
+
+/* Burbujas de vacaciones */
+.vacation-calendar-container .vacation-calendar-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: auto;
+    justify-content: center;
+}
+
+.vacation-calendar-container .vacation-calendar-bubble {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.vacation-calendar-container .vacation-calendar-bubble:hover {
+    transform: scale(1.2) translateY(-2px);
+    z-index: 10;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+
+.vacation-calendar-container .vacation-calendar-bubble:active {
+    transform: scale(1.1) translateY(-1px);
+}
+
+.vacation-calendar-container .vacation-calendar-bubble.vacation-calendar-rest-day {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.vacation-calendar-container .vacation-calendar-bubble.vacation-calendar-extra-work {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.vacation-calendar-container .vacation-calendar-bubble-icon {
+    color: white;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vacation-calendar-container .vacation-calendar-bubble-more {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #dee2e6;
+}
+
+/* Tooltip */
+.vacation-calendar-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e9ecef;
+    max-width: 280px;
+    pointer-events: none;
+    animation: vacation-calendar-tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes vacation-calendar-tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-content {
+    padding: 1rem;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 0.75rem;
+    border: 2px solid #e9ecef;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-info h4 svg {
+    color: #6c757d;
+    font-size: 18px;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-date {
+    margin: 0 0 0.25rem 0;
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-type {
+    margin: 0 0 0.5rem 0;
+    color: #007bff;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-description {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-action {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.vacation-calendar-tooltip .vacation-calendar-tooltip-action small {
+    color: #007bff;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Efectos de hover mejorados */
+.vacation-calendar-container .vacation-calendar-bubble:hover::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.3;
+    z-index: -1;
+    animation: vacation-calendar-hoverGlow 0.3s ease-out;
+}
+
+@keyframes vacation-calendar-hoverGlow {
+    from {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    to {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .vacation-calendar-container {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-navigation {
+        justify-content: center;
+    }
+
+    .vacation-calendar-container .vacation-calendar-current-month {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .vacation-calendar-container .vacation-calendar-current-month h2 {
+        font-size: 1.25rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-legend {
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-legend-item {
+        gap: 0.25rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-day {
+        min-height: 70px;
+        padding: 0.25rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-day-number {
+        font-size: 0.8rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-bubble {
+        width: 24px;
+        height: 24px;
+    }
+
+    .vacation-calendar-container .vacation-calendar-bubble-icon {
+        font-size: 12px;
+    }
+
+    .vacation-calendar-container .vacation-calendar-bubble-more {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-day-header {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .vacation-calendar-container {
+        padding: 0.75rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-day {
+        min-height: 60px;
+        padding: 0.25rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-bubble {
+        width: 20px;
+        height: 20px;
+    }
+
+    .vacation-calendar-container .vacation-calendar-bubble-icon {
+        font-size: 10px;
+    }
+
+    .vacation-calendar-container .vacation-calendar-bubble-more {
+        width: 20px;
+        height: 20px;
+        font-size: 0.6rem;
+    }
+
+    .vacation-calendar-container .vacation-calendar-day-header {
+        padding: 0.5rem 0.125rem;
+        font-size: 0.75rem;
+    }
+
+    .vacation-calendar-tooltip .vacation-calendar-tooltip-content {
+        padding: 0.75rem;
+    }
+
+    .vacation-calendar-tooltip {
+        max-width: 240px;
+    }
+} 
