@@ -7,10 +7,11 @@ const GoogleLoginButton = ({ isSubmitting = false }) => {
         if (isSubmitting) return;
 
         try {
-            const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050';
+            // Obtener la URL base sin el /api adicional
+            const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:5050/api';
 
             // Verificar si Google OAuth está configurado en el servidor
-            const response = await fetch(`${backendUrl}/api/auth/google`, {
+            const response = await fetch(`${backendUrl}/auth/google`, {
                 method: 'GET',
                 redirect: 'manual' // No seguir redirecciones automáticamente
             });
@@ -27,7 +28,7 @@ const GoogleLoginButton = ({ isSubmitting = false }) => {
             }
 
             // Si la respuesta es exitosa, redirigir a Google OAuth
-            window.location.href = `${backendUrl}/api/auth/google`;
+            window.location.href = `${backendUrl}/auth/google`;
 
         } catch (error) {
             console.error('Error al verificar Google OAuth:', error);
