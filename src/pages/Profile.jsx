@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import './Profile.css';
 import { toast } from 'react-toastify';
+import { vacationService } from '../services/vacationService';
+import VacationRequestForm from '../components/VacationRequestForm';
+import VacationCalendar from '../components/VacationCalendar';
 
 // Iconos
 import SaveIcon from '@mui/icons-material/Save';
@@ -15,6 +18,12 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import AddIcon from '@mui/icons-material/Add';
+import PendingIcon from '@mui/icons-material/Pending';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WorkIcon from '@mui/icons-material/Work';
 
 const Profile = () => {
     const { currentUser, updateUserProfile } = useAuth();
@@ -34,6 +43,13 @@ const Profile = () => {
     });
     const [error, setError] = useState(null);
 
+    // Estados para la sección de vacaciones
+    const [vacations, setVacations] = useState([]);
+    const [availableDays, setAvailableDays] = useState(null);
+    const [showVacationForm, setShowVacationForm] = useState(false);
+    const [vacationLoading, setVacationLoading] = useState(false);
+    const [selectedVacationDate, setSelectedVacationDate] = useState(null);
+
     useEffect(() => {
         if (currentUser) {
             setProfile({
@@ -43,8 +59,40 @@ const Profile = () => {
                 photoUrl: currentUser.photoUrl || null
             });
             setLoading(false);
+
+            // Cargar datos de vacaciones solo para técnicos
+            if (currentUser.role === 'tecnico') {
+                loadVacationData();
+            }
         }
     }, [currentUser]);
+
+    const loadVacationData = async () => {
+        if (!currentUser?.id) return;
+
+        try {
+            setVacationLoading(true);
+            const [userVacations, userDays] = await Promise.all([
+                vacationService.getUserVacations(currentUser.id),
+                vacationService.getUserAvailableDays(currentUser.id)
+            ]);
+
+            setVacations(userVacations);
+            setAvailableDays(userDays);
+        } catch (error) {
+            console.error('Error al cargar datos de vacaciones:', error);
+            toast.error('Error al cargar información de vacaciones');
+        } finally {
+            setVacationLoading(false);
+        }
+    };
+
+    const handleVacationFormClose = () => {
+        setShowVacationForm(false);
+        setSelectedVacationDate(null);
+        // Recargar datos después de crear una solicitud
+        loadVacationData();
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -424,6 +472,175 @@ const Profile = () => {
                         )}
                     </div>
                 </div>
+
+                {/* Sección de Vacaciones - Solo para técnicos */}
+                {currentUser?.role === 'tecnico' && (
+                    <div className="profile-card vacation-section">
+                        <div className="card-header">
+                            <h2>
+                                <BeachAccessIcon className="section-icon" />
+                                Mis Vacaciones
+                            </h2>
+                            <p>Gestiona tus solicitudes de vacaciones y consulta tu calendario personal</p>
+                            <button
+                                className="btn-primary"
+                                onClick={() => {
+                                    setSelectedVacationDate(null);
+                                    setShowVacationForm(true);
+                                }}
+                                disabled={vacationLoading}
+                            >
+                                <AddIcon />
+                                Nueva Solicitud
+                            </button>
+                        </div>
+
+                        {/* Resumen de días */}
+                        {availableDays && (
+                            <div className="vacation-summary">
+                                <div className="days-stats-grid">
+                                    <div className="stat-card available">
+                                        <div className="stat-icon">
+                                            <BeachAccessIcon />
+                                        </div>
+                                        <div className="stat-content">
+                                            <span className="stat-value">{availableDays.availableDays}</span>
+                                            <span className="stat-label">Días disponibles</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="stat-card used">
+                                        <div className="stat-icon">
+                                            <CalendarTodayIcon />
+                                        </div>
+                                        <div className="stat-content">
+                                            <span className="stat-value">{availableDays.usedRestDays}</span>
+                                            <span className="stat-label">Días usados</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="stat-card extra">
+                                        <div className="stat-icon">
+                                            <WorkIcon />
+                                        </div>
+                                        <div className="stat-content">
+                                            <span className="stat-value">{availableDays.extraWorkDays}</span>
+                                            <span className="stat-label">Días extra</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Lista de solicitudes */}
+                        <div className="vacation-requests">
+                            <h3>Mis Solicitudes</h3>
+                            {vacationLoading ? (
+                                <div className="loading-state">
+                                    <div className="loading-spinner"></div>
+                                    <p>Cargando solicitudes...</p>
+                                </div>
+                            ) : vacations.length === 0 ? (
+                                <div className="empty-state">
+                                    <BeachAccessIcon className="empty-icon" />
+                                    <p>No tienes solicitudes de vacaciones</p>
+                                    <button
+                                        className="btn-primary"
+                                        onClick={() => {
+                                            setSelectedVacationDate(null);
+                                            setShowVacationForm(true);
+                                        }}
+                                    >
+                                        <AddIcon />
+                                        Crear primera solicitud
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="requests-list">
+                                    {vacations.slice(-5).map((vacation) => (
+                                        <div key={vacation.id} className="request-item">
+                                            <div className="request-date">
+                                                <CalendarTodayIcon />
+                                                {new Date(vacation.date).toLocaleDateString('es-ES', {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric'
+                                                })}
+                                            </div>
+
+                                            <div className="request-type">
+                                                {vacation.type === 'rest_day' ? (
+                                                    <>
+                                                        <BeachAccessIcon className="type-icon rest" />
+                                                        <span>Día de descanso</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <WorkIcon className="type-icon work" />
+                                                        <span>Día de trabajo extra</span>
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            <div className="request-status">
+                                                {vacation.isApproved ? (
+                                                    <>
+                                                        <CheckCircleIcon className="status-icon approved" />
+                                                        <span className="status-text approved">Aprobada</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <PendingIcon className="status-icon pending" />
+                                                        <span className="status-text pending">Pendiente</span>
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            {vacation.description && (
+                                                <div className="request-description">
+                                                    {vacation.description}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                    {vacations.length > 5 && (
+                                        <div className="show-more">
+                                            <p>Mostrando las 5 solicitudes más recientes de {vacations.length} totales</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Calendario personal */}
+                        <div className="personal-calendar">
+                            <h3>Mi Calendario de Vacaciones</h3>
+                            <p className="calendar-description">
+                                Consulta tus vacaciones aprobadas. Haz clic en cualquier fecha para crear una nueva solicitud.
+                            </p>
+                            <VacationCalendar
+                                vacations={vacations.filter(v => v.isApproved)}
+                                isPersonal={true}
+                                showOnlyOwnVacations={true}
+                                currentUserId={currentUser?.id}
+                                onDateClick={(date) => {
+                                    const formattedDate = date.toISOString().split('T')[0];
+                                    setSelectedVacationDate(formattedDate);
+                                    setShowVacationForm(true);
+                                }}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal de solicitud de vacaciones */}
+                {showVacationForm && (
+                    <VacationRequestForm
+                        onClose={handleVacationFormClose}
+                        selectedDate={selectedVacationDate}
+                    />
+                )}
             </div>
         </div>
     );

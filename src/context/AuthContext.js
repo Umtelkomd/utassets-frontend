@@ -13,46 +13,57 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    // Limpiar también la cookie de autenticación
+    document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     setCurrentUser(null);
   };
 
   // Función para validar token existente con el servidor
   const validateExistingToken = async () => {
-    const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 
-    if (!storedToken || !storedUser) {
-      setIsAuthInitialized(true);
-      return;
-    }
-
+    // Para Google OAuth, podemos tener usuario sin token en localStorage
+    // porque usamos cookies HTTP-only
     try {
       setIsValidatingToken(true);
-      const parsedUser = JSON.parse(storedUser);
       
-      // Validar con el servidor
+      // Siempre intentar validar con el servidor (ya sea token o cookie)
       const validation = await validateTokenWithServer();
       
-      if (validation.isValid) {
-        // Token válido, restaurar usuario
-        if (parsedUser && typeof parsedUser === 'object') {
-          setCurrentUser(parsedUser);
+      if (validation.isValid && validation.user) {
+        // Autenticación válida, usar los datos del servidor
+        setCurrentUser(validation.user);
+        // Asegurar que el localStorage esté sincronizado
+        localStorage.setItem('user', JSON.stringify(validation.user));
+      } else if (storedUser) {
+        // Si no hay validación del servidor pero hay usuario almacenado
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && typeof parsedUser === 'object') {
+            // Mantener la sesión temporalmente, pero tratar de validar después
+            setCurrentUser(parsedUser);
+          }
+        } catch (parseError) {
+          console.error('Error al parsear usuario almacenado:', parseError);
+          logout();
         }
       } else {
-        // Token inválido, limpiar storage
-        console.warn('Token almacenado es inválido, limpiando sesión');
+        // No hay sesión válida
         logout();
       }
     } catch (error) {
-      console.error('Error al validar token almacenado:', error);
-      // En caso de error de conexión, mantener la sesión pero marcar como no validada
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && typeof parsedUser === 'object') {
-          setCurrentUser(parsedUser);
+      console.error('Error al validar autenticación:', error);
+      
+      // En caso de error de conexión, intentar mantener sesión con datos locales
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && typeof parsedUser === 'object') {
+            setCurrentUser(parsedUser);
+          }
+        } catch (parseError) {
+          logout();
         }
-      } catch (parseError) {
-        logout();
       }
     } finally {
       setIsValidatingToken(false);

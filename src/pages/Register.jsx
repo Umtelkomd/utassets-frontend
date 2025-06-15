@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import './Register.css';
 import axios from '../axiosConfig';
 
@@ -14,11 +15,13 @@ const Register = () => {
         email: '',
         password: '',
         confirmPassword: '',
+        phone: '',
         photoUrl: null
     });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
     const { register } = useAuth();
     const navigate = useNavigate();
 
@@ -63,6 +66,10 @@ const Register = () => {
             newErrors.confirmPassword = 'Las contraseñas no coinciden';
         }
 
+        if (formData.phone && !/^\+?[1-9]\d{1,14}$/.test(formData.phone)) {
+            newErrors.phone = 'El número de teléfono no es válido (formato: +123456789)';
+        }
+
         if (formData.photoUrl && formData.photoUrl.size > 5 * 1024 * 1024) {
             newErrors.photoUrl = 'La imagen no debe superar los 5MB';
         }
@@ -96,6 +103,13 @@ const Register = () => {
                     ...prev,
                     photoUrl: file
                 }));
+
+                // Crear preview de la imagen
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setImagePreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
             }
         } else {
             setFormData(prev => {
@@ -123,6 +137,20 @@ const Register = () => {
         }
     };
 
+    const removeImage = () => {
+        setFormData(prev => ({
+            ...prev,
+            photoUrl: null
+        }));
+        setImagePreview(null);
+
+        // Limpiar el input de archivo
+        const fileInput = document.getElementById('photoUrl');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -133,25 +161,7 @@ const Register = () => {
         setIsSubmitting(true);
 
         try {
-            // Si hay una imagen, subirla primero
-            let imageUrl = null;
-            if (formData.photoUrl instanceof File) {
-                const formDataImage = new FormData();
-                formDataImage.append('image', formData.photoUrl);
-                formDataImage.append('entityType', 'users');
-
-                try {
-                    const uploadResponse = await axios.post('/upload', formDataImage);
-                    imageUrl = uploadResponse.data.url;
-                } catch (error) {
-                    console.error('Error al subir la imagen:', error);
-                    toast.error('Error al subir la imagen. Por favor, inténtelo de nuevo.');
-                    setIsSubmitting(false);
-                    return;
-                }
-            }
-
-            // Crear un FormData para enviar los datos
+            // Crear un FormData para enviar todos los datos incluida la imagen
             const submitData = new FormData();
 
             // Agregar los campos del formulario
@@ -160,12 +170,19 @@ const Register = () => {
             submitData.append('password', formData.password);
             submitData.append('fullName', formData.fullName);
             submitData.append('birthDate', formData.birthDate);
-            if (imageUrl) {
-                submitData.append('photoUrl', imageUrl);
+
+            // Agregar teléfono si está presente
+            if (formData.phone) {
+                submitData.append('phone', formData.phone);
             }
 
-            // Enviar la petición al backend
-            const response = await axios.post('/auth/register', submitData, {
+            // Si hay una imagen, agregarla directamente al FormData
+            if (formData.photoUrl instanceof File) {
+                submitData.append('image', formData.photoUrl); // Cambié 'photoUrl' por 'image' que es lo que espera el backend
+            }
+
+            // Enviar la petición al backend (ruta corregida)
+            const response = await axios.post('/users/register', submitData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -211,6 +228,15 @@ const Register = () => {
                 </div>
                 <div className="register-form-container">
                     <h2>Registro</h2>
+
+                    {/* Botón de Google OAuth */}
+                    <GoogleLoginButton isSubmitting={isSubmitting} />
+
+                    {/* Separador */}
+                    <div className="auth-divider">
+                        <span>o registrarse con email</span>
+                    </div>
+
                     <form className="register-form" onSubmit={handleSubmit} noValidate encType="multipart/form-data">
                         {errors.general && (
                             <div className="error-message general-error">
@@ -293,6 +319,25 @@ const Register = () => {
                             )}
                         </div>
                         <div className="form-group">
+                            <label htmlFor="phone">Teléfono (Opcional)</label>
+                            <input
+                                type="tel"
+                                id="phone"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                disabled={isSubmitting}
+                                placeholder="+123456789"
+                                aria-invalid={!!errors.phone}
+                                aria-describedby={errors.phone ? "phone-error" : undefined}
+                            />
+                            {errors.phone && (
+                                <span className="error-message" id="phone-error">
+                                    {errors.phone}
+                                </span>
+                            )}
+                        </div>
+                        <div className="form-group">
                             <label htmlFor="password">Contraseña</label>
                             <div className="password-input-container">
                                 <input
@@ -356,6 +401,26 @@ const Register = () => {
                                 <span className="error-message" id="photoUrl-error">
                                     {errors.photoUrl}
                                 </span>
+                            )}
+                            {imagePreview && (
+                                <div className="image-preview-container">
+                                    <div className="image-preview">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Vista previa"
+                                            className="preview-image"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="remove-image-btn"
+                                            onClick={removeImage}
+                                            aria-label="Eliminar imagen"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                    <p className="preview-text">Vista previa de tu foto</p>
+                                </div>
                             )}
                         </div>
                         <button

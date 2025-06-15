@@ -8,6 +8,8 @@ import {
     CalendarToday as CalendarIcon,
     Warning as WarningIcon,
     CheckCircle as CheckIcon,
+    Cancel as CancelIcon,
+    PendingActions as PendingIcon,
 } from '@mui/icons-material';
 import axiosInstance from '../axiosConfig';
 import './Vacations.css';
@@ -15,8 +17,13 @@ import { toast } from 'react-toastify';
 import VacationCalendar from '../components/VacationCalendar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import CancelVacationsModal from '../components/CancelVacationsModal';
+import PendingVacationsManager from '../components/PendingVacationsManager';
+import VacationRequestForm from '../components/VacationRequestForm';
+import { useAuth } from '../context/AuthContext';
 
 const Vacations = () => {
+    const { currentUser } = useAuth();
     const [vacations, setVacations] = useState([]);
     const [users, setUsers] = useState([]);
     const [usersWithDays, setUsersWithDays] = useState([]);
@@ -39,6 +46,14 @@ const Vacations = () => {
         date: '',
         type: ''
     });
+    const [cancelModal, setCancelModal] = useState({
+        isOpen: false,
+        user: null
+    });
+
+    // Estados para solicitudes pendientes y formulario de técnicos
+    const [showRequestForm, setShowRequestForm] = useState(false);
+    const [activeTab, setActiveTab] = useState('calendar'); // 'calendar', 'pending', 'request'
 
     useEffect(() => {
         fetchData();
@@ -182,6 +197,24 @@ const Vacations = () => {
         });
     };
 
+    const handleOpenCancelModal = (user) => {
+        setCancelModal({
+            isOpen: true,
+            user: user
+        });
+    };
+
+    const handleCloseCancelModal = () => {
+        setCancelModal({
+            isOpen: false,
+            user: null
+        });
+    };
+
+    const handleVacationsCancelled = () => {
+        fetchData(); // Recargar datos después de cancelar vacaciones
+    };
+
     const handleVacationClick = (vacation) => {
         setDeleteModal({
             isOpen: true,
@@ -256,299 +289,431 @@ const Vacations = () => {
             <header className="page-header">
                 <div className="header-title">
                     <VacationIcon />
-                    <h1>Gestión de Vacaciones</h1>
+                    <h1>
+                        {currentUser?.role === 'administrador'
+                            ? 'Gestión de Vacaciones'
+                            : 'Mis Vacaciones'
+                        }
+                    </h1>
                 </div>
                 <div className="header-info">
                     <span>Año {new Date().getFullYear()}</span>
+                    {currentUser?.role === 'tecnico' && (
+                        <button
+                            className="btn-primary"
+                            onClick={() => setShowRequestForm(true)}
+                        >
+                            <AddIcon />
+                            Nueva Solicitud
+                        </button>
+                    )}
                 </div>
             </header>
 
-            {/* Calendario de Vacaciones */}
-            <div className="calendar-section">
-                <h2>
-                    <CalendarIcon />
-                    Calendario de Vacaciones
-                </h2>
-                <p className="calendar-description">
-                    Haz clic en cualquier día para agregar una vacación o día extra trabajado.
-                    Haz clic en las burbujas de colores para eliminar vacaciones existentes.
-                </p>
-                <VacationCalendar
-                    vacations={vacations}
-                    onDateClick={handleDateClick}
-                    onVacationClick={handleVacationClick}
-                />
-            </div>
-
-            {/* Cards de Días Disponibles */}
-            <div className="users-days-section">
-                <h2>
-                    <PersonIcon />
-                    Días Disponibles por Persona
-                </h2>
-                <div className="users-days-grid">
-                    {usersWithDays.map(user => (
-                        <div key={user.id} className="user-days-card">
-                            <div className="user-days-header">
-                                <div className="user-avatar">
-                                    {user.photoUrl ? (
-                                        <img
-                                            src={user.photoUrl}
-                                            alt={user.fullName}
-                                            className="user-image"
-                                        />
-                                    ) : (
-                                        <div className="default-avatar">
-                                            {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="user-info">
-                                    <h3>{user.fullName}</h3>
-                                    <p>{user.email}</p>
-                                </div>
-                            </div>
-
-                            <div className="user-days-stats">
-                                <div className="days-stat">
-                                    <span className="stat-label">Total del año</span>
-                                    <span className="stat-value">{user.totalDays} días</span>
-                                </div>
-                                <div className="days-stat">
-                                    <span className="stat-label">Días usados</span>
-                                    <span className="stat-value">{user.usedRestDays} días</span>
-                                </div>
-                                <div className="days-stat">
-                                    <span className="stat-label">Días extra</span>
-                                    <span className="stat-value">+{user.extraWorkDays} días</span>
-                                </div>
-                                <div className={`days-stat available-days ${getDaysColor(user.availableDays)}`}>
-                                    <span className="stat-label">Disponibles</span>
-                                    <span className="stat-value">{user.availableDays} días</span>
-                                </div>
-                            </div>
-
-                            <div className="user-days-actions">
-                                <button
-                                    className="btn-rest-day"
-                                    onClick={() => {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            userId: user.id,
-                                            type: 'rest_day',
-                                            date: '',
-                                            endDate: '',
-                                            isRange: false
-                                        }));
-                                        setConflictingUsers([]);
-                                        setShowAddModal(true);
-                                    }}
-                                >
-                                    <VacationIcon />
-                                    Día de descanso
-                                </button>
-                                <button
-                                    className="btn-work-day"
-                                    onClick={() => {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            userId: user.id,
-                                            type: 'extra_work_day',
-                                            date: '',
-                                            endDate: '',
-                                            isRange: false
-                                        }));
-                                        setConflictingUsers([]);
-                                        setShowAddModal(true);
-                                    }}
-                                >
-                                    <WorkIcon />
-                                    Día extra
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Modal para agregar vacación */}
-            {showAddModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>
-                            {formData.type === 'rest_day' ? 'Agregar Día de Descanso' : 'Agregar Día Extra Trabajado'}
-                        </h2>
-
-                        {selectedDate && (
-                            <div className="selected-date-info">
-                                <CalendarIcon />
-                                <span>Fecha seleccionada: {formatDate(selectedDate)}</span>
-                            </div>
-                        )}
-
-                        {conflictingUsers.length > 0 && (
-                            <div className="conflicts-warning">
-                                <WarningIcon />
-                                <div>
-                                    <h4>
-                                        {formData.isRange
-                                            ? 'Personas que también estarán ausentes en el rango seleccionado:'
-                                            : 'Personas que también estarán ausentes este día:'
-                                        }
-                                    </h4>
-                                    <ul>
-                                        {conflictingUsers.map(conflict => (
-                                            <li key={conflict.id}>
-                                                {conflict.user.fullName}
-                                                {conflict.date && ` - ${formatDate(conflict.date)}`}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleAddVacation}>
-                            <div className="form-group">
-                                <label>
-                                    <PersonIcon /> Persona:
-                                </label>
-                                <select
-                                    value={formData.userId}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
-                                    required
-                                >
-                                    <option value="">Seleccionar persona</option>
-                                    {users.map(user => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.fullName}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>
-                                    <CalendarIcon /> Fecha de inicio:
-                                </label>
-                                <input
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={(e) => {
-                                        const newDate = e.target.value;
-                                        setFormData(prev => ({ ...prev, date: newDate }));
-                                        if (newDate) {
-                                            checkRangeConflicts(newDate, formData.endDate);
-                                        }
-                                    }}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label className="checkbox-label">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.isRange}
-                                        onChange={(e) => setFormData(prev => ({
-                                            ...prev,
-                                            isRange: e.target.checked,
-                                            endDate: e.target.checked ? prev.endDate : ''
-                                        }))}
-                                    />
-                                    Seleccionar rango de fechas (múltiples días consecutivos)
-                                </label>
-                            </div>
-
-                            {formData.isRange && (
-                                <div className="form-group">
-                                    <label>
-                                        <CalendarIcon /> Fecha de fin:
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={formData.endDate}
-                                        onChange={(e) => {
-                                            const newEndDate = e.target.value;
-                                            setFormData(prev => ({ ...prev, endDate: newEndDate }));
-                                            if (formData.date && newEndDate) {
-                                                checkRangeConflicts(formData.date, newEndDate);
-                                            }
-                                        }}
-                                        min={formData.date}
-                                        required={formData.isRange}
-                                    />
-                                    {formData.date && formData.endDate && (
-                                        <small className="date-range-info">
-                                            Se crearán {getDaysBetween(formData.date, formData.endDate)} día(s) de vacación
-                                        </small>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="form-group">
-                                <label>Tipo:</label>
-                                <div className="radio-group">
-                                    <label className="radio-option">
-                                        <input
-                                            type="radio"
-                                            value="rest_day"
-                                            checked={formData.type === 'rest_day'}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                                        />
-                                        <VacationIcon />
-                                        Día de descanso
-                                    </label>
-                                    <label className="radio-option">
-                                        <input
-                                            type="radio"
-                                            value="extra_work_day"
-                                            checked={formData.type === 'extra_work_day'}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                                        />
-                                        <WorkIcon />
-                                        Día extra trabajado
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Descripción (opcional):</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Motivo o descripción adicional..."
-                                    rows="3"
-                                />
-                            </div>
-
-                            <div className="modal-actions">
-                                <button type="submit" className="btn-primary">
-                                    <AddIcon />
-                                    {formData.type === 'rest_day' ? 'Agregar Descanso' : 'Agregar Día Extra'}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn-secondary"
-                                    onClick={handleCloseModal}
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+            {/* Navegación por pestañas para administradores */}
+            {currentUser?.role === 'administrador' && (
+                <div className="tabs-navigation">
+                    <button
+                        className={`tab-button ${activeTab === 'calendar' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('calendar')}
+                    >
+                        <CalendarIcon />
+                        Calendario
+                    </button>
+                    <button
+                        className={`tab-button ${activeTab === 'pending' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('pending')}
+                    >
+                        <PendingIcon />
+                        Solicitudes Pendientes
+                    </button>
                 </div>
             )}
 
-            {/* Modal de confirmación de eliminación */}
-            {deleteModal.isOpen && (
-                <DeleteConfirmationModal
-                    isOpen={deleteModal.isOpen}
-                    onClose={closeDeleteModal}
-                    onConfirm={handleDeleteVacation}
-                    itemName={`${deleteModal.userName} - ${deleteModal.date}`}
-                    title="Confirmar Eliminación de Vacación"
-                    message={`¿Estás seguro de que deseas eliminar este ${deleteModal.type} de ${deleteModal.userName} el ${deleteModal.date}?`}
+            {/* Contenido principal según rol y pestaña activa */}
+            {currentUser?.role === 'administrador' && activeTab === 'calendar' && (
+                <>
+                    {/* Calendario de Vacaciones */}
+                    <div className="calendar-section">
+                        <h2>
+                            <CalendarIcon />
+                            Calendario de Vacaciones
+                        </h2>
+                        <p className="calendar-description">
+                            Haz clic en cualquier día para agregar una vacación o día extra trabajado.
+                            Haz clic en las burbujas de colores para eliminar vacaciones existentes.
+                        </p>
+                        <VacationCalendar
+                            vacations={vacations}
+                            onDateClick={handleDateClick}
+                            onVacationClick={handleVacationClick}
+                        />
+                    </div>
+
+                    {/* Cards de Días Disponibles */}
+                    <div className="users-days-section">
+                        <h2>
+                            <PersonIcon />
+                            Días Disponibles por Persona
+                        </h2>
+                        <div className="users-days-grid">
+                            {usersWithDays.map(user => (
+                                <div key={user.id} className="user-days-card">
+                                    <div className="user-days-header">
+                                        <div className="user-avatar">
+                                            {user.photoUrl ? (
+                                                <img
+                                                    src={user.photoUrl}
+                                                    alt={user.fullName}
+                                                    className="user-image"
+                                                />
+                                            ) : (
+                                                <div className="default-avatar">
+                                                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="user-info">
+                                            <h3>{user.fullName}</h3>
+                                            <p>{user.email}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="user-days-stats">
+                                        <div className="days-stat">
+                                            <span className="stat-label">Total del año</span>
+                                            <span className="stat-value">{user.totalDays} días</span>
+                                        </div>
+                                        <div className="days-stat">
+                                            <span className="stat-label">Días usados</span>
+                                            <span className="stat-value">{user.usedRestDays} días</span>
+                                        </div>
+                                        <div className="days-stat">
+                                            <span className="stat-label">Días extra</span>
+                                            <span className="stat-value">+{user.extraWorkDays} días</span>
+                                        </div>
+                                        <div className={`days-stat available-days ${getDaysColor(user.availableDays)}`}>
+                                            <span className="stat-label">Disponibles</span>
+                                            <span className="stat-value">{user.availableDays} días</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="user-days-actions">
+                                        <button
+                                            className="btn-rest-day"
+                                            onClick={() => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    userId: user.id,
+                                                    type: 'rest_day',
+                                                    date: '',
+                                                    endDate: '',
+                                                    isRange: false
+                                                }));
+                                                setConflictingUsers([]);
+                                                setShowAddModal(true);
+                                            }}
+                                        >
+                                            <VacationIcon />
+                                            Día de descanso
+                                        </button>
+                                        <button
+                                            className="btn-work-day"
+                                            onClick={() => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    userId: user.id,
+                                                    type: 'extra_work_day',
+                                                    date: '',
+                                                    endDate: '',
+                                                    isRange: false
+                                                }));
+                                                setConflictingUsers([]);
+                                                setShowAddModal(true);
+                                            }}
+                                        >
+                                            <WorkIcon />
+                                            Día extra
+                                        </button>
+                                        {user.usedRestDays > 0 && (
+                                            <button
+                                                className="btn-cancel-vacations"
+                                                onClick={() => handleOpenCancelModal(user)}
+                                            >
+                                                <CancelIcon />
+                                                Cancelar vacaciones
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Modal para agregar vacación */}
+                    {showAddModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                <h2>
+                                    {formData.type === 'rest_day' ? 'Agregar Día de Descanso' : 'Agregar Día Extra Trabajado'}
+                                </h2>
+
+                                {selectedDate && (
+                                    <div className="selected-date-info">
+                                        <CalendarIcon />
+                                        <span>Fecha seleccionada: {formatDate(selectedDate)}</span>
+                                    </div>
+                                )}
+
+                                {conflictingUsers.length > 0 && (
+                                    <div className="conflicts-warning">
+                                        <WarningIcon />
+                                        <div>
+                                            <h4>
+                                                {formData.isRange
+                                                    ? 'Personas que también estarán ausentes en el rango seleccionado:'
+                                                    : 'Personas que también estarán ausentes este día:'
+                                                }
+                                            </h4>
+                                            <ul>
+                                                {conflictingUsers.map(conflict => (
+                                                    <li key={conflict.id}>
+                                                        {conflict.user.fullName}
+                                                        {conflict.date && ` - ${formatDate(conflict.date)}`}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleAddVacation}>
+                                    <div className="form-group">
+                                        <label>
+                                            <PersonIcon /> Persona:
+                                        </label>
+                                        <select
+                                            value={formData.userId}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
+                                            required
+                                        >
+                                            <option value="">Seleccionar persona</option>
+                                            {users.map(user => (
+                                                <option key={user.id} value={user.id}>
+                                                    {user.fullName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>
+                                            <CalendarIcon /> Fecha de inicio:
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={formData.date}
+                                            onChange={(e) => {
+                                                const newDate = e.target.value;
+                                                setFormData(prev => ({ ...prev, date: newDate }));
+                                                if (newDate) {
+                                                    checkRangeConflicts(newDate, formData.endDate);
+                                                }
+                                            }}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <div className="range-toggle-container">
+                                            <input
+                                                type="checkbox"
+                                                id="rangeToggle"
+                                                className="range-toggle-input"
+                                                checked={formData.isRange}
+                                                onChange={(e) => setFormData(prev => ({
+                                                    ...prev,
+                                                    isRange: e.target.checked,
+                                                    endDate: e.target.checked ? prev.endDate : ''
+                                                }))}
+                                            />
+                                            <label htmlFor="rangeToggle" className="range-toggle-card">
+                                                <div className="toggle-indicator">
+                                                    <CalendarIcon />
+                                                </div>
+                                                <div className="toggle-content">
+                                                    <h4>Múltiples días consecutivos</h4>
+                                                    <p>Crea varias vacaciones en un rango de fechas</p>
+                                                </div>
+                                                <div className="toggle-switch">
+                                                    <div className="switch-slider"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {formData.isRange && (
+                                        <div className="form-group">
+                                            <label>
+                                                <CalendarIcon /> Fecha de fin:
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={formData.endDate}
+                                                onChange={(e) => {
+                                                    const newEndDate = e.target.value;
+                                                    setFormData(prev => ({ ...prev, endDate: newEndDate }));
+                                                    if (formData.date && newEndDate) {
+                                                        checkRangeConflicts(formData.date, newEndDate);
+                                                    }
+                                                }}
+                                                min={formData.date}
+                                                required={formData.isRange}
+                                            />
+                                            {formData.date && formData.endDate && (
+                                                <small className="date-range-info">
+                                                    Se crearán {getDaysBetween(formData.date, formData.endDate)} día(s) de vacación
+                                                </small>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="form-group">
+                                        <div className="type-selector-container">
+                                            <h3 className="type-selector-title">Selecciona el tipo de vacación:</h3>
+
+                                            <div className="type-options">
+                                                <input
+                                                    type="radio"
+                                                    id="restDay"
+                                                    name="vacationType"
+                                                    value="rest_day"
+                                                    className="type-radio-input"
+                                                    checked={formData.type === 'rest_day'}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                                                />
+                                                <label htmlFor="restDay" className="type-option-card">
+                                                    <div className="type-indicator type-rest">
+                                                        <VacationIcon />
+                                                    </div>
+                                                    <div className="type-content">
+                                                        <h4>Día de descanso</h4>
+                                                        <p>Solicita un día libre o vacaciones</p>
+                                                    </div>
+                                                    <div className="type-check">
+                                                        <CheckIcon />
+                                                    </div>
+                                                </label>
+
+                                                <input
+                                                    type="radio"
+                                                    id="workDay"
+                                                    name="vacationType"
+                                                    value="extra_work_day"
+                                                    className="type-radio-input"
+                                                    checked={formData.type === 'extra_work_day'}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                                                />
+                                                <label htmlFor="workDay" className="type-option-card">
+                                                    <div className="type-indicator type-work">
+                                                        <WorkIcon />
+                                                    </div>
+                                                    <div className="type-content">
+                                                        <h4>Día extra trabajado</h4>
+                                                        <p>Registra un día extra de trabajo</p>
+                                                    </div>
+                                                    <div className="type-check">
+                                                        <CheckIcon />
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Descripción (opcional):</label>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                                            placeholder="Motivo o descripción adicional..."
+                                            rows="3"
+                                        />
+                                    </div>
+
+                                    <div className="modal-actions">
+                                        <button type="submit" className="btn-primary">
+                                            <AddIcon />
+                                            {formData.type === 'rest_day' ? 'Agregar Descanso' : 'Agregar Día Extra'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            onClick={handleCloseModal}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modal de confirmación de eliminación */}
+                    {deleteModal.isOpen && (
+                        <DeleteConfirmationModal
+                            isOpen={deleteModal.isOpen}
+                            onClose={closeDeleteModal}
+                            onConfirm={handleDeleteVacation}
+                            itemName={`${deleteModal.userName} - ${deleteModal.date}`}
+                            title="Confirmar Eliminación de Vacación"
+                            message={`¿Estás seguro de que deseas eliminar este ${deleteModal.type} de ${deleteModal.userName} el ${deleteModal.date}?`}
+                        />
+                    )}
+
+                    {/* Modal de cancelación de vacaciones */}
+                    {cancelModal.isOpen && (
+                        <CancelVacationsModal
+                            isOpen={cancelModal.isOpen}
+                            onClose={handleCloseCancelModal}
+                            user={cancelModal.user}
+                            onVacationsDeleted={handleVacationsCancelled}
+                        />
+                    )}
+                </>
+            )}
+
+            {/* Pestaña de solicitudes pendientes para administradores */}
+            {currentUser?.role === 'administrador' && activeTab === 'pending' && (
+                <PendingVacationsManager onUpdate={fetchData} />
+            )}
+
+            {/* Vista para técnicos - Solo calendario personal */}
+            {currentUser?.role === 'tecnico' && (
+                <div className="calendar-section">
+                    <h2>
+                        <CalendarIcon />
+                        Mi Calendario de Vacaciones
+                    </h2>
+                    <p className="calendar-description">
+                        Consulta el estado de tus solicitudes de vacaciones.
+                        Las solicitudes aprobadas aparecen en el calendario.
+                    </p>
+                    <VacationCalendar
+                        vacations={vacations.filter(v => v.userId === currentUser.id)}
+                        isPersonal={true}
+                        showOnlyOwnVacations={true}
+                        currentUserId={currentUser.id}
+                    />
+                </div>
+            )}
+
+            {/* Modal de solicitud para técnicos */}
+            {showRequestForm && currentUser?.role === 'tecnico' && (
+                <VacationRequestForm
+                    onClose={() => {
+                        setShowRequestForm(false);
+                        fetchData(); // Refrescar datos después de crear solicitud
+                    }}
                 />
             )}
         </div>

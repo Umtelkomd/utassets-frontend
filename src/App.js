@@ -36,6 +36,7 @@ import RentalTypeSelection from './pages/RentalTypeSelection';
 import VehicleRentalForm from './pages/VehicleRentalForm';
 import HousingRentalForm from './pages/HousingRentalForm';
 import InventoryRentalForm from './pages/InventoryRentalForm';
+import AuthCallback from './pages/AuthCallback';
 
 // Contextos
 import { AuthProvider } from './context/AuthContext';
@@ -71,6 +72,7 @@ function App() {
             <Route path="/access-denied" element={<AccessDenied />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Ruta principal (Dashboard) */}
             <Route 

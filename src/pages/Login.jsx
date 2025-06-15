@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import '../pages/Login.css';
 
 const Login = () => {
@@ -37,6 +38,22 @@ const Login = () => {
             });
         } else if (urlParams.get('session') === 'expired') {
             toast.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
+        } else if (urlParams.get('google_auth') === 'success') {
+            toast.success('¡Autenticación con Google exitosa!', {
+                position: 'top-right',
+                autoClose: 3000,
+            });
+            navigate('/dashboard');
+        } else if (urlParams.get('error') === 'google_auth_failed') {
+            toast.error('Error en la autenticación con Google. Inténtalo de nuevo.', {
+                position: 'top-right',
+                autoClose: 5000,
+            });
+        } else if (urlParams.get('error') === 'server_error') {
+            toast.error('Error del servidor. Inténtalo más tarde.', {
                 position: 'top-right',
                 autoClose: 5000,
             });
@@ -154,6 +171,15 @@ const Login = () => {
                 </div>
                 <div className="login-form-container">
                     <h2>Iniciar Sesión</h2>
+
+                    {/* Botón de Google OAuth */}
+                    <GoogleLoginButton isSubmitting={isSubmitting} />
+
+                    {/* Separador */}
+                    <div className="auth-divider">
+                        <span>o</span>
+                    </div>
+
                     <form className="login-form" onSubmit={handleSubmit} noValidate>
                         {errors.general && (
                             <div className="error-message general-error">

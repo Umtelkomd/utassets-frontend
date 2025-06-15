@@ -16,7 +16,6 @@ import {
     Category as CategoryIcon,
     LocationOn as LocationOnIcon,
     DirectionsCar as DirectionsCarIcon,
-    Map as MapIcon,
     Add as AddIcon,
     DonutLarge as DonutLargeIcon,
     ArrowForward as ArrowForwardIcon,
@@ -42,11 +41,9 @@ const Dashboard = () => {
         itemsByCategory: [],
         itemsByCondition: [],
         itemsByLocation: [],
-        recentItems: [],
         totalVehicles: 0,
         vehiclesByStatus: [],
         vehiclesNeedingMaintenance: 0,
-        recentVehicles: [],
         totalUsers: 0,
         recentUsers: []
     });
@@ -126,9 +123,7 @@ const Dashboard = () => {
                     return { location, count };
                 }).sort((a, b) => b.count - a.count);
 
-                const recentItems = [...items]
-                    .sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0))
-                    .slice(0, 5);
+
 
                 const totalVehicles = vehicles.length;
 
@@ -142,18 +137,7 @@ const Dashboard = () => {
                     vehicle => vehicle.vehicleStatus && vehicle.vehicleStatus !== 'Operativo'
                 ).length;
 
-                const recentVehicles = [...vehicles]
-                    .sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0))
-                    .slice(0, 5)
-                    .map(vehicle => ({
-                        ...vehicle,
-                        _id: vehicle._id || vehicle.licensePlate || `vehicle-${Math.random().toString(36).substr(2, 9)}`,
-                        licensePlate: vehicle.licensePlate || vehicle.license_plate || vehicle.placa || 'N/A',
-                        brand: vehicle.brand || 'N/A',
-                        model: vehicle.model || 'N/A',
-                        vehicleStatus: vehicle.vehicleStatus || vehicle.condition || 'Desconocido',
-                        location: vehicle.location || 'No especificada'
-                    }));
+
 
                 setStats({
                     totalItems,
@@ -162,11 +146,9 @@ const Dashboard = () => {
                     itemsByCategory,
                     itemsByCondition,
                     itemsByLocation,
-                    recentItems,
                     totalVehicles,
                     vehiclesByStatus,
                     vehiclesNeedingMaintenance,
-                    recentVehicles,
                     totalUsers: users.length,
                     recentUsers: users.slice(0, 5)
                 });
@@ -189,87 +171,7 @@ const Dashboard = () => {
         );
     }
 
-    /* Ubicaciones importantes para la empresa */
-    const companyLocations = [
-        {
-            country: 'Colombia',
-            city: 'Manizales',
-            name: 'Oficina Central',
-            description: 'Sede principal de la empresa',
-            coordinates: { lat: 5.0689, lng: -75.5174 },
-            address: 'Calle 23 # 23-23'
-        },
-        {
-            country: 'Colombia',
-            city: 'Manizales',
-            name: 'Taller de Mantenimiento',
-            description: 'Centro de reparación y mantenimiento',
-            coordinates: { lat: 5.0689, lng: -75.5174 },
-            address: 'Calle 24 # 24-24'
-        },
-        {
-            country: 'Colombia',
-            city: 'Bogotá',
-            name: 'Oficina Central',
-            description: 'Sede principal de la empresa',
-            coordinates: { lat: 4.6097, lng: -74.0845 },
-            address: 'Carrera 7 # 7-7'
-        },
-        {
-            country: 'Colombia',
-            city: 'Bogotá',
-            name: 'Almacén de Suministros',
-            description: 'Depósito de materiales y herramientas',
-            coordinates: { lat: 4.6097, lng: -74.0845 },
-            address: 'Carrera 8 # 8-8'
-        },
-        {
-            country: 'Alemania',
-            city: 'Berlín',
-            name: 'Oficina Central',
-            description: 'Sede principal en Europa',
-            coordinates: { lat: 52.5200, lng: 13.4050 },
-            address: 'Unter den Linden 1'
-        },
-        {
-            country: 'Alemania',
-            city: 'Berlín',
-            name: 'Centro de Distribución',
-            description: 'Centro logístico principal',
-            coordinates: { lat: 52.5200, lng: 13.4050 },
-            address: 'Friedrichstraße 2'
-        },
-        {
-            country: 'Alemania',
-            city: 'Múnich',
-            name: 'Oficina Regional',
-            description: 'Sede regional sur de Alemania',
-            coordinates: { lat: 48.1351, lng: 11.5820 },
-            address: 'Marienplatz 1'
-        }
-    ];
 
-    // Agrupar ubicaciones por país y ciudad
-    const locationsByCountry = companyLocations.reduce((acc, location) => {
-        const country = location.country || 'Desconocido';
-        const city = location.city || 'Desconocida';
-        if (!acc[country]) {
-            acc[country] = {};
-        }
-        if (!acc[country][city]) {
-            acc[country][city] = [];
-        }
-        acc[country][city].push(location);
-        return acc;
-    }, {});
-
-    const getGoogleMapsLink = (location) => {
-        if (!location.coordinates || typeof location.coordinates.lat !== 'number' || typeof location.coordinates.lng !== 'number') {
-
-            return '#'; // Evitar error si no hay coordenadas
-        }
-        return `https://www.google.com/maps/dir/?api=1&destination=${location.coordinates.lat},${location.coordinates.lng}`;
-    };
 
     // Función para obtener colores sólidos para las categorías
     const getCategoryColor = (index) => {
@@ -582,149 +484,10 @@ const Dashboard = () => {
                             </div>
                         )}
 
-                        {/* Items recientes */}
-                        {stats.recentItems && stats.recentItems.length > 0 && (
-                            <div className="dashboard-card recent-items-container">
-                                <div className="card-header">
-                                    <h3>
-                                        <InventoryIcon />
-                                        Items Recientes
-                                    </h3>
-                                    <Link to="/inventory" className="view-all-link">
-                                        Ver todos
-                                    </Link>
-                                </div>
-                                <div className="items-cards-grid">
-                                    {stats.recentItems.map((item, index) => (
-                                        <div className="item-card" key={item._id || item.code || `item-${index}`}>
-                                            <div className="item-card-image">
-                                                {item.photoUrl ? (
-                                                    <img
-                                                        src={item.photoUrl}
-                                                        alt={item.itemName}
-                                                        className="item-image"
-                                                    />
-                                                ) : (
-                                                    <div className="item-image-placeholder">
-                                                        <InventoryIcon />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="item-card-content">
-                                                <h4 className="item-name">{item.itemName || 'N/A'}</h4>
-                                                <div className="item-details">
-                                                    <span className="item-category">{item.category || 'Sin categoría'}</span>
-                                                    <span className={`status-badge ${getStatusClass(item.condition)}`}>
-                                                        {item.condition || 'N/A'}
-                                                    </span>
-                                                </div>
-                                                <div className="item-location">
-                                                    <LocationOnIcon className="location-icon-small" />
-                                                    <span>{item.location || 'Sin ubicación'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Vehículos recientes */}
-                        {stats.recentVehicles && stats.recentVehicles.length > 0 && (
-                            <div className="dashboard-card recent-vehicles">
-                                <div className="card-header">
-                                    <h3>
-                                        <DirectionsCarIcon />
-                                        Vehículos Recientes
-                                    </h3>
-                                    <Link to="/vehicles" className="view-all-link">
-                                        Ver todos
-                                    </Link>
-                                </div>
-                                <div className="items-cards-grid">
-                                    {stats.recentVehicles.map((vehicle, index) => (
-                                        <div className="item-card" key={vehicle._id || vehicle.licensePlate || `vehicle-${index}`}>
-                                            <div className="item-card-image">
-                                                {vehicle.photoUrl ? (
-                                                    <img
-                                                        src={vehicle.photoUrl}
-                                                        alt={`${vehicle.brand} ${vehicle.model}`}
-                                                        className="vehicle-image"
-                                                    />
-                                                ) : (
-                                                    <div className="item-image-placeholder">
-                                                        <DirectionsCarIcon />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="item-card-content">
-                                                <h4 className="item-name">{vehicle.brand} {vehicle.model}</h4>
-                                                <div className="item-details">
-                                                    <span className="item-category">{vehicle.licensePlate || 'N/A'}</span>
-                                                    <span className={`status-badge ${getVehicleStatusClass(vehicle.vehicleStatus)}`}>
-                                                        {vehicle.vehicleStatus}
-                                                    </span>
-                                                </div>
-                                                <div className="item-location">
-                                                    <LocationOnIcon className="location-icon-small" />
-                                                    <span>{vehicle.location || 'Sin ubicación'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
                     </div>
 
-                    {/* Ubicaciones importantes */}
-                    {companyLocations && companyLocations.length > 0 && (
-                        <div className="dashboard-card locations-section">
-                            <div className="card-header">
-                                <h3>
-                                    <MapIcon />
-                                    Ubicaciones Importantes
-                                </h3>
-                            </div>
-                            <div className="locations-container">
-                                {Object.entries(locationsByCountry).map(([country, cities]) => (
-                                    <div key={country} className="country-group">
-                                        <h3 className="country-name">{country}</h3>
-                                        {Object.entries(cities).map(([city, locations]) => (
-                                            <div key={city} className="city-group">
-                                                <h4 className="city-name">{city}</h4>
-                                                <div className="city-locations">
-                                                    {locations.map((location, index) => (
-                                                        <a
-                                                            key={`${location.name}-${index}`}
-                                                            href={getGoogleMapsLink(location)}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="location-tile"
-                                                            title={`Abrir ${location.name} en Google Maps`}
-                                                        >
-                                                            <div className="location-tile-content">
-                                                                <div className="location-tile-header">
-                                                                    <LocationOnIcon className="location-icon" />
-                                                                    <div className="location-tile-info">
-                                                                        <h4>{location.name || 'Nombre no disponible'}</h4>
-                                                                        <p>{location.description || 'Sin descripción'}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="location-tile-address">
-                                                                    <span>{location.address || 'Dirección no disponible'}</span>
-                                                                </div>
-                                                            </div>
-                                                        </a>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+
                 </>
             )}
         </div>

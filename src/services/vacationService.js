@@ -49,7 +49,7 @@ export const vacationService = {
         }
     },
 
-    // Crear una nueva vacación (puede ser múltiples días)
+    // Crear una nueva vacación/solicitud (puede ser múltiples días)
     createVacation: async (vacationData) => {
         try {
             const response = await axiosInstance.post('/vacations', vacationData);
@@ -67,6 +67,19 @@ export const vacationService = {
             return response.data;
         } catch (error) {
             console.error('Error al eliminar vacación:', error);
+            throw error;
+        }
+    },
+
+    // Eliminar múltiples vacaciones
+    deleteBulkVacations: async (vacationIds) => {
+        try {
+            const response = await axiosInstance.delete('/vacations/bulk/multiple', {
+                data: { vacationIds }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error al eliminar vacaciones múltiples:', error);
             throw error;
         }
     },
@@ -91,6 +104,57 @@ export const vacationService = {
             return response.data;
         } catch (error) {
             console.error('Error al obtener vacaciones por rango de fechas:', error);
+            throw error;
+        }
+    },
+
+    // ========== NUEVAS FUNCIONES PARA GESTIÓN DE SOLICITUDES ==========
+
+    // Obtener solicitudes de vacaciones pendientes (solo para administradores)
+    getPendingVacations: async (year = null) => {
+        try {
+            const params = year ? { year } : {};
+            const response = await axiosInstance.get('/vacations/pending', { params });
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener solicitudes pendientes:', error);
+            throw error;
+        }
+    },
+
+    // Aprobar una solicitud de vacación
+    approveVacation: async (vacationId) => {
+        try {
+            const response = await axiosInstance.put(`/vacations/${vacationId}/approve`);
+            return response.data;
+        } catch (error) {
+            console.error('Error al aprobar vacación:', error);
+            throw error;
+        }
+    },
+
+    // Rechazar una solicitud de vacación
+    rejectVacation: async (vacationId, reason = '') => {
+        try {
+            const response = await axiosInstance.delete(`/vacations/${vacationId}/reject`, {
+                data: { reason }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error al rechazar vacación:', error);
+            throw error;
+        }
+    },
+
+    // Aprobar múltiples solicitudes de vacación
+    approveBulkVacations: async (vacationIds) => {
+        try {
+            const response = await axiosInstance.put('/vacations/approve/bulk', {
+                vacationIds
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error al aprobar vacaciones múltiples:', error);
             throw error;
         }
     }

@@ -10,6 +10,7 @@ const isProduction = false; // Forzar mostrar logs siempre
 const instance = axios.create({
   baseURL: API_URL,
   timeout: 15000, // 15 segundos de timeout
+  withCredentials: true, // Habilitar cookies
   headers: {
     'Content-Type': 'application/json',
   },

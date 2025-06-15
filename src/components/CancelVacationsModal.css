@@ -1,0 +1,305 @@
+.cancel-vacations-modal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.cancel-vacations-modal .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e6ed;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.cancel-vacations-modal .modal-header h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2c3e50;
+    font-size: 1.3rem;
+}
+
+.cancel-vacations-modal .modal-header h2 svg {
+    color: #e74c3c;
+}
+
+.cancel-vacations-modal .close-button {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.cancel-vacations-modal .close-button:hover {
+    background: #f1f3f4;
+    color: #495057;
+}
+
+.cancel-vacations-modal .modal-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.cancel-vacations-modal .loading-message {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+.cancel-vacations-modal .no-vacations-message {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+.cancel-vacations-modal .no-vacations-message svg {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 16px;
+}
+
+.cancel-vacations-modal .vacations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.cancel-vacations-modal .vacations-header p {
+    margin: 0;
+    color: #495057;
+    font-weight: 500;
+}
+
+.cancel-vacations-modal .select-all-button {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #495057;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.cancel-vacations-modal .select-all-button:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.cancel-vacations-modal .vacations-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.cancel-vacations-modal .vacation-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.cancel-vacations-modal .vacation-item:hover {
+    border-color: #dee2e6;
+    background: #f8f9fa;
+}
+
+.cancel-vacations-modal .vacation-item.selected {
+    border-color: #e74c3c;
+    background: #fff5f5;
+}
+
+.cancel-vacations-modal .vacation-checkbox {
+    margin-top: 2px;
+}
+
+.cancel-vacations-modal .vacation-checkbox svg {
+    color: #6c757d;
+    transition: color 0.2s;
+}
+
+.cancel-vacations-modal .vacation-checkbox svg.checked {
+    color: #e74c3c;
+}
+
+.cancel-vacations-modal .vacation-info {
+    flex: 1;
+}
+
+.cancel-vacations-modal .vacation-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.cancel-vacations-modal .vacation-date svg {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.cancel-vacations-modal .vacation-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #495057;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.cancel-vacations-modal .vacation-type svg {
+    font-size: 1rem;
+}
+
+.cancel-vacations-modal .vacation-description {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    border-left: 3px solid #dee2e6;
+}
+
+.cancel-vacations-modal .selection-summary {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+    margin-bottom: 20px;
+}
+
+.cancel-vacations-modal .selection-summary p {
+    margin: 0;
+    color: #495057;
+    font-weight: 500;
+}
+
+.cancel-vacations-modal .modal-actions {
+    padding: 20px;
+    border-top: 1px solid #e0e6ed;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #f8f9fa;
+}
+
+.cancel-vacations-modal .btn-delete {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.cancel-vacations-modal .btn-delete:hover:not(:disabled) {
+    background: #c0392b;
+    transform: translateY(-1px);
+}
+
+.cancel-vacations-modal .btn-delete:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.cancel-vacations-modal .btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.cancel-vacations-modal .btn-secondary:hover:not(:disabled) {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.cancel-vacations-modal .btn-secondary:disabled {
+    background: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Scrollbar personalizada para la lista de vacaciones */
+.cancel-vacations-modal .vacations-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cancel-vacations-modal .vacations-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.cancel-vacations-modal .vacations-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.cancel-vacations-modal .vacations-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cancel-vacations-modal {
+        max-width: 95%;
+        max-height: 90vh;
+    }
+    
+    .cancel-vacations-modal .modal-header,
+    .cancel-vacations-modal .modal-body,
+    .cancel-vacations-modal .modal-actions {
+        padding: 15px;
+    }
+    
+    .cancel-vacations-modal .vacations-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .cancel-vacations-modal .vacation-item {
+        padding: 12px;
+    }
+    
+    .cancel-vacations-modal .modal-actions {
+        flex-direction: column;
+    }
+} 

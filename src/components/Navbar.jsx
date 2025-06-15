@@ -37,6 +37,7 @@ const Navbar = () => {
     const [assetsMenuOpen, setAssetsMenuOpen] = useState(false);
     const [maintenanceMenuOpen, setMaintenanceMenuOpen] = useState(false);
     const [projectsMenuOpen, setProjectsMenuOpen] = useState(false);
+    const [hrMenuOpen, setHrMenuOpen] = useState(false);
 
     const { currentUser, logout } = useAuth();
     const { hasPermission, userRole } = usePermissions();
@@ -48,12 +49,14 @@ const Navbar = () => {
     const toggleAssetsMenu = () => setAssetsMenuOpen(!assetsMenuOpen);
     const toggleMaintenanceMenu = () => setMaintenanceMenuOpen(!maintenanceMenuOpen);
     const toggleProjectsMenu = () => setProjectsMenuOpen(!projectsMenuOpen);
+    const toggleHrMenu = () => setHrMenuOpen(!hrMenuOpen);
 
     const closeMenu = () => setIsOpen(false);
     const closeAllSubmenus = () => {
         setAssetsMenuOpen(false);
         setMaintenanceMenuOpen(false);
         setProjectsMenuOpen(false);
+        setHrMenuOpen(false);
     };
 
     const handleLogout = async () => {
@@ -94,8 +97,7 @@ const Navbar = () => {
                         closeAllSubmenus();
                     }}
                 >
-                    <HomeIcon className="nav-icon" />
-                    <span>Inicio</span>
+                    <HomeIcon className="nav-icon home-icon" />
                 </Link>
 
                 {/* Menú desplegable de Activos */}
@@ -106,6 +108,7 @@ const Navbar = () => {
                             toggleAssetsMenu();
                             setMaintenanceMenuOpen(false);
                             setProjectsMenuOpen(false);
+                            setHrMenuOpen(false);
                         }}
                     >
                         <CategoryIcon className="nav-icon" />
@@ -152,6 +155,59 @@ const Navbar = () => {
                     )}
                 </div>
 
+                {/* Menú desplegable de Recursos Humanos */}
+                {(hasPermission('canAccessSettings') || hasPermission('canManageVacations')) && (
+                    <div className={`navbar-dropdown ${isActive('/users') || isActive('/vacations') ? 'active' : ''}`}>
+                        <div
+                            className="navbar-dropdown-trigger"
+                            onClick={() => {
+                                toggleHrMenu();
+                                setAssetsMenuOpen(false);
+                                setMaintenanceMenuOpen(false);
+                                setProjectsMenuOpen(false);
+                            }}
+                        >
+                            <PeopleIcon className="nav-icon" />
+                            <span>Recursos Humanos</span>
+                            {hrMenuOpen ? <KeyboardArrowUpIcon className="dropdown-arrow" /> : <KeyboardArrowDownIcon className="dropdown-arrow" />}
+                        </div>
+
+                        {hrMenuOpen && (
+                            <div className="navbar-dropdown-menu">
+                                {/* Opción de Personal - Solo para administradores */}
+                                {hasPermission('canAccessSettings') && (
+                                    <Link
+                                        to="/users"
+                                        className={`dropdown-item ${isActive('/users') ? 'active' : ''}`}
+                                        onClick={() => {
+                                            closeMenu();
+                                            setHrMenuOpen(false);
+                                        }}
+                                    >
+                                        <PeopleIcon className="dropdown-icon" />
+                                        <span>Personal</span>
+                                    </Link>
+                                )}
+
+                                {/* Opción de Vacaciones - Solo para administradores */}
+                                {hasPermission('canManageVacations') && (
+                                    <Link
+                                        to="/vacations"
+                                        className={`dropdown-item ${isActive('/vacations') ? 'active' : ''}`}
+                                        onClick={() => {
+                                            closeMenu();
+                                            setHrMenuOpen(false);
+                                        }}
+                                    >
+                                        <BeachAccessIcon className="dropdown-icon" />
+                                        <span>Vacaciones</span>
+                                    </Link>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Alquileres - Solo para administradores */}
                 {hasPermission('canViewAllRentals') && (
                     <Link
@@ -173,30 +229,6 @@ const Navbar = () => {
                     >
                         <AssignmentIcon className="nav-icon" />
                         <span>Proyectos</span>
-                    </Link>
-                )}
-
-                {/* Opción de Usuarios - Solo para administradores */}
-                {hasPermission('canAccessSettings') && (
-                    <Link
-                        to="/users"
-                        className={`navbar-item ${isActive('/users') ? 'active' : ''}`}
-                        onClick={closeMenu}
-                    >
-                        <PeopleIcon className="nav-icon" />
-                        <span>Personal</span>
-                    </Link>
-                )}
-
-                {/* Opción de Vacaciones - Solo para administradores */}
-                {hasPermission('canManageVacations') && (
-                    <Link
-                        to="/vacations"
-                        className={`navbar-item ${isActive('/vacations') ? 'active' : ''}`}
-                        onClick={closeMenu}
-                    >
-                        <BeachAccessIcon className="nav-icon" />
-                        <span>Vacaciones</span>
                     </Link>
                 )}
             </div>
