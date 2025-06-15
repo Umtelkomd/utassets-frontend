@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import './VacationRequestForm.css';
 
-const VacationRequestForm = ({ onClose, selectedDate = null }) => {
+const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false }) => {
     const { currentUser } = useAuth();
     const [availableDays, setAvailableDays] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -50,7 +50,8 @@ const VacationRequestForm = ({ onClose, selectedDate = null }) => {
     };
 
     const checkConflicts = async () => {
-        if (!formData.date || formData.type !== 'rest_day') {
+        // No verificar conflictos en modo personal
+        if (isPersonal || !formData.date || formData.type !== 'rest_day') {
             setConflicts([]);
             return;
         }
@@ -304,8 +305,8 @@ const VacationRequestForm = ({ onClose, selectedDate = null }) => {
                         />
                     </div>
 
-                    {/* Conflictos */}
-                    {conflicts.length > 0 && formData.type === 'rest_day' && (
+                    {/* Conflictos - Solo mostrar en vista administrativa, no en perfil personal */}
+                    {!isPersonal && conflicts.length > 0 && formData.type === 'rest_day' && (
                         <div className="conflicts-warning">
                             <WarningIcon />
                             <div>

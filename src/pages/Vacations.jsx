@@ -77,7 +77,10 @@ const Vacations = () => {
 
     const fetchVacations = async () => {
         try {
-            const response = await axiosInstance.get('/vacations');
+            // Para el calendario, solo obtener vacaciones completamente aprobadas
+            const response = await axiosInstance.get('/vacations', {
+                params: { onlyApproved: 'true' }
+            });
             setVacations(response.data);
         } catch (error) {
             console.error('Error al cargar vacaciones:', error);

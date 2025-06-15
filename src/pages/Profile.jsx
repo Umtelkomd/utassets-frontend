@@ -692,12 +692,6 @@ const Profile = () => {
                                             )}
                                         </div>
                                     ))}
-
-                                    {vacations.length > 10 && (
-                                        <div className="show-more">
-                                            <p>Mostrando las 10 solicitudes más recientes de {vacations.length} totales</p>
-                                        </div>
-                                    )}
                                 </div>
                             )}
                         </div>
@@ -731,6 +725,7 @@ const Profile = () => {
                     <VacationRequestForm
                         onClose={handleVacationFormClose}
                         selectedDate={selectedVacationDate}
+                        isPersonal={true}
                     />
                 )}
             </div>

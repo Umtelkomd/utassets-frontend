@@ -8,7 +8,14 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import PersonIcon from '@mui/icons-material/Person';
 
-const VacationCalendar = ({ vacations = [], onDateClick, onVacationClick }) => {
+const VacationCalendar = ({
+    vacations = [],
+    onDateClick,
+    onVacationClick,
+    isPersonal = false,
+    showOnlyOwnVacations = false,
+    currentUserId = null
+}) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [hoveredVacation, setHoveredVacation] = useState(null);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -87,10 +94,17 @@ const VacationCalendar = ({ vacations = [], onDateClick, onVacationClick }) => {
         // Días del mes actual
         for (let day = 1; day <= daysInMonth; day++) {
             const currentDay = new Date(year, month, day);
-            const dayVacations = vacations.filter(vacation => {
+            let dayVacations = vacations.filter(vacation => {
                 const vacationDate = new Date(vacation.date);
                 return currentDay.toDateString() === vacationDate.toDateString();
             });
+
+            // Filtrar vacaciones si está en modo personal
+            if (isPersonal && showOnlyOwnVacations && currentUserId) {
+                dayVacations = dayVacations.filter(vacation =>
+                    vacation.userId === currentUserId || vacation.user?.id === currentUserId
+                );
+            }
 
             days.push({
                 date: currentDay,
@@ -259,7 +273,10 @@ const VacationCalendar = ({ vacations = [], onDateClick, onVacationClick }) => {
                                                 onMouseEnter={(e) => handleVacationHover(vacation, e)}
                                                 onMouseLeave={handleVacationLeave}
                                                 onClick={(e) => handleVacationClick(vacation, e)}
-                                                title={`Click para eliminar: ${vacation.user?.fullName || 'Usuario'}`}
+                                                title={isPersonal ?
+                                                    `Mi ${vacation.type === 'rest_day' ? 'día de descanso' : 'día extra trabajado'}` :
+                                                    `Click para eliminar: ${vacation.user?.fullName || 'Usuario'}`
+                                                }
                                             >
                                                 <div className="vacation-calendar-bubble-icon">
                                                     {getVacationIcon(vacation.type)}
@@ -289,7 +306,7 @@ const VacationCalendar = ({ vacations = [], onDateClick, onVacationClick }) => {
                     }}
                 >
                     <div className="vacation-calendar-tooltip-content">
-                        {hoveredVacation.user?.photoUrl && (
+                        {!isPersonal && hoveredVacation.user?.photoUrl && (
                             <div className="vacation-calendar-tooltip-image">
                                 <img
                                     src={hoveredVacation.user.photoUrl}
@@ -298,10 +315,12 @@ const VacationCalendar = ({ vacations = [], onDateClick, onVacationClick }) => {
                             </div>
                         )}
                         <div className="vacation-calendar-tooltip-info">
-                            <h4>
-                                <PersonIcon />
-                                {hoveredVacation.user?.fullName || 'Usuario'}
-                            </h4>
+                            {!isPersonal && (
+                                <h4>
+                                    <PersonIcon />
+                                    {hoveredVacation.user?.fullName || 'Usuario'}
+                                </h4>
+                            )}
                             <p className="vacation-calendar-tooltip-date">
                                 Fecha: {formatDate(hoveredVacation.date)}
                             </p>
@@ -313,9 +332,11 @@ const VacationCalendar = ({ vacations = [], onDateClick, onVacationClick }) => {
                                     {hoveredVacation.description}
                                 </p>
                             )}
-                            <div className="vacation-calendar-tooltip-action">
-                                <small>💡 Haz clic para eliminar esta vacación</small>
-                            </div>
+                            {!isPersonal && (
+                                <div className="vacation-calendar-tooltip-action">
+                                    <small>💡 Haz clic para eliminar esta vacación</small>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
