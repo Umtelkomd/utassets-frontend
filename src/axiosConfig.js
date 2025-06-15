@@ -31,18 +31,35 @@ const isTokenExpired = (token) => {
 // Función para hacer logout automático
 const performAutoLogout = (reason = 'expired') => {
   console.warn(`Realizando logout automático: ${reason}`);
+  
+  // Verificar si hay datos de sesión antes de limpiar
+  const hadToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+  const hadUser = localStorage.getItem('user');
+  
   localStorage.removeItem('token');
   localStorage.removeItem('authToken');
   localStorage.removeItem('user');
-  
-  // Disparar evento personalizado para notificar a otros componentes
-  window.dispatchEvent(new CustomEvent('auto-logout', { 
-    detail: { reason, message: 'Sesión expirada. Por favor, inicia sesión nuevamente.' }
-  }));
-  
-  // Redirigir solo si no estamos ya en login
-  if (!window.location.pathname.includes('/login')) {
-    window.location.href = `/login?${reason}=true`;
+    // Disparar evento personalizado para notificar a otros componentes
+    window.dispatchEvent(new CustomEvent('auto-logout', { 
+      detail: { reason, message: 'Sesión expirada. Por favor, inicia sesión nuevamente.' }
+    }));
+    
+    // Redirigir solo si no estamos ya en login (incluyendo bas
+  // Solo disparar eventos y redirigir si realmente había una sesión activa
+  if (hadToken || hadUser) {
+    // Disparar evento personalizado para notificar a otros componentes
+    window.dispatchEvent(new CustomEvent('auto-logout', { 
+      detail: { reason, message: 'Sesión expirada. Por favor, inicia sesión nuevamente.' }
+    }));
+    
+    // Obtener la URL base actual y construir la ruta de login correctamente
+    const currentPath = window.location.pathname;
+    const basePath = process.env.PUBLIC_URL || currentPath.includes('/utassets') ? '/utassets' : '';
+    
+    // Redirigir solo si no estamos ya en login
+    if (!currentPath.includes('/login')) {
+      window.location.href = `${basePath}/login?${reason}=true`;
+    }
   }
 };
 
@@ -117,16 +134,34 @@ instance.interceptors.response.use(
         case 401:
           // Solo realizar logout automático si NO es una solicitud de login
           const isLoginRequest = error.config?.url?.includes('/auth/login');
+          const isAuthMeRequest = error.config?.url?.includes('/auth/me');
           
           if (!isLoginRequest) {
-            // Token expirado, inválido o no autorizado
-            const errorMessage = error.response.data?.message || 'No autorizado';
-            if (errorMessage.toLowerCase().includes('token') || 
-                errorMessage.toLowerCase().includes('expired') ||
-                errorMessage.toLowerCase().includes('invalid')) {
-              performAutoLogout('invalid');
+            // Para /auth/me, solo hacer logout si había un token almacenado
+            if (isAuthMeRequest) {
+              const hasStoredToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+              if (hasStoredToken) {
+                // Token expirado, inválido o no autorizado
+                const errorMessage = error.response.data?.message || 'No autorizado';
+                if (errorMessage.toLowerCase().includes('token') || 
+                    errorMessage.toLowerCase().includes('expired') ||
+                    errorMessage.toLowerCase().includes('invalid')) {
+                  performAutoLogout('invalid');
+                } else {
+                  performAutoLogout('unauthorized');
+                }
+              }
+              // Si no hay token almacenado, no hacer logout automático
             } else {
-              performAutoLogout('unauthorized');
+              // Para otras rutas, hacer logout normalmente
+              const errorMessage = error.response.data?.message || 'No autorizado';
+              if (errorMessage.toLowerCase().includes('token') || 
+                  errorMessage.toLowerCase().includes('expired') ||
+                  errorMessage.toLowerCase().includes('invalid')) {
+                performAutoLogout('invalid');
+              } else {
+                performAutoLogout('unauthorized');
+              }
             }
           }
           // Si es una solicitud de login, dejar que el componente maneje el error

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../axiosConfig';
 import './Profile.css';
 import { toast } from 'react-toastify';
-import { vacationService } from '../services/vacationService';
+import { vacationService, VacationStatus } from '../services/vacationService';
 import VacationRequestForm from '../components/VacationRequestForm';
 import VacationCalendar from '../components/VacationCalendar';
 
@@ -24,6 +24,9 @@ import AddIcon from '@mui/icons-material/Add';
 import PendingIcon from '@mui/icons-material/Pending';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WorkIcon from '@mui/icons-material/Work';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import HourglassFullIcon from '@mui/icons-material/HourglassFull';
+import CancelScheduleSendIcon from '@mui/icons-material/CancelScheduleSend';
 
 const Profile = () => {
     const { currentUser, updateUserProfile } = useAuth();
@@ -92,6 +95,60 @@ const Profile = () => {
         setSelectedVacationDate(null);
         // Recargar datos después de crear una solicitud
         loadVacationData();
+    };
+
+    // Función para obtener el icono según el estado de la vacación
+    const getStatusIcon = (vacation) => {
+        const status = vacation.status || (vacation.isApproved ? VacationStatus.FULLY_APPROVED : VacationStatus.PENDING);
+
+        switch (status) {
+            case VacationStatus.PENDING:
+                return <HourglassEmptyIcon className="status-icon pending" />;
+            case VacationStatus.FIRST_APPROVED:
+                return <HourglassFullIcon className="status-icon first-approved" />;
+            case VacationStatus.FULLY_APPROVED:
+                return <CheckCircleIcon className="status-icon approved" />;
+            case VacationStatus.REJECTED:
+                return <CancelScheduleSendIcon className="status-icon rejected" />;
+            default:
+                return <PendingIcon className="status-icon pending" />;
+        }
+    };
+
+    // Función para obtener el texto del estado
+    const getStatusText = (vacation) => {
+        const status = vacation.status || (vacation.isApproved ? VacationStatus.FULLY_APPROVED : VacationStatus.PENDING);
+
+        switch (status) {
+            case VacationStatus.PENDING:
+                return 'Pendiente (1ra aprobación)';
+            case VacationStatus.FIRST_APPROVED:
+                return 'Pendiente (2da aprobación)';
+            case VacationStatus.FULLY_APPROVED:
+                return 'Aprobada';
+            case VacationStatus.REJECTED:
+                return 'Rechazada';
+            default:
+                return 'Pendiente';
+        }
+    };
+
+    // Función para obtener la clase CSS del estado
+    const getStatusClass = (vacation) => {
+        const status = vacation.status || (vacation.isApproved ? VacationStatus.FULLY_APPROVED : VacationStatus.PENDING);
+
+        switch (status) {
+            case VacationStatus.PENDING:
+                return 'pending';
+            case VacationStatus.FIRST_APPROVED:
+                return 'first-approved';
+            case VacationStatus.FULLY_APPROVED:
+                return 'approved';
+            case VacationStatus.REJECTED:
+                return 'rejected';
+            default:
+                return 'pending';
+        }
     };
 
     const handleInputChange = (e) => {
@@ -482,6 +539,10 @@ const Profile = () => {
                                 Mis Vacaciones
                             </h2>
                             <p>Gestiona tus solicitudes de vacaciones y consulta tu calendario personal</p>
+                            <div className="vacation-info-banner">
+                                <HourglassFullIcon className="info-icon" />
+                                <span>Las solicitudes de vacación requieren aprobación de dos administradores</span>
+                            </div>
                             <button
                                 className="btn-primary"
                                 onClick={() => {
@@ -557,7 +618,7 @@ const Profile = () => {
                                 </div>
                             ) : (
                                 <div className="requests-list">
-                                    {vacations.slice(-5).map((vacation) => (
+                                    {vacations.slice(-10).map((vacation) => (
                                         <div key={vacation.id} className="request-item">
                                             <div className="request-date">
                                                 <CalendarTodayIcon />
@@ -583,17 +644,10 @@ const Profile = () => {
                                             </div>
 
                                             <div className="request-status">
-                                                {vacation.isApproved ? (
-                                                    <>
-                                                        <CheckCircleIcon className="status-icon approved" />
-                                                        <span className="status-text approved">Aprobada</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <PendingIcon className="status-icon pending" />
-                                                        <span className="status-text pending">Pendiente</span>
-                                                    </>
-                                                )}
+                                                {getStatusIcon(vacation)}
+                                                <span className={`status-text ${getStatusClass(vacation)}`}>
+                                                    {getStatusText(vacation)}
+                                                </span>
                                             </div>
 
                                             {vacation.description && (
@@ -601,12 +655,47 @@ const Profile = () => {
                                                     {vacation.description}
                                                 </div>
                                             )}
+
+                                            {/* Información adicional de aprobaciones */}
+                                            {vacation.firstApprovedBy && (
+                                                <div className="approval-info">
+                                                    <div className="approval-step">
+                                                        <CheckCircleIcon className="approval-icon" />
+                                                        <span>1ª Aprobación: {vacation.firstApprovedBy.fullName}</span>
+                                                        <span className="approval-date">
+                                                            {new Date(vacation.firstApprovedDate).toLocaleDateString('es-ES')}
+                                                        </span>
+                                                    </div>
+                                                    {vacation.secondApprovedBy && (
+                                                        <div className="approval-step">
+                                                            <CheckCircleIcon className="approval-icon" />
+                                                            <span>2ª Aprobación: {vacation.secondApprovedBy.fullName}</span>
+                                                            <span className="approval-date">
+                                                                {new Date(vacation.secondApprovedDate).toLocaleDateString('es-ES')}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Información de rechazo */}
+                                            {vacation.status === VacationStatus.REJECTED && (
+                                                <div className="rejection-info">
+                                                    <CancelScheduleSendIcon className="rejection-icon" />
+                                                    <div className="rejection-details">
+                                                        <span>Rechazada por: {vacation.rejectedBy?.fullName || 'Administrador'}</span>
+                                                        {vacation.rejectionReason && (
+                                                            <p className="rejection-reason">Motivo: {vacation.rejectionReason}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
 
-                                    {vacations.length > 5 && (
+                                    {vacations.length > 10 && (
                                         <div className="show-more">
-                                            <p>Mostrando las 5 solicitudes más recientes de {vacations.length} totales</p>
+                                            <p>Mostrando las 10 solicitudes más recientes de {vacations.length} totales</p>
                                         </div>
                                     )}
                                 </div>
@@ -617,10 +706,13 @@ const Profile = () => {
                         <div className="personal-calendar">
                             <h3>Mi Calendario de Vacaciones</h3>
                             <p className="calendar-description">
-                                Consulta tus vacaciones aprobadas. Haz clic en cualquier fecha para crear una nueva solicitud.
+                                Consulta tus vacaciones completamente aprobadas. Haz clic en cualquier fecha para crear una nueva solicitud.
                             </p>
                             <VacationCalendar
-                                vacations={vacations.filter(v => v.isApproved)}
+                                vacations={vacations.filter(v =>
+                                    v.status === VacationStatus.FULLY_APPROVED ||
+                                    (v.isApproved && !v.status)
+                                )}
                                 isPersonal={true}
                                 showOnlyOwnVacations={true}
                                 currentUserId={currentUser?.id}

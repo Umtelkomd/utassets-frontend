@@ -41,7 +41,7 @@ const Categories = () => {
 
                 setCategories(categoriesWithCount);
             } catch (err) {
-                
+
                 setError('No se pudieron cargar las categorías. Por favor, intente nuevamente.');
             } finally {
                 setLoading(false);
@@ -85,7 +85,7 @@ const Categories = () => {
         <div className="categories-page">
             <div className="categories-header">
                 <div className="header-left">
-                    <Link to="/dashboard" className="back-link">
+                    <Link to="/" className="back-link">
                         <ArrowBackIcon />
                         <span>Volver al Dashboard</span>
                     </Link>

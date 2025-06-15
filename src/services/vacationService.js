@@ -1,5 +1,13 @@
 import axiosInstance from '../axiosConfig';
 
+// Estados de vacaciones para referencia
+export const VacationStatus = {
+    PENDING: 'pending',                 // Pendiente de aprobación
+    FIRST_APPROVED: 'first_approved',   // Aprobada por el primer administrador  
+    FULLY_APPROVED: 'fully_approved',   // Aprobada por ambos administradores
+    REJECTED: 'rejected'                // Rechazada
+};
+
 export const vacationService = {
     // Obtener todas las vacaciones del año actual
     getAllVacations: async (year = null) => {
@@ -108,9 +116,9 @@ export const vacationService = {
         }
     },
 
-    // ========== NUEVAS FUNCIONES PARA GESTIÓN DE SOLICITUDES ==========
+    // ========== FUNCIONES PARA GESTIÓN DE SOLICITUDES CON DOBLE APROBACIÓN ==========
 
-    // Obtener solicitudes de vacaciones pendientes (solo para administradores)
+    // Obtener solicitudes de vacaciones pendientes (incluye pending y first_approved)
     getPendingVacations: async (year = null) => {
         try {
             const params = year ? { year } : {};
@@ -122,7 +130,9 @@ export const vacationService = {
         }
     },
 
-    // Aprobar una solicitud de vacación
+    // Aprobar una solicitud de vacación (sistema de doble aprobación)
+    // - Si está en estado 'pending', pasa a 'first_approved'
+    // - Si está en estado 'first_approved', pasa a 'fully_approved'
     approveVacation: async (vacationId) => {
         try {
             const response = await axiosInstance.put(`/vacations/${vacationId}/approve`);
@@ -133,7 +143,7 @@ export const vacationService = {
         }
     },
 
-    // Rechazar una solicitud de vacación
+    // Rechazar una solicitud de vacación (marca como 'rejected')
     rejectVacation: async (vacationId, reason = '') => {
         try {
             const response = await axiosInstance.delete(`/vacations/${vacationId}/reject`, {
@@ -146,7 +156,8 @@ export const vacationService = {
         }
     },
 
-    // Aprobar múltiples solicitudes de vacación
+    // Aprobar múltiples solicitudes de vacación (ADVERTENCIA: Con doble aprobación puede ser confuso)
+    // Este método procesa cada solicitud según su estado actual
     approveBulkVacations: async (vacationIds) => {
         try {
             const response = await axiosInstance.put('/vacations/approve/bulk', {
@@ -157,5 +168,55 @@ export const vacationService = {
             console.error('Error al aprobar vacaciones múltiples:', error);
             throw error;
         }
+    },
+
+    // ========== FUNCIONES AUXILIARES PARA EL NUEVO SISTEMA ==========
+
+    // Obtener el texto legible del estado de vacación
+    getStatusText: (status) => {
+        switch (status) {
+            case VacationStatus.PENDING:
+                return 'Pendiente de primera aprobación';
+            case VacationStatus.FIRST_APPROVED:
+                return 'Pendiente de segunda aprobación';
+            case VacationStatus.FULLY_APPROVED:
+                return 'Completamente aprobada';
+            case VacationStatus.REJECTED:
+                return 'Rechazada';
+            default:
+                return 'Estado desconocido';
+        }
+    },
+
+    // Obtener el color del estado para la UI
+    getStatusColor: (status) => {
+        switch (status) {
+            case VacationStatus.PENDING:
+                return '#f39c12'; // Naranja
+            case VacationStatus.FIRST_APPROVED:
+                return '#3498db'; // Azul
+            case VacationStatus.FULLY_APPROVED:
+                return '#27ae60'; // Verde
+            case VacationStatus.REJECTED:
+                return '#e74c3c'; // Rojo
+            default:
+                return '#95a5a6'; // Gris
+        }
+    },
+
+    // Verificar si una vacación necesita aprobaciones
+    needsApproval: (vacation) => {
+        return vacation.status === VacationStatus.PENDING || 
+               vacation.status === VacationStatus.FIRST_APPROVED;
+    },
+
+    // Verificar si una vacación está completamente aprobada
+    isFullyApproved: (vacation) => {
+        return vacation.status === VacationStatus.FULLY_APPROVED;
+    },
+
+    // Verificar si una vacación está rechazada
+    isRejected: (vacation) => {
+        return vacation.status === VacationStatus.REJECTED;
     }
 }; 

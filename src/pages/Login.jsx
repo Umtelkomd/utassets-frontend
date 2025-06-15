@@ -13,13 +13,14 @@ const Login = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { login } = useAuth();
+    const { login, currentUser, isAuthInitialized } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
     // Manejar parámetros de URL para mostrar mensajes apropiados
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
+        console.log('Parámetros URL detectados:', Object.fromEntries(urlParams.entries()));
 
         if (urlParams.get('expired') === 'true') {
             toast.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', {
@@ -41,12 +42,6 @@ const Login = () => {
                 position: 'top-right',
                 autoClose: 5000,
             });
-        } else if (urlParams.get('google_auth') === 'success') {
-            toast.success('¡Autenticación con Google exitosa!', {
-                position: 'top-right',
-                autoClose: 3000,
-            });
-            navigate('/dashboard');
         } else if (urlParams.get('error') === 'google_auth_failed') {
             toast.error('Error en la autenticación con Google. Inténtalo de nuevo.', {
                 position: 'top-right',
@@ -64,7 +59,15 @@ const Login = () => {
             const newUrl = window.location.pathname;
             window.history.replaceState({}, '', newUrl);
         }
-    }, [location.search]);
+    }, [location.search, navigate]);
+
+    // Redirigir si el usuario ya está autenticado
+    useEffect(() => {
+        if (isAuthInitialized && currentUser) {
+            console.log('Usuario ya autenticado, redirigiendo a dashboard...');
+            navigate('/', { replace: true });
+        }
+    }, [currentUser, isAuthInitialized, navigate]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -173,7 +176,7 @@ const Login = () => {
                     <h2>Iniciar Sesión</h2>
 
                     {/* Botón de Google OAuth */}
-                    <GoogleLoginButton isSubmitting={isSubmitting} />
+                    {/* <GoogleLoginButton isSubmitting={isSubmitting} /> */}
 
                     {/* Separador */}
                     <div className="auth-divider">

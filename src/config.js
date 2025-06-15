@@ -9,7 +9,7 @@ const config = {
   })(),
   
   // URL base de la aplicación - Usada para rutas absolutas
-  baseUrl: '/utassets',
+  baseUrl: process.env.PUBLIC_URL || '/utassets',
   
   // Otras configuraciones
   appName: 'UTAssets',

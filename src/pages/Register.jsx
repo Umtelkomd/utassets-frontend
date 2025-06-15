@@ -230,7 +230,7 @@ const Register = () => {
                     <h2>Registro</h2>
 
                     {/* Botón de Google OAuth */}
-                    <GoogleLoginButton isSubmitting={isSubmitting} />
+                    {/* <GoogleLoginButton isSubmitting={isSubmitting} /> */}
 
                     {/* Separador */}
                     <div className="auth-divider">

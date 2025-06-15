@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { validateTokenWithServer } from '../axiosConfig';
+import { useAuth } from '../context/AuthContext';
 
 const AuthCallback = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [isProcessing, setIsProcessing] = useState(true);
+    const { checkTokenValidity } = useAuth();
 
     useEffect(() => {
         const handleCallback = async () => {
@@ -14,12 +16,15 @@ const AuthCallback = () => {
             const googleAuth = searchParams.get('google_auth');
             const error = searchParams.get('error');
 
+            console.log('AuthCallback - URL completa:', window.location.href);
             console.log('AuthCallback - parámetros:', { googleAuth, error });
+            console.log('AuthCallback - todos los parámetros:', Object.fromEntries(searchParams.entries()));
 
             if (googleAuth === 'success') {
                 try {
                     // Esperar un poco para que la cookie se establezca completamente
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    console.log('Esperando establecimiento de cookie...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
 
                     console.log('Validando autenticación con Google...');
                     const validation = await validateTokenWithServer();
@@ -30,6 +35,11 @@ const AuthCallback = () => {
                         // Actualizar localStorage para mantener sincronización
                         localStorage.setItem('user', JSON.stringify(validation.user));
 
+                        // Disparar evento personalizado para que AuthContext revalide
+                        window.dispatchEvent(new CustomEvent('google-auth-success', {
+                            detail: { user: validation.user }
+                        }));
+
                         toast.success('¡Autenticación con Google exitosa!', {
                             position: 'top-right',
                             autoClose: 3000,
@@ -37,17 +47,29 @@ const AuthCallback = () => {
 
                         // Redirigir al dashboard después de un breve delay
                         setTimeout(() => {
+                            console.log('Redirigiendo a dashboard...');
                             navigate('/', { replace: true });
-                        }, 1000);
+                        }, 1500);
                     } else {
+                        console.error('Validación falló:', validation);
                         throw new Error('No se pudo validar la autenticación');
                     }
                 } catch (error) {
                     console.error('Error al completar autenticación de Google:', error);
-                    toast.error('Error al completar la autenticación. Inténtalo de nuevo.', {
-                        position: 'top-right',
-                        autoClose: 5000,
-                    });
+
+                    // Si es un error 401, significa que la sesión no se estableció correctamente
+                    if (error.response?.status === 401) {
+                        toast.error('La sesión no se pudo establecer correctamente. Intenta iniciar sesión manualmente.', {
+                            position: 'top-right',
+                            autoClose: 5000,
+                        });
+                    } else {
+                        toast.error('Error al completar la autenticación. Inténtalo de nuevo.', {
+                            position: 'top-right',
+                            autoClose: 5000,
+                        });
+                    }
+
                     navigate('/login', { replace: true });
                 } finally {
                     setIsProcessing(false);
@@ -76,12 +98,16 @@ const AuthCallback = () => {
                 // No hay parámetros reconocidos, redirigir a login
                 setIsProcessing(false);
                 console.log('No hay parámetros de autenticación, redirigiendo a login');
+                toast.info('No se encontraron parámetros de autenticación válidos.', {
+                    position: 'top-right',
+                    autoClose: 3000,
+                });
                 navigate('/login', { replace: true });
             }
         };
 
         handleCallback();
-    }, [searchParams, navigate]);
+    }, [searchParams, navigate, checkTokenValidity]);
 
     return (
         <div style={{

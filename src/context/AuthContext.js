@@ -11,45 +11,70 @@ export const AuthProvider = ({ children }) => {
 
   // Función para hacer logout limpio
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    console.log('Ejecutando logout limpio');
+    
+    // Limpiar localStorage
+    const keysToRemove = ['token', 'authToken', 'user'];
+    keysToRemove.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.warn(`Error al limpiar ${key} del localStorage:`, error);
+      }
+    });
+    
     // Limpiar también la cookie de autenticación
-    document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    try {
+      document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    } catch (error) {
+      console.warn('Error al limpiar cookie de autenticación:', error);
+    }
+    
     setCurrentUser(null);
   };
 
   // Función para validar token existente con el servidor
   const validateExistingToken = async () => {
+    const storedToken = localStorage.getItem('token') || localStorage.getItem('authToken');
     const storedUser = localStorage.getItem('user');
+
+    // Si no hay token ni usuario almacenado, no hacer petición al servidor
+    if (!storedToken && !storedUser) {
+      console.log('No hay token ni usuario almacenado, saltando validación');
+      setIsAuthInitialized(true);
+      return;
+    }
 
     // Para Google OAuth, podemos tener usuario sin token en localStorage
     // porque usamos cookies HTTP-only
     try {
       setIsValidatingToken(true);
       
-      // Siempre intentar validar con el servidor (ya sea token o cookie)
-      const validation = await validateTokenWithServer();
-      
-      if (validation.isValid && validation.user) {
-        // Autenticación válida, usar los datos del servidor
-        setCurrentUser(validation.user);
-        // Asegurar que el localStorage esté sincronizado
-        localStorage.setItem('user', JSON.stringify(validation.user));
-      } else if (storedUser) {
-        // Si no hay validación del servidor pero hay usuario almacenado
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && typeof parsedUser === 'object') {
-            // Mantener la sesión temporalmente, pero tratar de validar después
-            setCurrentUser(parsedUser);
+      // Solo intentar validar con el servidor si hay alguna evidencia de sesión
+      if (storedToken || storedUser) {
+        const validation = await validateTokenWithServer();
+        
+        if (validation.isValid && validation.user) {
+          // Autenticación válida, usar los datos del servidor
+          setCurrentUser(validation.user);
+          // Asegurar que el localStorage esté sincronizado
+          localStorage.setItem('user', JSON.stringify(validation.user));
+        } else if (storedUser) {
+          // Si no hay validación del servidor pero hay usuario almacenado
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            if (parsedUser && typeof parsedUser === 'object') {
+              // Mantener la sesión temporalmente, pero tratar de validar después
+              setCurrentUser(parsedUser);
+            }
+          } catch (parseError) {
+            console.error('Error al parsear usuario almacenado:', parseError);
+            logout();
           }
-        } catch (parseError) {
-          console.error('Error al parsear usuario almacenado:', parseError);
+        } else {
+          // No hay sesión válida
           logout();
         }
-      } else {
-        // No hay sesión válida
-        logout();
       }
     } catch (error) {
       console.error('Error al validar autenticación:', error);
@@ -119,17 +144,28 @@ export const AuthProvider = ({ children }) => {
       });
     };
 
+    const handleGoogleAuthSuccess = (event) => {
+      const { user } = event.detail;
+      console.log('Google Auth Success event recibido:', user);
+      if (user) {
+        setCurrentUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    };
+
     // Escuchar eventos del interceptor
     window.addEventListener('auto-logout', handleAutoLogout);
     window.addEventListener('access-forbidden', handleAccessForbidden);
     window.addEventListener('server-error', handleServerError);
     window.addEventListener('api-connection-error', handleConnectionError);
+    window.addEventListener('google-auth-success', handleGoogleAuthSuccess);
 
     return () => {
       window.removeEventListener('auto-logout', handleAutoLogout);
       window.removeEventListener('access-forbidden', handleAccessForbidden);
       window.removeEventListener('server-error', handleServerError);
       window.removeEventListener('api-connection-error', handleConnectionError);
+      window.removeEventListener('google-auth-success', handleGoogleAuthSuccess);
     };
   }, []);
 

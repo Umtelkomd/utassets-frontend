@@ -84,6 +84,12 @@ function App() {
               } 
             />
 
+            {/* Ruta alternativa para /dashboard - Redirige a / */}
+            <Route 
+              path="/dashboard" 
+              element={<Navigate to="/" replace />}
+            />
+
             {/* Ruta de Perfil */}
             <Route 
               path="/profile" 
