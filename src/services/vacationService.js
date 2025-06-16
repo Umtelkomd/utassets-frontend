@@ -170,6 +170,19 @@ export const vacationService = {
         }
     },
 
+    // Aprobar días específicos de una solicitud agrupada
+    approveSelectedDaysFromRequest: async (vacationIds) => {
+        try {
+            const response = await axiosInstance.put('/vacations/approve/selected-days', {
+                vacationIds
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error al aprobar días seleccionados:', error);
+            throw error;
+        }
+    },
+
     // ========== FUNCIONES AUXILIARES PARA EL NUEVO SISTEMA ==========
 
     // Obtener el texto legible del estado de vacación
