@@ -175,7 +175,11 @@ const CancelVacationsModal = ({ isOpen, onClose, user, onVacationsDeleted }) => 
                                         <div className="vacation-info">
                                             <div className="vacation-date">
                                                 <CalendarIcon />
-                                                {formatDate(vacation.date)}
+                                                {vacation.dayCount === 1 ? (
+                                                    formatDate(vacation.startDate)
+                                                ) : (
+                                                    `${formatDate(vacation.startDate)} - ${formatDate(vacation.endDate)} (${vacation.dayCount} días)`
+                                                )}
                                             </div>
 
                                             <div className="vacation-type">

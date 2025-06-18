@@ -73,6 +73,69 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
         }
     };
 
+    // Función para formatear el rango de fechas de una vacación
+    const formatVacationRange = (vacation) => {
+        if (vacation.startDate && vacation.endDate) {
+            const start = new Date(vacation.startDate);
+            const end = new Date(vacation.endDate);
+
+            if (start.toDateString() === end.toDateString()) {
+                return formatDate(vacation.startDate);
+            } else {
+                return `${formatDate(vacation.startDate)} - ${formatDate(vacation.endDate)}`;
+            }
+        } else if (vacation.date) {
+            return formatDate(vacation.date);
+        }
+        return 'Fecha no disponible';
+    };
+
+    // Función para agrupar conflictos por usuario
+    const getGroupedConflicts = () => {
+        const grouped = conflicts.reduce((acc, conflict) => {
+            const userName = conflict.user?.fullName || conflict.fullName || 'Usuario desconocido';
+            if (!acc[userName]) {
+                acc[userName] = [];
+            }
+            acc[userName].push(conflict);
+            return acc;
+        }, {});
+
+        return Object.entries(grouped).map(([userName, userConflicts]) => ({
+            userName,
+            conflicts: userConflicts
+        }));
+    };
+
+    // Contar días únicos con conflictos
+    const getConflictDaysCount = () => {
+        if (!formData.isRange || !formData.endDate) {
+            return conflicts.length > 0 ? 1 : 0;
+        }
+
+        const conflictDates = new Set();
+        conflicts.forEach(conflict => {
+            if (conflict.startDate && conflict.endDate) {
+                const start = new Date(conflict.startDate);
+                const end = new Date(conflict.endDate);
+                const requestStart = new Date(formData.date);
+                const requestEnd = new Date(formData.endDate);
+
+                // Encontrar superposición entre rangos
+                const overlapStart = new Date(Math.max(start.getTime(), requestStart.getTime()));
+                const overlapEnd = new Date(Math.min(end.getTime(), requestEnd.getTime()));
+
+                if (overlapStart <= overlapEnd) {
+                    for (let d = new Date(overlapStart); d <= overlapEnd; d.setDate(d.getDate() + 1)) {
+                        conflictDates.add(d.toDateString());
+                    }
+                }
+            }
+        });
+
+        return conflictDates.size;
+    };
+
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -305,20 +368,54 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
                         />
                     </div>
 
-                    {/* Conflictos - Solo mostrar en vista administrativa, no en perfil personal */}
-                    {!isPersonal && conflicts.length > 0 && formData.type === 'rest_day' && (
+                    {/* Conflictos - Mostrar información detallada */}
+                    {conflicts.length > 0 && formData.type === 'rest_day' && (
                         <div className="conflicts-warning">
-                            <WarningIcon />
-                            <div>
-                                <h4>Conflictos detectados</h4>
-                                <p>{conflicts.length} persona(s) ya tienen vacaciones en esta(s) fecha(s):</p>
-                                <ul>
-                                    {conflicts.map((conflict, index) => (
-                                        <li key={index}>
-                                            {conflict.user?.fullName || conflict.fullName} - {formatDate(conflict.date)}
-                                        </li>
-                                    ))}
-                                </ul>
+                            <div className="conflicts-header">
+                                <WarningIcon />
+                                <div className="conflicts-title">
+                                    <h4>⚠️ Conflictos Detectados</h4>
+                                    <p>
+                                        Hay <strong>{getConflictDaysCount()} día(s)</strong> donde otros técnicos también tienen vacaciones durante {formData.isRange && formData.endDate ? 'este período' : 'esta fecha'}:
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="conflicts-details">
+                                {getGroupedConflicts().map((group, groupIndex) => (
+                                    <div key={groupIndex} className="conflict-user-group">
+                                        <div className="conflict-user-header">
+                                            <span className="conflict-user-name">👤 {group.userName}</span>
+                                            <span className="conflict-count">
+                                                {group.conflicts.length} conflicto{group.conflicts.length > 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+
+                                        <div className="conflict-dates">
+                                            {group.conflicts.map((conflict, conflictIndex) => (
+                                                <div key={conflictIndex} className="conflict-date-item">
+                                                    <span className="conflict-date">
+                                                        📅 {formatVacationRange(conflict)}
+                                                    </span>
+                                                    {conflict.description && (
+                                                        <span className="conflict-description">
+                                                            💬 {conflict.description}
+                                                        </span>
+                                                    )}
+                                                    <span className="conflict-type">
+                                                        {conflict.type === 'rest_day' ? '🏖️ Día de descanso' : '💼 Día extra trabajado'}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="conflicts-footer">
+                                <p>
+                                    💡 <strong>Recomendación:</strong> Coordina con tu equipo antes de enviar la solicitud para evitar problemas de cobertura.
+                                </p>
                             </div>
                         </div>
                     )}

@@ -13,12 +13,13 @@ import {
     HourglassFull as PendingSecondIcon,
     Block as BlockedIcon,
     Warning as WarningIcon,
-    DateRange as DateRangeIcon
+    DateRange as DateRangeIcon,
+    Event as EventIcon
 } from '@mui/icons-material';
 import { vacationService, VacationStatus } from '../services/vacationService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
-import VacationRequestCalendar from './VacationRequestCalendar';
+import VacationPendingCalendar from './VacationPendingCalendar';
 import './PendingVacationsManager.css';
 
 const PendingVacationsManager = ({ onUpdate }) => {
@@ -26,12 +27,12 @@ const PendingVacationsManager = ({ onUpdate }) => {
     const [pendingRequests, setPendingRequests] = useState([]);
     const [allVacations, setAllVacations] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectingRequest, setRejectingRequest] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
+    const [approvingIds, setApprovingIds] = useState(new Set());
     const [isRejecting, setIsRejecting] = useState(false);
-    const [approvingRequests, setApprovingRequests] = useState(new Set());
-    const [selectedDates, setSelectedDates] = useState({});
 
     useEffect(() => {
         fetchPendingRequests();
@@ -40,19 +41,14 @@ const PendingVacationsManager = ({ onUpdate }) => {
     const fetchPendingRequests = async () => {
         try {
             setLoading(true);
-            const data = await vacationService.getPendingVacations();
+            const data = await vacationService.getPendingVacationsGrouped();
             setPendingRequests(data.pendingRequests || []);
             setAllVacations(data.allVacations || []);
 
-            // Inicializar fechas seleccionadas (por defecto todas seleccionadas)
-            const initialSelectedDates = {};
-            (data.pendingRequests || []).forEach(request => {
-                const requestKey = request.batchId || `single-${request.vacations[0]?.id}`;
-                initialSelectedDates[requestKey] = request.dates.map(date =>
-                    new Date(date).toISOString().split('T')[0]
-                );
-            });
-            setSelectedDates(initialSelectedDates);
+            // Seleccionar automáticamente la primera solicitud para mostrar el calendario
+            if (data.pendingRequests && data.pendingRequests.length > 0) {
+                setSelectedRequest(data.pendingRequests[0]);
+            }
         } catch (error) {
             console.error('Error al cargar solicitudes pendientes:', error);
             toast.error('Error al cargar solicitudes pendientes');
@@ -62,25 +58,9 @@ const PendingVacationsManager = ({ onUpdate }) => {
     };
 
     const handleApproveRequest = async (request) => {
-        const requestKey = request.batchId || `single-${request.vacations[0]?.id}`;
-        const selectedDatesForRequest = selectedDates[requestKey] || [];
-
-        if (selectedDatesForRequest.length === 0) {
-            toast.warning('Selecciona al menos un día para aprobar');
-            return;
-        }
-
-        // Obtener IDs de las vacaciones correspondientes a las fechas seleccionadas
-        const vacationIdsToApprove = request.vacations
-            .filter(vacation => {
-                const vacationDateStr = new Date(vacation.date).toISOString().split('T')[0];
-                return selectedDatesForRequest.includes(vacationDateStr);
-            })
-            .map(vacation => vacation.id);
-
         try {
-            setApprovingRequests(prev => new Set(prev).add(requestKey));
-            const response = await vacationService.approveSelectedDaysFromRequest(vacationIdsToApprove);
+            setApprovingIds(prev => new Set(prev).add(request.id));
+            const response = await vacationService.approvePeriodVacations(request.vacationIds);
             toast.success(response.message);
             fetchPendingRequests();
             if (onUpdate) onUpdate();
@@ -89,9 +69,9 @@ const PendingVacationsManager = ({ onUpdate }) => {
             const errorMessage = error.response?.data?.message || 'Error al aprobar la solicitud';
             toast.error(errorMessage);
         } finally {
-            setApprovingRequests(prev => {
+            setApprovingIds(prev => {
                 const newSet = new Set(prev);
-                newSet.delete(requestKey);
+                newSet.delete(request.id);
                 return newSet;
             });
         }
@@ -102,13 +82,8 @@ const PendingVacationsManager = ({ onUpdate }) => {
 
         try {
             setIsRejecting(true);
-
-            // Rechazar todas las vacaciones de la solicitud
-            for (const vacation of rejectingRequest.vacations) {
-                await vacationService.rejectVacation(vacation.id, rejectReason);
-            }
-
-            toast.success('Solicitud rechazada correctamente');
+            await vacationService.rejectPeriodVacations(rejectingRequest.vacationIds, rejectReason);
+            toast.success('Período de vacaciones rechazado correctamente');
             setShowRejectModal(false);
             setRejectingRequest(null);
             setRejectReason('');
@@ -128,72 +103,77 @@ const PendingVacationsManager = ({ onUpdate }) => {
         }
 
         // No puede aprobar su propia solicitud
-        if (request.user.id === currentUser.id) {
+        if (request.userId === currentUser.id) {
             return false;
         }
 
-        // Verificar si hay al menos una vacación que se puede aprobar
-        return request.vacations.some(vacation => {
-            if (vacation.status === VacationStatus.PENDING) {
-                return true;
-            }
-            if (vacation.status === VacationStatus.FIRST_APPROVED) {
-                return vacation.firstApprovedBy && vacation.firstApprovedBy.id !== currentUser.id;
-            }
-            return false;
-        });
+        // Si está en estado PENDING, cualquier admin puede dar primera aprobación
+        if (request.status === VacationStatus.PENDING) {
+            return true;
+        }
+
+        // Si está en estado FIRST_APPROVED, solo otro admin diferente puede dar segunda aprobación
+        if (request.status === VacationStatus.FIRST_APPROVED) {
+            return request.firstApprovedBy && request.firstApprovedBy.id !== currentUser.id;
+        }
+
+        return false;
     };
 
-    const getRequestStatusText = (request) => {
-        const statuses = request.vacations.map(v => v.status);
-        const allPending = statuses.every(s => s === VacationStatus.PENDING);
-        const allFirstApproved = statuses.every(s => s === VacationStatus.FIRST_APPROVED);
-        const mixed = !allPending && !allFirstApproved;
-
-        if (allPending) {
-            return 'Pendiente (1ª aprobación)';
-        } else if (allFirstApproved) {
-            return 'Pendiente (2ª aprobación)';
-        } else if (mixed) {
-            return 'Estados mixtos';
+    const getApproveButtonText = (request) => {
+        if (request.status === VacationStatus.PENDING) {
+            return '1ª Aprobación';
         }
-        return 'Pendiente';
-    };
-
-    const getRequestStatusIcon = (request) => {
-        const statuses = request.vacations.map(v => v.status);
-        const allPending = statuses.every(s => s === VacationStatus.PENDING);
-        const allFirstApproved = statuses.every(s => s === VacationStatus.FIRST_APPROVED);
-
-        if (allPending) {
-            return <PendingFirstIcon className="status-icon pending" />;
-        } else if (allFirstApproved) {
-            return <PendingSecondIcon className="status-icon first-approved" />;
-        } else {
-            return <WarningIcon className="status-icon mixed" />;
+        if (request.status === VacationStatus.FIRST_APPROVED) {
+            return '2ª Aprobación';
         }
+        return 'Aprobar';
     };
 
     const getBlockReason = (request) => {
-        if (request.user.id === currentUser?.id) {
+        if (request.userId === currentUser?.id) {
             return 'No puedes aprobar tu propia solicitud';
         }
-
-        const hasFirstApprovalByCurrentUser = request.vacations.some(vacation =>
-            vacation.status === VacationStatus.FIRST_APPROVED &&
-            vacation.firstApprovedBy && vacation.firstApprovedBy.id === currentUser?.id
-        );
-
-        if (hasFirstApprovalByCurrentUser) {
+        if (request.status === VacationStatus.FIRST_APPROVED &&
+            request.firstApprovedBy && request.firstApprovedBy.id === currentUser?.id) {
             return 'Ya diste la primera aprobación. Debe aprobar otro administrador';
         }
-
         return 'No se puede aprobar';
+    };
+
+    const getStatusIcon = (request) => {
+        switch (request.status) {
+            case VacationStatus.PENDING:
+                return <PendingFirstIcon className="status-icon pending" />;
+            case VacationStatus.FIRST_APPROVED:
+                return <PendingSecondIcon className="status-icon first-approved" />;
+            case VacationStatus.FULLY_APPROVED:
+                return <ApproveIcon className="status-icon approved" />;
+            default:
+                return <PendingIcon className="status-icon pending" />;
+        }
+    };
+
+    const getStatusText = (request) => {
+        switch (request.status) {
+            case VacationStatus.PENDING:
+                return 'Pendiente (1ª aprobación)';
+            case VacationStatus.FIRST_APPROVED:
+                return 'Pendiente (2ª aprobación)';
+            case VacationStatus.FULLY_APPROVED:
+                return 'Completamente aprobada';
+            default:
+                return 'Pendiente';
+        }
     };
 
     const openRejectModal = (request) => {
         setRejectingRequest(request);
         setShowRejectModal(true);
+    };
+
+    const handleRequestClick = (request) => {
+        setSelectedRequest(request);
     };
 
     const formatDate = (dateString) => {
@@ -204,40 +184,37 @@ const PendingVacationsManager = ({ onUpdate }) => {
         });
     };
 
-    const formatDateRange = (dates) => {
-        if (dates.length === 1) {
-            return formatDate(dates[0]);
+    const formatDateRange = (startDate, endDate) => {
+        const start = formatDate(startDate);
+        const end = formatDate(endDate);
+
+        if (start === end) {
+            return start;
         }
 
-        const sortedDates = [...dates].sort((a, b) => new Date(a) - new Date(b));
-        const firstDate = formatDate(sortedDates[0]);
-        const lastDate = formatDate(sortedDates[sortedDates.length - 1]);
-
-        return `${firstDate} - ${lastDate}`;
+        return `${start} - ${end}`;
     };
 
-    const handleDatesSelected = (requestKey, selectedDatesArray) => {
-        setSelectedDates(prev => ({
-            ...prev,
-            [requestKey]: selectedDatesArray
-        }));
-    };
+    // Obtener conflictos para la solicitud seleccionada
+    const getSelectedRequestConflicts = () => {
+        if (!selectedRequest || !allVacations.length) return [];
 
-    const getDateConflicts = (request) => {
-        if (!allVacations.length) return [];
+        const startDate = new Date(selectedRequest.startDate);
+        const endDate = new Date(selectedRequest.endDate);
 
-        const requestDates = request.dates.map(date =>
-            new Date(date).toISOString().split('T')[0]
-        );
+        return allVacations.filter(vacation => {
+            const vacationStartDate = new Date(vacation.startDate);
+            const vacationEndDate = new Date(vacation.endDate);
 
-        return allVacations.filter(v => {
-            const vDate = new Date(v.date).toISOString().split('T')[0];
-            return requestDates.includes(vDate) &&
-                v.userId !== request.user.id &&
-                !request.vacations.some(rv => rv.id === v.id) &&
-                (v.status === VacationStatus.FULLY_APPROVED ||
-                    v.status === VacationStatus.PENDING ||
-                    v.status === VacationStatus.FIRST_APPROVED);
+            // Verificar si hay superposición entre los rangos
+            const hasOverlap = vacationStartDate <= endDate && vacationEndDate >= startDate;
+
+            return hasOverlap &&
+                vacation.userId !== selectedRequest.userId &&
+                vacation.type === 'rest_day' &&
+                (vacation.status === VacationStatus.FULLY_APPROVED ||
+                    vacation.status === VacationStatus.PENDING ||
+                    vacation.status === VacationStatus.FIRST_APPROVED);
         });
     };
 
@@ -247,12 +224,12 @@ const PendingVacationsManager = ({ onUpdate }) => {
                 <div className="header-content">
                     <h2>
                         <PendingIcon className="header-icon" />
-                        Solicitudes Pendientes
+                        Solicitudes de Períodos de Vacaciones
                     </h2>
-                    <p>Gestiona las solicitudes de vacaciones agrupadas. Selecciona los días que quieres aprobar de cada solicitud.</p>
+                    <p>Gestiona solicitudes agrupadas por períodos consecutivos</p>
                     <div className="approval-info-banner">
                         <PendingSecondIcon className="info-icon" />
-                        <span>Sistema de doble aprobación: cada solicitud requiere la aprobación de dos administradores diferentes</span>
+                        <span>Sistema de doble aprobación: cada período requiere la aprobación de dos administradores diferentes</span>
                     </div>
                 </div>
 
@@ -280,159 +257,161 @@ const PendingVacationsManager = ({ onUpdate }) => {
                     <p>Todas las solicitudes de vacaciones han sido procesadas</p>
                 </div>
             ) : (
-                <div className="pending-requests-list">
-                    {pendingRequests.map((request) => {
-                        const requestKey = request.batchId || `single-${request.vacations[0]?.id}`;
-                        const isApproving = approvingRequests.has(requestKey);
-                        const selectedDatesForRequest = selectedDates[requestKey] || [];
-                        const conflicts = getDateConflicts(request);
+                <div className="content-layout">
+                    {/* Lista de solicitudes */}
+                    <div className="requests-section">
+                        <h3>
+                            <EventIcon />
+                            Períodos Solicitados ({pendingRequests.length})
+                        </h3>
 
-                        return (
-                            <div key={requestKey} className="pending-request-item">
-                                <div className="request-header">
-                                    <div className="user-info">
-                                        <PersonIcon className="user-icon" />
-                                        <span className="user-name">{request.user.fullName}</span>
-                                        <div className="request-type">
-                                            {request.type === 'rest_day' ? (
-                                                <>
-                                                    <VacationIcon className="type-icon vacation" />
-                                                    <span>Días de descanso</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <WorkIcon className="type-icon work" />
-                                                    <span>Días de trabajo extra</span>
-                                                </>
-                                            )}
+                        <div className="requests-list">
+                            {pendingRequests.map((request) => (
+                                <div
+                                    key={request.id}
+                                    className={`request-item ${selectedRequest?.id === request.id ? 'selected' : ''}`}
+                                    onClick={() => handleRequestClick(request)}
+                                >
+                                    <div className="item-info">
+                                        <div className="item-header">
+                                            <div className="user-info">
+                                                <PersonIcon className="user-icon" />
+                                                <span className="user-name">{request.user.fullName}</span>
+                                            </div>
+
+                                            <div className="status-info">
+                                                {getStatusIcon(request)}
+                                                <span className="status-text">{getStatusText(request)}</span>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="status-info">
-                                        {getRequestStatusIcon(request)}
-                                        <span className="status-text">{getRequestStatusText(request)}</span>
-                                    </div>
-                                </div>
+                                        <div className="item-details">
+                                            <div className="detail-item">
+                                                <DateRangeIcon className="detail-icon" />
+                                                <span>{formatDateRange(request.startDate, request.endDate)}</span>
+                                            </div>
 
-                                <div className="request-details">
-                                    <div className="detail-item">
-                                        <DateRangeIcon className="detail-icon" />
-                                        <span>{formatDateRange(request.dates)} ({request.dates.length} días)</span>
-                                    </div>
+                                            <div className="detail-item">
+                                                <CalendarIcon className="detail-icon" />
+                                                <span>{request.dayCount} día(s)</span>
+                                            </div>
 
-                                    <div className="detail-item">
-                                        <CalendarIcon className="detail-icon" />
-                                        <span>Solicitado el {formatDate(request.createdAt)}</span>
-                                    </div>
-                                </div>
-
-                                {request.description && (
-                                    <div className="request-description">
-                                        <DescriptionIcon className="description-icon" />
-                                        <span>{request.description}</span>
-                                    </div>
-                                )}
-
-                                {/* Información sobre conflictos de fechas */}
-                                {conflicts.length > 0 && (
-                                    <div className="date-conflicts-info">
-                                        <div className="conflicts-header">
-                                            <WarningIcon className="conflicts-icon" />
-                                            <span className="conflicts-title">
-                                                Personas que también tienen vacaciones en las fechas solicitadas:
-                                            </span>
+                                            <div className="detail-item">
+                                                {request.type === 'rest_day' ? (
+                                                    <>
+                                                        <VacationIcon className="detail-icon vacation" />
+                                                        <span>Días de descanso</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <WorkIcon className="detail-icon work" />
+                                                        <span>Días extra trabajados</span>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="conflicts-list">
-                                            {conflicts.map(conflict => (
-                                                <div key={conflict.id} className="conflict-item">
-                                                    <PersonIcon className="conflict-person-icon" />
-                                                    <span className="conflict-person-name">
-                                                        {conflict.user?.fullName || 'Usuario desconocido'}
-                                                    </span>
-                                                    <span className="conflict-date">
-                                                        {formatDate(conflict.date)}
-                                                    </span>
-                                                    <span className={`conflict-status ${conflict.status}`}>
-                                                        {conflict.status === VacationStatus.FULLY_APPROVED && '(Aprobado)'}
-                                                        {conflict.status === VacationStatus.PENDING && '(Pendiente 1ª)'}
-                                                        {conflict.status === VacationStatus.FIRST_APPROVED && '(Pendiente 2ª)'}
+
+                                        {request.description && (
+                                            <div className="item-description">
+                                                <DescriptionIcon className="description-icon" />
+                                                <span>{request.description}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Información de aprobaciones */}
+                                        {request.firstApprovedBy && (
+                                            <div className="approval-info">
+                                                <div className="approval-step completed">
+                                                    <ApproveIcon className="approval-icon" />
+                                                    <span>1ª Aprobación: {request.firstApprovedBy.fullName}</span>
+                                                    <span className="approval-date">
+                                                        {new Date(request.firstApprovedDate).toLocaleDateString('es-ES')}
                                                     </span>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Información de aprobaciones previas */}
-                                {request.firstApprovedBy && (
-                                    <div className="approval-info">
-                                        <div className="approval-step completed">
-                                            <ApproveIcon className="approval-icon" />
-                                            <span>1ª Aprobación: {request.firstApprovedBy.fullName}</span>
-                                            <span className="approval-date">
-                                                {new Date(request.firstApprovedDate).toLocaleDateString('es-ES')}
-                                            </span>
-                                        </div>
-                                        {request.status === VacationStatus.FIRST_APPROVED && (
-                                            <div className="approval-step pending">
-                                                <PendingSecondIcon className="approval-icon" />
-                                                <span>Esperando 2ª aprobación de otro administrador</span>
+                                                {request.status === VacationStatus.FIRST_APPROVED && (
+                                                    <div className="approval-step pending">
+                                                        <PendingSecondIcon className="approval-icon" />
+                                                        <span>Esperando 2ª aprobación de otro administrador</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
-                                )}
 
-                                {/* Calendario de selección */}
-                                <VacationRequestCalendar
-                                    requestedDates={request.dates}
-                                    selectedDates={selectedDatesForRequest}
-                                    onDatesSelected={(selectedDatesArray) =>
-                                        handleDatesSelected(requestKey, selectedDatesArray)
-                                    }
-                                    type={request.type}
-                                    disabled={isApproving}
-                                />
+                                    <div className="item-actions">
+                                        {canApproveRequest(request) ? (
+                                            <button
+                                                className="btn-approve"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleApproveRequest(request);
+                                                }}
+                                                title={`Dar ${getApproveButtonText(request)}`}
+                                                disabled={approvingIds.has(request.id)}
+                                            >
+                                                {approvingIds.has(request.id) ? (
+                                                    <>
+                                                        <div className="loading-spinner small"></div>
+                                                        Aprobando...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ApproveIcon />
+                                                        {getApproveButtonText(request)}
+                                                    </>
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <div className="btn-blocked" title={getBlockReason(request)}>
+                                                <BlockedIcon />
+                                                <span>No disponible</span>
+                                            </div>
+                                        )}
 
-                                <div className="request-actions">
-                                    {canApproveRequest(request) ? (
                                         <button
-                                            className="btn-approve-request"
-                                            onClick={() => handleApproveRequest(request)}
-                                            disabled={isApproving || selectedDatesForRequest.length === 0}
-                                            title={`Aprobar ${selectedDatesForRequest.length} día(s) seleccionado(s)`}
+                                            className="btn-reject"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openRejectModal(request);
+                                            }}
+                                            title="Rechazar período completo"
+                                            disabled={isRejecting}
                                         >
-                                            {isApproving ? (
-                                                <>
-                                                    <div className="loading-spinner small"></div>
-                                                    Aprobando...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <ApproveIcon />
-                                                    Aprobar días seleccionados ({selectedDatesForRequest.length})
-                                                </>
-                                            )}
+                                            <RejectIcon />
+                                            Rechazar
                                         </button>
-                                    ) : (
-                                        <div className="btn-blocked" title={getBlockReason(request)}>
-                                            <BlockedIcon />
-                                            <span>No disponible</span>
-                                        </div>
-                                    )}
-
-                                    <button
-                                        className="btn-reject"
-                                        onClick={() => openRejectModal(request)}
-                                        title="Rechazar toda la solicitud"
-                                        disabled={isRejecting}
-                                    >
-                                        <RejectIcon />
-                                        Rechazar solicitud
-                                    </button>
+                                    </div>
                                 </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Calendario de la solicitud seleccionada */}
+                    <div className="calendar-section">
+                        <h3>
+                            <CalendarIcon />
+                            Vista Previa del Período
+                        </h3>
+
+                        <VacationPendingCalendar
+                            vacationRequest={selectedRequest}
+                            conflictingVacations={getSelectedRequestConflicts()}
+                            showConflicts={true}
+                        />
+
+                        {selectedRequest && getSelectedRequestConflicts().length > 0 && (
+                            <div className="conflicts-summary">
+                                <div className="conflicts-header">
+                                    <WarningIcon className="conflicts-icon" />
+                                    <h4>Conflictos Detectados</h4>
+                                </div>
+                                <p>
+                                    Hay {getSelectedRequestConflicts().length} día(s) donde otros técnicos
+                                    también tienen vacaciones durante este período.
+                                </p>
                             </div>
-                        );
-                    })}
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -441,12 +420,16 @@ const PendingVacationsManager = ({ onUpdate }) => {
                 <div className="modal-overlay">
                     <div className="reject-modal">
                         <div className="modal-header">
-                            <h3>Rechazar Solicitud</h3>
+                            <h3>Rechazar Período de Vacaciones</h3>
                             <p>
-                                ¿Estás seguro de que quieres rechazar la solicitud de{' '}
-                                <strong>{rejectingRequest?.user.fullName}</strong> de{' '}
-                                <strong>{rejectingRequest?.dates.length} día(s)</strong>?
+                                ¿Estás seguro de que quieres rechazar el período de {' '}
+                                <strong>{rejectingRequest?.dayCount} día(s)</strong> solicitado por{' '}
+                                <strong>{rejectingRequest?.user.fullName}</strong>?
                             </p>
+                            <div className="period-info">
+                                <DateRangeIcon />
+                                <span>{formatDateRange(rejectingRequest?.startDate, rejectingRequest?.endDate)}</span>
+                            </div>
                         </div>
 
                         <div className="modal-body">
@@ -458,7 +441,7 @@ const PendingVacationsManager = ({ onUpdate }) => {
                                 <textarea
                                     value={rejectReason}
                                     onChange={(e) => setRejectReason(e.target.value)}
-                                    placeholder="Explica el motivo del rechazo..."
+                                    placeholder="Explica el motivo del rechazo del período completo..."
                                     rows="3"
                                 />
                             </div>
@@ -485,7 +468,7 @@ const PendingVacationsManager = ({ onUpdate }) => {
                                 {isRejecting ? (
                                     <>
                                         <div className="loading-spinner small"></div>
-                                        Rechazando...
+                                        Rechazando período...
                                     </>
                                 ) : (
                                     <>

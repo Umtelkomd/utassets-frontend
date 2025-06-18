@@ -57,6 +57,50 @@ const VacationCalendar = ({
         return date.toLocaleDateString('es-ES', options);
     };
 
+    // Formatear rango de fechas
+    const formatDateRange = (startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start.toDateString() === end.toDateString()) {
+            return formatDate(startDate);
+        }
+
+        const startFormatted = start.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: start.getMonth() === end.getMonth() ? undefined : 'short'
+        });
+        const endFormatted = end.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        return `${startFormatted} - ${endFormatted}`;
+    };
+
+    // Calcular días en el rango
+    const calculateDayCount = (startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = end.getTime() - start.getTime();
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    };
+
+    // Verificar si una fecha está dentro de un rango de vacación
+    const isDateInVacationRange = (date, vacation) => {
+        const checkDate = new Date(date);
+        const startDate = new Date(vacation.startDate);
+        const endDate = new Date(vacation.endDate);
+
+        // Normalizar horas para comparar solo fechas
+        checkDate.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+
+        return checkDate >= startDate && checkDate <= endDate;
+    };
+
     // Navegación del calendario
     const goToPreviousMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -95,8 +139,7 @@ const VacationCalendar = ({
         for (let day = 1; day <= daysInMonth; day++) {
             const currentDay = new Date(year, month, day);
             let dayVacations = vacations.filter(vacation => {
-                const vacationDate = new Date(vacation.date);
-                return currentDay.toDateString() === vacationDate.toDateString();
+                return isDateInVacationRange(currentDay, vacation);
             });
 
             // Filtrar vacaciones si está en modo personal
@@ -322,7 +365,15 @@ const VacationCalendar = ({
                                 </h4>
                             )}
                             <p className="vacation-calendar-tooltip-date">
-                                Fecha: {formatDate(hoveredVacation.date)}
+                                {calculateDayCount(hoveredVacation.startDate, hoveredVacation.endDate) === 1 ? (
+                                    <>Fecha: {formatDate(hoveredVacation.startDate)}</>
+                                ) : (
+                                    <>
+                                        Período: {formatDateRange(hoveredVacation.startDate, hoveredVacation.endDate)}
+                                        <br />
+                                        <small>({calculateDayCount(hoveredVacation.startDate, hoveredVacation.endDate)} días)</small>
+                                    </>
+                                )}
                             </p>
                             <p className="vacation-calendar-tooltip-type">
                                 {hoveredVacation.type === 'rest_day' ? 'Día de descanso' : 'Día extra trabajado'}

@@ -622,11 +622,24 @@ const Profile = () => {
                                         <div key={vacation.id} className="request-item">
                                             <div className="request-date">
                                                 <CalendarTodayIcon />
-                                                {new Date(vacation.date).toLocaleDateString('es-ES', {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric'
-                                                })}
+                                                {vacation.dayCount === 1 ? (
+                                                    new Date(vacation.startDate).toLocaleDateString('es-ES', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric'
+                                                    })
+                                                ) : (
+                                                    `${new Date(vacation.startDate).toLocaleDateString('es-ES', {
+                                                        day: 'numeric',
+                                                        month: vacation.startDate && vacation.endDate &&
+                                                            new Date(vacation.startDate).getMonth() === new Date(vacation.endDate).getMonth()
+                                                            ? undefined : 'short'
+                                                    })} - ${new Date(vacation.endDate).toLocaleDateString('es-ES', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric'
+                                                    })}`
+                                                )}
                                             </div>
 
                                             <div className="request-type">
@@ -711,7 +724,11 @@ const Profile = () => {
                                 showOnlyOwnVacations={true}
                                 currentUserId={currentUser?.id}
                                 onDateClick={(date) => {
-                                    const formattedDate = date.toISOString().split('T')[0];
+                                    // Formatear la fecha manteniendo la zona horaria local
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const formattedDate = `${year}-${month}-${day}`;
                                     setSelectedVacationDate(formattedDate);
                                     setShowVacationForm(true);
                                 }}

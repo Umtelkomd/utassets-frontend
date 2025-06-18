@@ -130,6 +130,44 @@ export const vacationService = {
         }
     },
 
+    // Obtener solicitudes de vacaciones pendientes agrupadas por períodos
+    getPendingVacationsGrouped: async (year = null) => {
+        try {
+            const params = year ? { year } : {};
+            const response = await axiosInstance.get('/vacations/pending/grouped', { params });
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener solicitudes pendientes agrupadas:', error);
+            throw error;
+        }
+    },
+
+    // Aprobar un período completo de vacaciones
+    approvePeriodVacations: async (vacationIds) => {
+        try {
+            const response = await axiosInstance.put('/vacations/approve/period', {
+                vacationIds
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error al aprobar período de vacaciones:', error);
+            throw error;
+        }
+    },
+
+    // Rechazar un período completo de vacaciones
+    rejectPeriodVacations: async (vacationIds, reason = '') => {
+        try {
+            const response = await axiosInstance.delete('/vacations/reject/period', {
+                data: { vacationIds, reason }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error al rechazar período de vacaciones:', error);
+            throw error;
+        }
+    },
+
     // Aprobar una solicitud de vacación (sistema de doble aprobación)
     // - Si está en estado 'pending', pasa a 'first_approved'
     // - Si está en estado 'first_approved', pasa a 'fully_approved'
@@ -166,19 +204,6 @@ export const vacationService = {
             return response.data;
         } catch (error) {
             console.error('Error al aprobar vacaciones múltiples:', error);
-            throw error;
-        }
-    },
-
-    // Aprobar días específicos de una solicitud agrupada
-    approveSelectedDaysFromRequest: async (vacationIds) => {
-        try {
-            const response = await axiosInstance.put('/vacations/approve/selected-days', {
-                vacationIds
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error al aprobar días seleccionados:', error);
             throw error;
         }
     },

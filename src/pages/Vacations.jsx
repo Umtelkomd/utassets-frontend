@@ -43,8 +43,9 @@ const Vacations = () => {
         isOpen: false,
         vacationId: null,
         userName: '',
-        date: '',
-        type: ''
+        dateRange: '',
+        type: '',
+        dayCount: 0
     });
     const [cancelModal, setCancelModal] = useState({
         isOpen: false,
@@ -112,6 +113,34 @@ const Vacations = () => {
         return `${year}-${month}-${day}`;
     };
 
+    const formatDateRange = (startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start.toDateString() === end.toDateString()) {
+            return formatDate(startDate);
+        }
+
+        const startFormatted = start.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: start.getMonth() === end.getMonth() ? undefined : 'short'
+        });
+        const endFormatted = end.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        return `${startFormatted} - ${endFormatted}`;
+    };
+
+    const calculateDayCount = (startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = end.getTime() - start.getTime();
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    };
+
     const handleDateClick = async (date) => {
         setSelectedDate(date);
         const formattedDate = formatDateForInput(date);
@@ -164,8 +193,8 @@ const Vacations = () => {
             setConflictingUsers([]);
 
             // Mostrar mensaje personalizado según la respuesta
-            if (response.data.count > 1) {
-                toast.success(`Se crearon ${response.data.count} días de vacación correctamente`);
+            if (response.data.dayCount > 1) {
+                toast.success(`Se creó la vacación de ${response.data.dayCount} días correctamente`);
             } else {
                 toast.success('Vacación agregada correctamente');
             }
@@ -195,8 +224,9 @@ const Vacations = () => {
             isOpen: false,
             vacationId: null,
             userName: '',
-            date: '',
-            type: ''
+            dateRange: '',
+            type: '',
+            dayCount: 0
         });
     };
 
@@ -219,12 +249,18 @@ const Vacations = () => {
     };
 
     const handleVacationClick = (vacation) => {
+        const dayCount = calculateDayCount(vacation.startDate, vacation.endDate);
+        const dateRange = dayCount === 1
+            ? formatDate(vacation.startDate)
+            : formatDateRange(vacation.startDate, vacation.endDate);
+
         setDeleteModal({
             isOpen: true,
             vacationId: vacation.id,
             userName: vacation.user?.fullName || 'Usuario',
-            date: formatDate(vacation.date),
-            type: vacation.type === 'rest_day' ? 'día de descanso' : 'día extra trabajado'
+            dateRange: dateRange,
+            type: vacation.type === 'rest_day' ? 'día de descanso' : 'día extra trabajado',
+            dayCount: dayCount
         });
     };
 
@@ -482,7 +518,9 @@ const Vacations = () => {
                                                 {conflictingUsers.map(conflict => (
                                                     <li key={conflict.id}>
                                                         {conflict.user.fullName}
-                                                        {conflict.date && ` - ${formatDate(conflict.date)}`}
+                                                        {conflict.startDate && conflict.endDate && (
+                                                            ` - ${formatDateRange(conflict.startDate, conflict.endDate)}`
+                                                        )}
                                                     </li>
                                                 ))}
                                             </ul>
@@ -546,7 +584,7 @@ const Vacations = () => {
                                                 </div>
                                                 <div className="toggle-content">
                                                     <h4>Múltiples días consecutivos</h4>
-                                                    <p>Crea varias vacaciones en un rango de fechas</p>
+                                                    <p>Crea una sola vacación en un rango de fechas</p>
                                                 </div>
                                                 <div className="toggle-switch">
                                                     <div className="switch-slider"></div>
@@ -575,7 +613,7 @@ const Vacations = () => {
                                             />
                                             {formData.date && formData.endDate && (
                                                 <small className="date-range-info">
-                                                    Se crearán {getDaysBetween(formData.date, formData.endDate)} día(s) de vacación
+                                                    Se creará una vacación de {getDaysBetween(formData.date, formData.endDate)} día(s)
                                                 </small>
                                             )}
                                         </div>
@@ -667,9 +705,17 @@ const Vacations = () => {
                             isOpen={deleteModal.isOpen}
                             onClose={closeDeleteModal}
                             onConfirm={handleDeleteVacation}
-                            itemName={`${deleteModal.userName} - ${deleteModal.date}`}
+                            itemName={`${deleteModal.userName} - ${deleteModal.dateRange}`}
                             title="Confirmar Eliminación de Vacación"
-                            message={`¿Estás seguro de que deseas eliminar este ${deleteModal.type} de ${deleteModal.userName} el ${deleteModal.date}?`}
+                            message={`¿Estás seguro de que deseas eliminar este ${deleteModal.type} de ${deleteModal.userName}?`}
+                            details={deleteModal.dayCount > 1 ? (
+                                <div>
+                                    <p><strong>Período:</strong> {deleteModal.dateRange}</p>
+                                    <p><strong>Duración:</strong> {deleteModal.dayCount} días</p>
+                                </div>
+                            ) : (
+                                <p><strong>Fecha:</strong> {deleteModal.dateRange}</p>
+                            )}
                         />
                     )}
 
