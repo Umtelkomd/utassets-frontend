@@ -1,0 +1,168 @@
+/* Estilos estandarizados para filtros y select en todas las listas */
+
+.standard-search-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    align-items: center;
+}
+
+.standard-search-container {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.standard-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #666;
+    z-index: 1;
+}
+
+.standard-search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 1rem 0 3rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.standard-search-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.standard-filter-dropdown {
+    position: relative;
+    min-width: 200px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.standard-filter-dropdown.fuel-type-filter {
+    min-width: 230px;
+}
+
+.standard-filter-icon {
+    position: absolute;
+    left: 12px;
+    color: #666;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.standard-filter-select {
+    width: 100%;
+    height: 100%;
+    padding: 0 1rem 0 3rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: transparent;
+    cursor: pointer;
+    appearance: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.standard-filter-select:focus {
+    background-color: #f8f9fa;
+}
+
+.standard-filter-select:hover {
+    background-color: #f8f9fa;
+}
+
+/* Flecha personalizada para select */
+.standard-filter-dropdown::after {
+    content: '▼';
+    position: absolute;
+    right: 12px;
+    color: #666;
+    pointer-events: none;
+    font-size: 0.8rem;
+}
+
+.standard-btn-secondary {
+    height: 40px;
+    padding: 0 1.5rem;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #666;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.standard-btn-secondary:hover {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+}
+
+/* Estilos específicos para filter-group que contiene los filtros estándar */
+.filter-group .standard-filter-dropdown {
+    margin-right: 1rem;
+}
+
+.filter-group .standard-filter-icon {
+    left: 12px;
+    z-index: 2;
+}
+
+.filter-group .standard-filter-select {
+    padding-left: 3rem;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .standard-search-section {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .standard-search-container,
+    .standard-filter-dropdown {
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .standard-btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .standard-search-section {
+        padding: 0.75rem;
+    }
+
+    .standard-search-input,
+    .standard-filter-select {
+        font-size: 16px; /* Previene zoom en iOS */
+    }
+} 

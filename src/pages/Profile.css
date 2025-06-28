@@ -522,7 +522,7 @@
   margin-bottom: 2rem;
 }
 
-.stat-card {
+.profile-container .stat-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -533,24 +533,24 @@
   transition: all 0.3s ease;
 }
 
-.stat-card:hover {
+.profile-container .stat-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-.stat-card.available {
+.profile-container .stat-card.available {
   border-left: 4px solid #10b981;
 }
 
-.stat-card.used {
+.profile-container .stat-card.used {
   border-left: 4px solid #f59e0b;
 }
 
-.stat-card.extra {
+.profile-container .stat-card.extra {
   border-left: 4px solid #8b5cf6;
 }
 
-.stat-icon {
+.profile-container .stat-icon {
   flex-shrink: 0;
   padding: 1rem;
   border-radius: 10px;
@@ -559,38 +559,38 @@
   justify-content: center;
 }
 
-.stat-card.available .stat-icon {
+.profile-container .stat-card.available .stat-icon {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
 }
 
-.stat-card.used .stat-icon {
+.profile-container .stat-card.used .stat-icon {
   background: rgba(245, 158, 11, 0.1);
   color: #f59e0b;
 }
 
-.stat-card.extra .stat-icon {
+.profile-container .stat-card.extra .stat-icon {
   background: rgba(139, 92, 246, 0.1);
   color: #8b5cf6;
 }
 
-.stat-icon svg {
+.profile-container .stat-icon svg {
   font-size: 1.5rem !important;
 }
 
-.stat-content {
+.profile-container .stat-content {
   display: flex;
   flex-direction: column;
 }
 
-.stat-value {
+.profile-container .stat-value {
   font-size: 2rem;
   font-weight: 700;
   color: #111827;
   line-height: 1;
 }
 
-.stat-label {
+.profile-container .stat-label {
   font-size: 0.9rem;
   color: #6b7280;
   font-weight: 500;
@@ -801,19 +801,19 @@
     justify-self: center;
   }
 
-  .stat-card {
+  .profile-container .stat-card {
     padding: 1.25rem;
   }
 
-  .stat-icon {
+  .profile-container .stat-icon {
     padding: 0.75rem;
   }
 
-  .stat-icon svg {
+  .profile-container .stat-icon svg {
     font-size: 1.25rem !important;
   }
 
-  .stat-value {
+  .profile-container .stat-value {
     font-size: 1.75rem;
   }
 

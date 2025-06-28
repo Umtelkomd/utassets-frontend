@@ -13,6 +13,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ResetPassword from './pages/ResetPassword';
+import ConfirmEmail from './pages/ConfirmEmail';
 import Dashboard from './pages/Dashboard';
 import InventoryList from './pages/InventoryList';
 import InventoryForm from './pages/InventoryForm';
@@ -37,6 +38,10 @@ import VehicleRentalForm from './pages/VehicleRentalForm';
 import HousingRentalForm from './pages/HousingRentalForm';
 import InventoryRentalForm from './pages/InventoryRentalForm';
 import AuthCallback from './pages/AuthCallback';
+import Financings from './pages/Financings';
+import FinancingDetail from './pages/FinancingDetail';
+import AddFinancing from './pages/AddFinancing';
+import EditFinancing from './pages/EditFinancing';
 
 // Contextos
 import { AuthProvider } from './context/AuthContext';
@@ -69,6 +74,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/confirm-email" element={<ConfirmEmail />} />
             <Route path="/access-denied" element={<AccessDenied />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/reports" element={<Reports />} />
@@ -319,6 +325,44 @@ function App() {
                 <ProtectedRoute 
                   element={<PageContainer><HousingForm /></PageContainer>}
                   requiredPermission="canEditHousing"
+                />
+              } 
+            />
+
+            {/* Rutas de Financiamientos */}
+            <Route 
+              path="/financings" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><Financings /></PageContainer>}
+                  requiredPermission="canAccessSettings"
+                />
+              } 
+            />
+            <Route 
+              path="/financings/new" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><AddFinancing /></PageContainer>}
+                  requiredPermission="canAccessSettings"
+                />
+              } 
+            />
+            <Route 
+              path="/financings/:id" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><FinancingDetail /></PageContainer>}
+                  requiredPermission="canAccessSettings"
+                />
+              } 
+            />
+            <Route 
+              path="/financings/:id/edit" 
+              element={
+                <ProtectedRoute 
+                  element={<PageContainer><EditFinancing /></PageContainer>}
+                  requiredPermission="canAccessSettings"
                 />
               } 
             />

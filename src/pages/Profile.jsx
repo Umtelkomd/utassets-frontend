@@ -541,7 +541,7 @@ const Profile = () => {
                             <p>Gestiona tus solicitudes de vacaciones y consulta tu calendario personal</p>
                             <div className="vacation-info-banner">
                                 <HourglassFullIcon className="info-icon" />
-                                <span>Las solicitudes de vacación requieren aprobación de dos administradores</span>
+                                <span>Las solicitudes de vacaciónes requieren aprobación de dos administradores</span>
                             </div>
                             <button
                                 className="btn-primary"
@@ -688,19 +688,6 @@ const Profile = () => {
                                                             </span>
                                                         </div>
                                                     )}
-                                                </div>
-                                            )}
-
-                                            {/* Información de rechazo */}
-                                            {vacation.status === VacationStatus.REJECTED && (
-                                                <div className="rejection-info">
-                                                    <CancelScheduleSendIcon className="rejection-icon" />
-                                                    <div className="rejection-details">
-                                                        <span>Rechazada por: {vacation.rejectedBy?.fullName || 'Administrador'}</span>
-                                                        {vacation.rejectionReason && (
-                                                            <p className="rejection-reason">Motivo: {vacation.rejectionReason}</p>
-                                                        )}
-                                                    </div>
                                                 </div>
                                             )}
                                         </div>

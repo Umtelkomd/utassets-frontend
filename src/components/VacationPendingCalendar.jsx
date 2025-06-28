@@ -279,12 +279,6 @@ const VacationPendingCalendar = ({
                     <div className="legend-color end-color"></div>
                     <span>Fin</span>
                 </div>
-                {showConflicts && (
-                    <div className="legend-item">
-                        <div className="legend-color conflict-color"></div>
-                        <span>Conflictos</span>
-                    </div>
-                )}
             </div>
         </div>
     );

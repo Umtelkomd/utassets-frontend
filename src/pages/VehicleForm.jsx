@@ -159,10 +159,23 @@ const VehicleForm = () => {
                         return `${year}-${month}-${day}`;
                     };
 
-                    // Asegurar que responsibleUsers sea un array de objetos con id
-                    const formattedResponsibleUsers = vehicle.responsibleUsers?.map(user => ({
-                        id: typeof user === 'object' ? user.id : user
-                    })) || [];
+                    // Asegurar que responsibleUsers sea un array de objetos completos
+                    const formattedResponsibleUsers = vehicle.responsibleUsers?.map(user => {
+                        if (typeof user === 'object') {
+                            return {
+                                id: user.id,
+                                fullName: user.fullName,
+                                name: user.name,
+                                last_name: user.last_name,
+                                username: user.username,
+                                email: user.email,
+                                role: user.role,
+                                isActive: user.isActive
+                            };
+                        } else {
+                            return { id: user };
+                        }
+                    }) || [];
 
 
                     setFormData({
@@ -637,9 +650,20 @@ const VehicleForm = () => {
                                                     <span className="detail-label">Técnicos:</span>
                                                     <div className="technicians-list">
                                                         {formData.responsibleUsers.map((user, index) => {
-                                                            const userName = typeof user === 'object' ?
-                                                                (user.fullName || `${user.name} ${user.last_name}`) :
-                                                                'Usuario desconocido';
+                                                            let userName = 'Usuario desconocido';
+
+                                                            if (typeof user === 'object') {
+                                                                if (user.fullName) {
+                                                                    userName = user.fullName;
+                                                                } else if (user.name && user.last_name) {
+                                                                    userName = `${user.name} ${user.last_name}`;
+                                                                } else if (user.name) {
+                                                                    userName = user.name;
+                                                                } else if (user.username) {
+                                                                    userName = user.username;
+                                                                }
+                                                            }
+
                                                             return (
                                                                 <span key={index} className="technician-chip">
                                                                     <PersonIcon className="technician-icon" />
@@ -693,7 +717,7 @@ const VehicleForm = () => {
                                                                     onClick={() => toggleUserSelection(user.id)}
                                                                 >
                                                                     <PersonIcon className="user-icon" />
-                                                                    <span>{user.fullName || `${user.name} ${user.last_name}`}</span>
+                                                                    <span>{user.fullName || (user.name && user.last_name ? `${user.name} ${user.last_name}` : user.name || user.username || 'Usuario sin nombre')}</span>
                                                                 </div>
                                                             ))}
                                                         </div>

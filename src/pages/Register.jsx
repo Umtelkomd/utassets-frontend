@@ -188,7 +188,15 @@ const Register = () => {
                 }
             });
 
-            toast.success('Registro exitoso. Por favor inicia sesión.');
+            toast.success(response.data.message || 'Registro exitoso. Revisa tu correo electrónico para confirmar tu cuenta.');
+
+            // Mostrar información adicional sobre la confirmación
+            setTimeout(() => {
+                toast.info('Revisa tu bandeja de entrada (y carpeta de spam) para el correo de confirmación.', {
+                    autoClose: 7000,
+                });
+            }, 2000);
+
             navigate('/login');
         } catch (error) {
             console.error('Error en el registro:', error);

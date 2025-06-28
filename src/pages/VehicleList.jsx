@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../axiosConfig';
 import './VehicleList.css';
+import '../components/FilterStyles.css';
 import { usePermissions } from '../context/PermissionsContext';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -244,24 +245,24 @@ const VehicleList = () => {
                     )}
                 </div>
 
-                <div className="search-section">
-                    <div className="search-container">
-                        <SearchIcon className="search-icon" />
+                <div className="standard-search-section">
+                    <div className="standard-search-container">
+                        <SearchIcon className="standard-search-icon" />
                         <input
                             type="text"
                             placeholder="Buscar por marca, modelo, placa..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
+                            className="standard-search-input"
                         />
                     </div>
 
-                    <div className="filter-dropdown">
-                        <FilterListIcon className="filter-icon" />
+                    <div className="standard-filter-dropdown">
+                        <FilterListIcon className="standard-filter-icon" />
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="filter-select"
+                            className="standard-filter-select"
                         >
                             <option value="">Todos los estados</option>
                             {vehicleStatuses.map(status => (
@@ -270,12 +271,12 @@ const VehicleList = () => {
                         </select>
                     </div>
 
-                    <div className="filter-dropdown">
-                        <FilterListIcon className="filter-icon" />
+                    <div className="standard-filter-dropdown">
+                        <FilterListIcon className="standard-filter-icon" />
                         <select
                             value={brandFilter}
                             onChange={(e) => setBrandFilter(e.target.value)}
-                            className="filter-select"
+                            className="standard-filter-select"
                         >
                             <option value="">Todas las marcas</option>
                             {brands.map(brand => (
@@ -284,12 +285,12 @@ const VehicleList = () => {
                         </select>
                     </div>
 
-                    <div className="filter-dropdown">
-                        <FilterListIcon className="filter-icon" />
+                    <div className="standard-filter-dropdown fuel-type-filter">
+                        <FilterListIcon className="standard-filter-icon" />
                         <select
                             value={fuelTypeFilter}
                             onChange={(e) => setFuelTypeFilter(e.target.value)}
-                            className="filter-select"
+                            className="standard-filter-select"
                         >
                             <option value="">Todos los combustibles</option>
                             {fuelTypes.map(type => (
@@ -358,9 +359,20 @@ const VehicleList = () => {
                                                                 <span className="detail-label">Técnicos:</span>
                                                                 <div className="technicians-list">
                                                                     {vehicle.responsibleUsers.map((user, index) => {
-                                                                        const userName = typeof user === 'object' ?
-                                                                            (user.fullName || `${user.name} ${user.last_name}`) :
-                                                                            'Usuario desconocido';
+                                                                        let userName = 'Usuario desconocido';
+
+                                                                        if (typeof user === 'object') {
+                                                                            if (user.fullName) {
+                                                                                userName = user.fullName;
+                                                                            } else if (user.name && user.last_name) {
+                                                                                userName = `${user.name} ${user.last_name}`;
+                                                                            } else if (user.name) {
+                                                                                userName = user.name;
+                                                                            } else if (user.username) {
+                                                                                userName = user.username;
+                                                                            }
+                                                                        }
+
                                                                         return (
                                                                             <span key={index} className="technician-chip">
                                                                                 <PersonIcon className="technician-icon" />
@@ -380,7 +392,7 @@ const VehicleList = () => {
                                                         <EditButton
                                                             itemId={vehicle.id}
                                                             type="vehicle"
-                                                            className="action-button edit-button"
+                                                            className="vehicle-action-button vehicle-edit-button"
                                                         />
                                                     )}
                                                     {hasPermission('canDeleteVehicle') && (
@@ -388,7 +400,7 @@ const VehicleList = () => {
                                                             onDelete={() => handleDelete(vehicle)}
                                                             itemId={vehicle.id}
                                                             itemName={vehicle.name}
-                                                            className="action-button delete-button"
+                                                            className="vehicle-action-button vehicle-delete-button"
                                                         />
                                                     )}
                                                 </div>

@@ -1,8 +1,0 @@
-# Redirects for React Router on Render
-# This ensures that all routes are handled by React Router instead of the server
-
-# Handle all routes under /utassets
-/utassets/* /utassets/index.html 200
-
-# Fallback for any other routes
-/* /utassets/index.html 200 

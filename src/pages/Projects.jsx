@@ -5,18 +5,21 @@ import './Projects.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import * as projectService from '../services/projectService.ts';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import { useJsApiLoader } from '@react-google-maps/api';
 
 // Iconos
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import SortIcon from '@mui/icons-material/Sort';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import CancelIcon from '@mui/icons-material/Cancel';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import {
+    Add as AddIcon,
+    Edit as EditIcon,
+    Delete as DeleteIcon,
+    Search as SearchIcon,
+    Sort as SortIcon,
+    FilterList as FilterListIcon,
+    LocationOn as LocationOnIcon,
+    CalendarToday as CalendarTodayIcon,
+    Cancel as CancelIcon,
+    Visibility as VisibilityIcon
+} from '@mui/icons-material';
 
 // Coordenadas por defecto (Paderborn, Alemania)
 const DEFAULT_LOCATION = {
@@ -94,6 +97,13 @@ const Projects = () => {
         startDate: '',
         endDate: '',
         status: 'activo'
+    });
+
+    // Cargar la API de Google Maps una sola vez a nivel superior con librerías adicionales
+    const { isLoaded: isMapLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API,
+        libraries: ['places', 'geometry']
     });
 
     /* Ubicaciones importantes para la empresa */
@@ -439,21 +449,21 @@ const Projects = () => {
                                 <div className="project-card-actions">
                                     <button
                                         onClick={() => openViewModal(project)}
-                                        className="action-button view"
+                                        className="btn-action view"
                                         title="Ver detalles"
                                     >
                                         <VisibilityIcon />
                                     </button>
                                     <button
                                         onClick={() => openEditModal(project)}
-                                        className="action-button edit"
+                                        className="btn-action edit"
                                         title="Editar"
                                     >
                                         <EditIcon />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteClick(project)}
-                                        className="action-button delete"
+                                        className="btn-action delete"
                                         title="Eliminar"
                                     >
                                         <DeleteIcon />
@@ -520,6 +530,7 @@ const Projects = () => {
                 fetchProjects={fetchProjects}
                 formData={formData}
                 setFormData={setFormData}
+                isMapLoaded={isMapLoaded}
             />
 
             {/* Modal para ver detalles del proyecto */}
@@ -598,7 +609,7 @@ const Projects = () => {
                                         setShowViewModal(false);
                                         openEditModal(currentProject);
                                     }}
-                                    className="edit-button"
+                                    className="btn-action edit"
                                 >
                                     <EditIcon /> Editar Proyecto
                                 </button>

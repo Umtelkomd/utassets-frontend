@@ -38,6 +38,12 @@ const rolePermissions = {
     canDeleteRental: true,
     canViewAllRentals: true,
     canManageVacations: true,
+    // Permisos de financiamientos
+    canCreateFinancings: true,
+    canEditFinancings: true,
+    canDeleteFinancings: true,
+    canViewFinancings: true,
+    canRecordPayments: true,
   },
   tecnico: {
     canCreateVehicle: false,
@@ -63,7 +69,13 @@ const rolePermissions = {
     canDeleteHousing: false,
     canViewAllHousing: false,
     canManageVacations: false,
-      }
+    // Permisos de financiamientos para técnicos
+    canCreateFinancings: false,
+    canEditFinancings: false,
+    canDeleteFinancings: false,
+    canViewFinancings: true,
+    canRecordPayments: true,
+  }
 };
 
 // Proveedor del contexto de permisos

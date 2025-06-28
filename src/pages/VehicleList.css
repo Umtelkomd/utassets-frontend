@@ -137,31 +137,37 @@
   width: 100%;
 }
 
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 20px;
+/* Tabla específica de VehicleList */
+.vehicle-list-container .table-container table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 20px !important;
+  margin-bottom: 0 !important; /* Evitar margin de App.css */
 }
 
-tbody {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-  padding: 20px;
-  width: 100%;
+/* Reforzar especificidad para evitar conflictos con App.css */
+.vehicle-list-container .table-container tbody {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)) !important;
+  gap: 20px !important;
+  padding: 20px !important;
+  width: 100% !important;
 }
 
-.vehicle-card-row {
-  width: 100%;
-  border-bottom: none;
+/* Reforzar estilos de filas y celdas */
+.vehicle-list-container .table-container .vehicle-card-row {
+  width: 100% !important;
+  border-bottom: none !important;
 }
 
-.vehicle-card-row:hover {
-  background-color: transparent;
+.vehicle-list-container .table-container .vehicle-card-row:hover {
+  background-color: transparent !important;
 }
 
-.vehicle-card-cell {
-  padding: 0;
+.vehicle-list-container .table-container .vehicle-card-cell {
+  padding: 0 !important;
+  border-bottom: none !important; /* Evitar bordes de App.css */
+  text-align: left !important;
 }
 
 .vehicle-card {
@@ -324,7 +330,7 @@ tbody {
   gap: 0.4rem;
 }
 
-.action-button {
+.vehicle-action-button {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -336,19 +342,19 @@ tbody {
   justify-content: center;
 }
 
-.view-button {
+.vehicle-view-button {
   background-color: #1976d2;
 }
 
-.edit-button {
+.vehicle-edit-button {
   background-color: #f57c00;
 }
 
-.delete-button {
+.vehicle-delete-button {
   background-color: #c62828;
 }
 
-.action-button:hover {
+.vehicle-action-button:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
 }
@@ -387,21 +393,21 @@ tbody {
     flex-wrap: wrap;
   }
 
-  .action-button {
+  .vehicle-action-button {
     flex: 1;
   }
 
-  tbody {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    padding: 10px;
-    gap: 15px;
+  .vehicle-list-container .table-container tbody {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    padding: 10px !important;
+    gap: 15px !important;
   }
 }
 
 @media (max-width: 576px) {
-  tbody {
-    grid-template-columns: 1fr;
-    padding: 10px;
+  .vehicle-list-container .table-container tbody {
+    grid-template-columns: 1fr !important;
+    padding: 10px !important;
   }
 }
 

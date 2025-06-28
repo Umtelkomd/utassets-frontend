@@ -90,50 +90,110 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
         return 'Fecha no disponible';
     };
 
-    // Función para agrupar conflictos por usuario
-    const getGroupedConflicts = () => {
-        const grouped = conflicts.reduce((acc, conflict) => {
-            const userName = conflict.user?.fullName || conflict.fullName || 'Usuario desconocido';
-            if (!acc[userName]) {
-                acc[userName] = [];
-            }
-            acc[userName].push(conflict);
-            return acc;
-        }, {});
+    // Función para obtener conflictos detallados por fecha
+    const getDetailedConflicts = () => {
+        if (!formData.date || formData.type !== 'rest_day') return [];
 
-        return Object.entries(grouped).map(([userName, userConflicts]) => ({
-            userName,
-            conflicts: userConflicts
-        }));
+        // Generar todas las fechas del rango solicitado
+        const requestDates = [];
+        const startDate = new Date(formData.date);
+        const endDate = formData.isRange && formData.endDate ? new Date(formData.endDate) : startDate;
+
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            requestDates.push(new Date(d));
+        }
+
+        // Para cada fecha del rango, encontrar conflictos
+        const conflictsByDate = [];
+
+        requestDates.forEach(date => {
+            const dateString = date.toISOString().split('T')[0];
+            const dayConflicts = conflicts.filter(conflict => {
+                // Si el conflicto tiene startDate y endDate (rango)
+                if (conflict.startDate && conflict.endDate) {
+                    const conflictStart = new Date(conflict.startDate);
+                    const conflictEnd = new Date(conflict.endDate);
+                    return date >= conflictStart && date <= conflictEnd;
+                }
+                // Si el conflicto es de un solo día
+                if (conflict.date) {
+                    const conflictDate = new Date(conflict.date);
+                    return date.toDateString() === conflictDate.toDateString();
+                }
+                return false;
+            });
+
+            if (dayConflicts.length > 0) {
+                conflictsByDate.push({
+                    date: date,
+                    dateString: dateString,
+                    conflicts: dayConflicts
+                });
+            }
+        });
+
+        return conflictsByDate;
+    };
+
+    // Función para agrupar conflictos por usuario (versión mejorada)
+    const getGroupedConflicts = () => {
+        const detailed = getDetailedConflicts();
+        const grouped = {};
+
+        detailed.forEach(dateConflict => {
+            dateConflict.conflicts.forEach(conflict => {
+                const userName = conflict.user?.fullName || conflict.fullName || 'Usuario desconocido';
+                if (!grouped[userName]) {
+                    grouped[userName] = {
+                        userName,
+                        dates: [],
+                        conflicts: []
+                    };
+                }
+
+                // Agregar fecha si no está ya en la lista
+                const dateString = dateConflict.date.toISOString().split('T')[0];
+                if (!grouped[userName].dates.some(d => d.dateString === dateString)) {
+                    grouped[userName].dates.push({
+                        date: dateConflict.date,
+                        dateString: dateString,
+                        conflict: conflict
+                    });
+                }
+
+                // Agregar conflicto si no está ya en la lista
+                if (!grouped[userName].conflicts.some(c => c.id === conflict.id)) {
+                    grouped[userName].conflicts.push(conflict);
+                }
+            });
+        });
+
+        return Object.values(grouped);
     };
 
     // Contar días únicos con conflictos
     const getConflictDaysCount = () => {
-        if (!formData.isRange || !formData.endDate) {
-            return conflicts.length > 0 ? 1 : 0;
-        }
+        const detailed = getDetailedConflicts();
+        return detailed.length;
+    };
 
-        const conflictDates = new Set();
-        conflicts.forEach(conflict => {
-            if (conflict.startDate && conflict.endDate) {
-                const start = new Date(conflict.startDate);
-                const end = new Date(conflict.endDate);
-                const requestStart = new Date(formData.date);
-                const requestEnd = new Date(formData.endDate);
+    // Obtener resumen de conflictos para mostrar
+    const getConflictSummary = () => {
+        const grouped = getGroupedConflicts();
+        const totalDays = getConflictDaysCount();
+        const totalPeople = grouped.length;
 
-                // Encontrar superposición entre rangos
-                const overlapStart = new Date(Math.max(start.getTime(), requestStart.getTime()));
-                const overlapEnd = new Date(Math.min(end.getTime(), requestEnd.getTime()));
+        if (totalDays === 0) return null;
 
-                if (overlapStart <= overlapEnd) {
-                    for (let d = new Date(overlapStart); d <= overlapEnd; d.setDate(d.getDate() + 1)) {
-                        conflictDates.add(d.toDateString());
-                    }
-                }
-            }
-        });
+        // Crear resumen de personas
+        const peopleNames = grouped.map(g => g.userName).join(', ');
 
-        return conflictDates.size;
+        return {
+            totalDays,
+            totalPeople,
+            peopleNames,
+            grouped
+        };
     };
 
     const handleInputChange = (e) => {
@@ -160,6 +220,20 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
         if (formData.isRange && new Date(formData.endDate) < new Date(formData.date)) {
             toast.error('La fecha de fin no puede ser anterior a la fecha de inicio');
             return;
+        }
+
+        // Validar días disponibles para días de descanso
+        if (formData.type === 'rest_day' && availableDays) {
+            const requestedDays = formData.isRange && formData.endDate
+                ? getDaysBetween(formData.date, formData.endDate)
+                : 1;
+
+            if (requestedDays > availableDays.availableDays) {
+                toast.error(
+                    `No tienes suficientes días disponibles. Solicitas ${requestedDays} días, pero solo tienes ${availableDays.availableDays} días disponibles.`
+                );
+                return;
+            }
         }
 
         try {
@@ -202,6 +276,27 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     };
 
+    // Calcular días solicitados actuales
+    const getCurrentlyRequestedDays = () => {
+        if (formData.type !== 'rest_day') return 0;
+
+        return formData.isRange && formData.endDate
+            ? getDaysBetween(formData.date, formData.endDate)
+            : formData.date ? 1 : 0;
+    };
+
+    // Calcular días restantes después de esta solicitud
+    const getDaysAfterRequest = () => {
+        if (!availableDays) return null;
+        return availableDays.availableDays - getCurrentlyRequestedDays();
+    };
+
+    // Verificar si la solicitud excede los días disponibles
+    const isRequestExceedingLimit = () => {
+        if (formData.type !== 'rest_day' || !availableDays) return false;
+        return getCurrentlyRequestedDays() > availableDays.availableDays;
+    };
+
     return (
         <div className="vacation-request-modal-overlay">
             <div className="vacation-request-modal">
@@ -234,6 +329,31 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
                                 <span className="days-value">{availableDays.extraWorkDays}</span>
                             </div>
                         </div>
+
+                        {/* Indicador de solicitud actual */}
+                        {formData.type === 'rest_day' && getCurrentlyRequestedDays() > 0 && (
+                            <div className={`current-request-info ${isRequestExceedingLimit() ? 'exceeding' : ''}`}>
+                                <div className="request-calculation">
+                                    <div className="calculation-item">
+                                        <span className="calculation-label">Solicitando:</span>
+                                        <span className="calculation-value">{getCurrentlyRequestedDays()} día(s)</span>
+                                    </div>
+                                    <div className="calculation-item">
+                                        <span className="calculation-label">Quedarían:</span>
+                                        <span className={`calculation-value ${getDaysAfterRequest() < 0 ? 'negative' : getDaysAfterRequest() <= 5 ? 'low' : 'normal'}`}>
+                                            {getDaysAfterRequest()} día(s)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {isRequestExceedingLimit() && (
+                                    <div className="limit-exceeded-warning">
+                                        <WarningIcon />
+                                        <span>⚠️ Esta solicitud excede tus días disponibles</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -369,56 +489,69 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
                     </div>
 
                     {/* Conflictos - Mostrar información detallada */}
-                    {conflicts.length > 0 && formData.type === 'rest_day' && (
-                        <div className="conflicts-warning">
-                            <div className="conflicts-header">
-                                <WarningIcon />
-                                <div className="conflicts-title">
-                                    <h4>⚠️ Conflictos Detectados</h4>
+                    {(() => {
+                        const conflictSummary = getConflictSummary();
+                        if (!conflictSummary) return null;
+
+                        return (
+                            <div className="conflicts-warning">
+                                <div className="conflicts-header">
+                                    <WarningIcon />
+                                    <div className="conflicts-title">
+                                        <h4>⚠️ Conflictos de Vacaciones Detectados</h4>
+                                        <p>
+                                            Hay <strong>{conflictSummary.totalDays} día(s)</strong> con conflictos que involucran a <strong>{conflictSummary.totalPeople} persona(s)</strong>:
+                                        </p>
+                                        <div className="conflicts-summary">
+                                            <span className="conflicts-people">👥 {conflictSummary.peopleNames}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="conflicts-details">
+                                    {conflictSummary.grouped.map((group, groupIndex) => (
+                                        <div key={groupIndex} className="conflict-user-group">
+                                            <div className="conflict-user-header">
+                                                <span className="conflict-user-name">👤 {group.userName}</span>
+                                                <span className="conflict-count">
+                                                    {group.dates.length} día{group.dates.length > 1 ? 's' : ''} en conflicto
+                                                </span>
+                                            </div>
+
+                                            <div className="conflict-dates">
+                                                {group.dates.map((dateItem, dateIndex) => (
+                                                    <div key={dateIndex} className="conflict-date-item">
+                                                        <span className="conflict-date">
+                                                            📅 {formatDate(dateItem.dateString)}
+                                                        </span>
+                                                        {dateItem.conflict.description && (
+                                                            <span className="conflict-description">
+                                                                💬 {dateItem.conflict.description}
+                                                            </span>
+                                                        )}
+                                                        <span className="conflict-type">
+                                                            {dateItem.conflict.type === 'rest_day' ? '🏖️ Día de descanso' : '💼 Día extra trabajado'}
+                                                        </span>
+                                                        {dateItem.conflict.startDate && dateItem.conflict.endDate && (
+                                                            <span className="conflict-period">
+                                                                📆 Período: {formatVacationRange(dateItem.conflict)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="conflicts-footer">
                                     <p>
-                                        Hay <strong>{getConflictDaysCount()} día(s)</strong> donde otros técnicos también tienen vacaciones durante {formData.isRange && formData.endDate ? 'este período' : 'esta fecha'}:
+                                        💡 <strong>Recomendación:</strong> Coordina con las personas mencionadas antes de enviar la solicitud para evitar problemas de cobertura.
                                     </p>
                                 </div>
                             </div>
-
-                            <div className="conflicts-details">
-                                {getGroupedConflicts().map((group, groupIndex) => (
-                                    <div key={groupIndex} className="conflict-user-group">
-                                        <div className="conflict-user-header">
-                                            <span className="conflict-user-name">👤 {group.userName}</span>
-                                            <span className="conflict-count">
-                                                {group.conflicts.length} conflicto{group.conflicts.length > 1 ? 's' : ''}
-                                            </span>
-                                        </div>
-
-                                        <div className="conflict-dates">
-                                            {group.conflicts.map((conflict, conflictIndex) => (
-                                                <div key={conflictIndex} className="conflict-date-item">
-                                                    <span className="conflict-date">
-                                                        📅 {formatVacationRange(conflict)}
-                                                    </span>
-                                                    {conflict.description && (
-                                                        <span className="conflict-description">
-                                                            💬 {conflict.description}
-                                                        </span>
-                                                    )}
-                                                    <span className="conflict-type">
-                                                        {conflict.type === 'rest_day' ? '🏖️ Día de descanso' : '💼 Día extra trabajado'}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="conflicts-footer">
-                                <p>
-                                    💡 <strong>Recomendación:</strong> Coordina con tu equipo antes de enviar la solicitud para evitar problemas de cobertura.
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {/* Botones */}
                     <div className="modal-actions">
@@ -434,7 +567,7 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
                         <button
                             type="submit"
                             className="btn-primary"
-                            disabled={loading}
+                            disabled={loading || isRequestExceedingLimit()}
                         >
                             <SendIcon />
                             {loading ? 'Enviando...' : 'Enviar Solicitud'}

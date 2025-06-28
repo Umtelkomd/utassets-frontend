@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import ResendConfirmationEmail from '../components/ResendConfirmationEmail';
 import '../pages/Login.css';
 
 const Login = () => {
@@ -13,6 +14,8 @@ const Login = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showResendModal, setShowResendModal] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
     const { login, currentUser, isAuthInitialized } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -130,14 +133,41 @@ const Login = () => {
                     password: ''
                 }));
 
-                setErrors({
-                    general: response.error
-                });
+                // Verificar si es un error de email no confirmado
+                if (response.emailNotConfirmed) {
+                    setUserEmail(response.email || formData.email);
+                    setErrors({
+                        general: response.error
+                    });
 
-                toast.error(response.error, {
-                    position: 'top-right',
-                    autoClose: 3000
-                });
+                    // Mostrar mensaje diferente si se envió un nuevo correo automáticamente
+                    if (response.newEmailSent) {
+                        toast.success('¡Nuevo correo de confirmación enviado! Revisa tu bandeja de entrada.', {
+                            position: 'top-right',
+                            autoClose: 6000
+                        });
+                        // Mensaje secundario con más información
+                        setTimeout(() => {
+                            toast.info('Revisa también tu carpeta de spam. El enlace expira en 24 horas.', {
+                                position: 'top-right',
+                                autoClose: 8000
+                            });
+                        }, 2000);
+                    } else {
+                        toast.error(response.error, {
+                            position: 'top-right',
+                            autoClose: 5000
+                        });
+                    }
+                } else {
+                    setErrors({
+                        general: response.error
+                    });
+                    toast.error(response.error, {
+                        position: 'top-right',
+                        autoClose: 3000
+                    });
+                }
             }
         } finally {
             setIsSubmitting(false);
@@ -244,12 +274,34 @@ const Login = () => {
                         >
                             {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                         </button>
+                        {errors.general && userEmail && (
+                            <div className="resend-confirmation-link">
+                                <button
+                                    type="button"
+                                    className="resend-link-button"
+                                    onClick={() => setShowResendModal(true)}
+                                >
+                                    ¿No recibiste el correo? Reenviar confirmación
+                                </button>
+                            </div>
+                        )}
                         <div className="register-link">
                             ¿No tienes una cuenta? <Link to="/register">Regístrate</Link>
                         </div>
                     </form>
                 </div>
             </div>
+
+            {showResendModal && (
+                <ResendConfirmationEmail
+                    email={userEmail}
+                    onClose={() => {
+                        setShowResendModal(false);
+                        setUserEmail('');
+                        setErrors({});
+                    }}
+                />
+            )}
         </div>
     );
 };

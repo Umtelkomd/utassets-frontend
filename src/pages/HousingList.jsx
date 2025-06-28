@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../axiosConfig';
 import './HousingList.css';
+import '../components/FilterStyles.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import EditHousingButton from '../components/EditHousingButton';
@@ -149,24 +150,24 @@ const HousingList = () => {
                     )}
                 </div>
 
-                <div className="search-section">
-                    <div className="search-container">
-                        <SearchIcon className="search-icon" />
+                <div className="standard-search-section">
+                    <div className="standard-search-container">
+                        <SearchIcon className="standard-search-icon" />
                         <input
                             type="text"
                             placeholder="Buscar por dirección..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
+                            className="standard-search-input"
                         />
                     </div>
 
-                    <div className="filter-dropdown">
-                        <FilterListIcon className="filter-icon" />
+                    <div className="standard-filter-dropdown">
+                        <FilterListIcon className="standard-filter-icon" />
                         <select
                             value={bedroomsFilter}
                             onChange={(e) => setBedroomsFilter(e.target.value)}
-                            className="filter-select"
+                            className="standard-filter-select"
                         >
                             <option value="">Todas las habitaciones</option>
                             <option value="1">1 habitación</option>
@@ -176,12 +177,12 @@ const HousingList = () => {
                         </select>
                     </div>
 
-                    <div className="filter-dropdown">
-                        <FilterListIcon className="filter-icon" />
+                    <div className="standard-filter-dropdown">
+                        <FilterListIcon className="standard-filter-icon" />
                         <select
                             value={availabilityFilter}
                             onChange={(e) => setAvailabilityFilter(e.target.value)}
-                            className="filter-select"
+                            className="standard-filter-select"
                         >
                             <option value="">Todas las disponibilidades</option>
                             <option value="available">Disponibles</option>
@@ -190,7 +191,7 @@ const HousingList = () => {
                     </div>
 
                     <button
-                        className="btn-secondary"
+                        className="standard-btn-secondary"
                         onClick={resetFilters}
                     >
                         Limpiar filtros

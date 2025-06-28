@@ -28,7 +28,8 @@ import {
     ReportProblem as ReportProblemIcon,
     CalendarMonth as CalendarMonthIcon,
     BeachAccess as BeachAccessIcon,
-    Home
+    Home,
+    AccountBalance as AccountBalanceIcon
 } from '@mui/icons-material';
 
 const Navbar = () => {
@@ -207,6 +208,18 @@ const Navbar = () => {
                         )}
                     </div>
                 )}
+
+                {/* Financiamientos - Solo para administradores */}
+                {/* {hasPermission('canAccessSettings') && (
+                    <Link
+                        to="/financings"
+                        className={`navbar-item ${isActive('/financings') ? 'active' : ''}`}
+                        onClick={closeMenu}
+                    >
+                        <AccountBalanceIcon className="nav-icon" />
+                        <span>Financiamientos</span>
+                    </Link>
+                )} */}
 
                 {/* Alquileres - Solo para administradores */}
                 {hasPermission('canViewAllRentals') && (

@@ -125,6 +125,82 @@
     color: #28a745;
 }
 
+/* Indicador de solicitud actual */
+.current-request-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: white;
+    border: 2px solid #e3f2fd;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.current-request-info.exceeding {
+    border-color: #ffcdd2;
+    background: #ffebee;
+}
+
+.request-calculation {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.calculation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.current-request-info.exceeding .calculation-item {
+    background: #ffebee;
+}
+
+.calculation-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.calculation-value {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.calculation-value.negative {
+    color: #dc3545;
+}
+
+.calculation-value.low {
+    color: #f57c00;
+}
+
+.calculation-value.normal {
+    color: #2e7d32;
+}
+
+.limit-exceeded-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #ffcdd2;
+    border-radius: 8px;
+    color: #c62828;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.limit-exceeded-warning svg {
+    color: #d32f2f;
+    font-size: 1.1rem;
+}
+
 /* Formulario */
 .vacation-request-form {
     padding: 2rem;
@@ -633,6 +709,27 @@
     margin-left: 1.5rem;
 }
 
+.conflicts-summary {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.conflicts-people {
+    font-weight: 600;
+    color: #f57c00;
+    font-size: 0.9rem;
+}
+
+.conflict-period {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-style: italic;
+    margin-left: 1.5rem;
+}
+
 .conflicts-footer {
     background: rgba(255, 255, 255, 0.8);
     border-radius: 8px;
@@ -743,6 +840,15 @@
     .days-summary {
         grid-template-columns: 1fr;
         gap: 0.75rem;
+    }
+
+    .request-calculation {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .calculation-item {
+        padding: 0.75rem;
     }
 
     .vacation-request-form {

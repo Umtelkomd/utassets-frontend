@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { getRentals, deleteRental, getRentalsByDateRange } from '../services/rentalService';
 import { getInventory } from '../services/inventoryService';
 import './RentalList.css';
+import '../components/FilterStyles.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import DeleteButton from '../components/DeleteButton';
 import EditRentalButton from '../components/EditRentalButton';
@@ -299,19 +300,20 @@ const RentalList = () => {
                 </div>
             </div>
 
-            <div className="filters-section">
-                <div className="search-box">
-                    <SearchIcon className="search-icon" />
+            <div className="standard-search-section">
+                <div className="standard-search-container">
+                    <SearchIcon className="standard-search-icon" />
                     <input
                         type="text"
                         placeholder="Buscar por ítem, fecha, o monto..."
                         value={searchTerm}
                         onChange={handleSearchChange}
+                        className="standard-search-input"
                     />
                 </div>
 
                 <button
-                    className="btn btn-filter"
+                    className="standard-btn-secondary"
                     onClick={() => setShowFilters(!showFilters)}
                 >
                     <FilterListIcon /> Filtros
@@ -323,17 +325,20 @@ const RentalList = () => {
                     <div className="filter-group">
                         <div className="form-group">
                             <label htmlFor="typeFilter">Tipo de Alquiler</label>
-                            <select
-                                id="typeFilter"
-                                value={typeFilter}
-                                onChange={(e) => setTypeFilter(e.target.value)}
-                                className="form-control"
-                            >
-                                <option value="all">Todos los tipos</option>
-                                <option value="housing">Vivienda</option>
-                                <option value="vehicle">Vehículo</option>
-                                <option value="item">Ítem</option>
-                            </select>
+                            <div className="standard-filter-dropdown">
+                                <FilterListIcon className="standard-filter-icon" />
+                                <select
+                                    id="typeFilter"
+                                    value={typeFilter}
+                                    onChange={(e) => setTypeFilter(e.target.value)}
+                                    className="standard-filter-select"
+                                >
+                                    <option value="all">Todos los tipos</option>
+                                    <option value="housing">Vivienda</option>
+                                    <option value="vehicle">Vehículo</option>
+                                    <option value="item">Ítem</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div className="date-filters">
@@ -358,7 +363,7 @@ const RentalList = () => {
                     </div>
                     <div className="filter-actions">
                         <button
-                            className="btn btn-clear"
+                            className="standard-btn-secondary"
                             onClick={handleClearFilters}
                         >
                             Limpiar

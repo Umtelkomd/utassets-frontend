@@ -49,7 +49,7 @@
 }
 
 /* Estilos específicos para VehicleList */
-.action-button {
+.vehicle-action-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -63,31 +63,31 @@
     margin: 0 4px;
 }
 
-.action-button:hover {
+.vehicle-action-button:hover {
     background-color: rgba(0, 0, 0, 0.05);
     transform: scale(1.05);
 }
 
-.action-button.edit-button {
+.vehicle-action-button.vehicle-edit-button {
     color: #2196f3;
 }
 
-.action-button.edit-button:hover {
+.vehicle-action-button.vehicle-edit-button:hover {
     background-color: rgba(33, 150, 243, 0.1);
 }
 
-.action-button.delete-button {
+.vehicle-action-button.vehicle-delete-button {
     color: #f44336;
 }
 
-.action-button.delete-button:hover {
+.vehicle-action-button.vehicle-delete-button:hover {
     background-color: rgba(244, 67, 54, 0.1);
 }
 
-.action-button.view-button {
+.vehicle-action-button.vehicle-view-button {
     color: #4caf50;
 }
 
-.action-button.view-button:hover {
+.vehicle-action-button.vehicle-view-button:hover {
     background-color: rgba(76, 175, 80, 0.1);
 } 

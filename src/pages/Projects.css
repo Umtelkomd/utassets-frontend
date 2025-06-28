@@ -282,7 +282,8 @@
 }
 
 /* Estilos de la tabla */
-.table-container {
+/* ✅ CORREGIDO: Estilos específicos solo para Projects */
+.projects-container .table-container {
     margin-top: 1.5rem;
     background: white;
     border-radius: 12px;
@@ -290,17 +291,17 @@
     overflow: hidden;
 }
 
-table {
+.projects-container .table-container table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
 
-thead {
+.projects-container .table-container thead {
     background-color: #f8fafc;
 }
 
-th {
+.projects-container .table-container th {
     color: #64748b;
     font-weight: 600;
     font-size: 0.875rem;
@@ -312,7 +313,7 @@ th {
     white-space: nowrap;
 }
 
-td {
+.projects-container .table-container td {
     padding: 1.25rem 1.5rem;
     color: #334155;
     font-size: 0.9375rem;
@@ -320,43 +321,49 @@ td {
     background-color: white;
 }
 
-/* Ajustes de alineación para cada columna */
-th:nth-child(1), td:nth-child(1) { 
+/* Ajustes de alineación para cada columna - ESPECÍFICOS PARA PROJECTS */
+.projects-container .table-container th:nth-child(1), 
+.projects-container .table-container td:nth-child(1) { 
     padding-left: 2rem;
     width: 18%; 
 } /* Nombre */
 
-th:nth-child(2), td:nth-child(2) { 
+.projects-container .table-container th:nth-child(2), 
+.projects-container .table-container td:nth-child(2) { 
     text-align: center;
     width: 15%; 
 } /* Estado */
 
-th:nth-child(3), td:nth-child(3) { 
+.projects-container .table-container th:nth-child(3), 
+.projects-container .table-container td:nth-child(3) { 
     text-align: center;
     width: 22%; 
 } /* Ubicación */
 
-th:nth-child(4), td:nth-child(4) { 
+.projects-container .table-container th:nth-child(4), 
+.projects-container .table-container td:nth-child(4) { 
     text-align: center;
     width: 15%; 
 } /* Fecha Inicio */
 
-th:nth-child(5), td:nth-child(5) { 
+.projects-container .table-container th:nth-child(5), 
+.projects-container .table-container td:nth-child(5) { 
     text-align: center;
     width: 15%; 
 } /* Fecha Fin */
 
-th:nth-child(6), td:nth-child(6) { 
+.projects-container .table-container th:nth-child(6), 
+.projects-container .table-container td:nth-child(6) { 
     text-align: right;
     padding-right: 2rem;
     width: 15%; 
 } /* Acciones */
 
-tr:last-child td {
+.projects-container .table-container tr:last-child td {
     border-bottom: none;
 }
 
-tr:hover td {
+.projects-container .table-container tr:hover td {
     background-color: #f8fafc;
 }
 
@@ -466,29 +473,32 @@ tr:hover td {
     font-size: 1.25rem;
 }
 
-/* Responsive */
+/* Responsive - ESPECÍFICO PARA PROJECTS */
 @media (max-width: 1024px) {
-    .table-container {
+    .projects-container .table-container {
         border-radius: 0;
         box-shadow: none;
         border: 1px solid #e2e8f0;
     }
     
-    th, td {
+    .projects-container .table-container th, 
+    .projects-container .table-container td {
         padding: 1rem;
     }
 
-    th:nth-child(1), td:nth-child(1) { 
+    .projects-container .table-container th:nth-child(1), 
+    .projects-container .table-container td:nth-child(1) { 
         padding-left: 1rem; 
     }
 
-    th:nth-child(6), td:nth-child(6) { 
+    .projects-container .table-container th:nth-child(6), 
+    .projects-container .table-container td:nth-child(6) { 
         padding-right: 1rem; 
     }
 }
 
-/* Icono de ordenamiento */
-th .sort-icon {
+/* Icono de ordenamiento - ESPECÍFICO PARA PROJECTS */
+.projects-container .table-container th .sort-icon {
     margin-left: 0.5rem;
     vertical-align: middle;
     color: #94a3b8;
@@ -542,6 +552,80 @@ th .sort-icon {
 }
 
 /* Estilos para el modal de vista detallada */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 10;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.close-button {
+    background-color: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+
+.close-button:hover {
+    background-color: #f1f5f9;
+    color: #ef4444;
+    transform: scale(1.1);
+}
+
 .view-modal {
     max-width: 900px;
 }

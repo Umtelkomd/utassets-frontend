@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from '../axiosConfig';
 import './InventoryList.css';
+import '../components/FilterStyles.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import EditButton from '../components/EditButton';
@@ -103,10 +104,6 @@ const InventoryList = () => {
 
             setItems(items);
             setFilteredItems(items);
-
-            // Extraer categorías únicas para el filtro
-            const uniqueCategories = [...new Set(items.map(item => item.category).filter(Boolean))];
-            setCategories(uniqueCategories);
         } catch (error) {
 
             toast.error('Error al cargar el inventario');
@@ -306,40 +303,40 @@ const InventoryList = () => {
                     </div>
                 </div>
 
-                <div className="search-section">
-                    <div className="search-container">
-                        <SearchIcon className="search-icon" />
+                <div className="standard-search-section">
+                    <div className="standard-search-container">
+                        <SearchIcon className="standard-search-icon" />
                         <input
                             type="text"
                             placeholder="Buscar por nombre, código, ubicación..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
+                            className="standard-search-input"
                         />
                     </div>
 
-                    <div className="filter-dropdown">
-                        <FilterListIcon className="filter-icon" />
+                    <div className="standard-filter-dropdown">
+                        <FilterListIcon className="standard-filter-icon" />
                         <select
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
-                            className="filter-select"
+                            className="standard-filter-select"
                         >
                             <option value="">Todas las categorías</option>
-                            {categories.map((category) => (
-                                <option key={category.id || category._id} value={category.name}>
-                                    {category.name}
+                            {categories.map((category, index) => (
+                                <option key={category.id || category._id || index} value={category.name || category}>
+                                    {category.name || category}
                                 </option>
                             ))}
                         </select>
                     </div>
 
-                    <div className="filter-dropdown">
-                        <FilterListIcon className="filter-icon" />
+                    <div className="standard-filter-dropdown">
+                        <FilterListIcon className="standard-filter-icon" />
                         <select
                             value={selectedCondition}
                             onChange={(e) => setSelectedCondition(e.target.value)}
-                            className="filter-select"
+                            className="standard-filter-select"
                         >
                             <option value="">Todos los estados</option>
                             <option value="Excelente">Excelente</option>
@@ -351,7 +348,7 @@ const InventoryList = () => {
                     </div>
 
                     <button
-                        className="btn-secondary"
+                        className="standard-btn-secondary"
                         onClick={resetFilters}
                     >
                         Limpiar filtros

@@ -34,6 +34,10 @@ const PendingVacationsManager = ({ onUpdate }) => {
     const [approvingIds, setApprovingIds] = useState(new Set());
     const [isRejecting, setIsRejecting] = useState(false);
 
+    // Definir los permisos de aprobación
+    const FIRST_APPROVAL_ADMINS = ['reyalejandroh@gmail.com', 'bsandoval@umtelkomd.com'];
+    const SECOND_APPROVAL_ADMIN = 'jromero@umtelkomd.com';
+
     useEffect(() => {
         fetchPendingRequests();
     }, []);
@@ -42,12 +46,19 @@ const PendingVacationsManager = ({ onUpdate }) => {
         try {
             setLoading(true);
             const data = await vacationService.getPendingVacationsGrouped();
-            setPendingRequests(data.pendingRequests || []);
+            const allRequests = data.pendingRequests || [];
+
+            // Filtrar solicitudes según los permisos del usuario actual
+            const filteredRequests = filterRequestsByPermissions(allRequests);
+
+            setPendingRequests(filteredRequests);
             setAllVacations(data.allVacations || []);
 
             // Seleccionar automáticamente la primera solicitud para mostrar el calendario
-            if (data.pendingRequests && data.pendingRequests.length > 0) {
-                setSelectedRequest(data.pendingRequests[0]);
+            if (filteredRequests && filteredRequests.length > 0) {
+                setSelectedRequest(filteredRequests[0]);
+            } else {
+                setSelectedRequest(null);
             }
         } catch (error) {
             console.error('Error al cargar solicitudes pendientes:', error);
@@ -55,6 +66,26 @@ const PendingVacationsManager = ({ onUpdate }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Función para filtrar solicitudes según permisos
+    const filterRequestsByPermissions = (requests) => {
+        if (!currentUser || !currentUser.email) return [];
+
+        return requests.filter(request => {
+            // Solicitudes nuevas (primera aprobación pendiente)
+            if (request.status === VacationStatus.PENDING) {
+                return FIRST_APPROVAL_ADMINS.includes(currentUser.email);
+            }
+
+            // Solicitudes pendientes de segunda aprobación
+            if (request.status === VacationStatus.FIRST_APPROVED) {
+                return currentUser.email === SECOND_APPROVAL_ADMIN;
+            }
+
+            // Por defecto no mostrar
+            return false;
+        });
     };
 
     const handleApproveRequest = async (request) => {
@@ -98,7 +129,7 @@ const PendingVacationsManager = ({ onUpdate }) => {
     };
 
     const canApproveRequest = (request) => {
-        if (!currentUser || currentUser.role !== 'administrador') {
+        if (!currentUser || currentUser.role !== 'administrador' || !currentUser.email) {
             return false;
         }
 
@@ -107,14 +138,16 @@ const PendingVacationsManager = ({ onUpdate }) => {
             return false;
         }
 
-        // Si está en estado PENDING, cualquier admin puede dar primera aprobación
+        // Si está en estado PENDING, solo los admins de primera aprobación pueden aprobar
         if (request.status === VacationStatus.PENDING) {
-            return true;
+            return FIRST_APPROVAL_ADMINS.includes(currentUser.email);
         }
 
-        // Si está en estado FIRST_APPROVED, solo otro admin diferente puede dar segunda aprobación
+        // Si está en estado FIRST_APPROVED, solo el admin de segunda aprobación puede aprobar
         if (request.status === VacationStatus.FIRST_APPROVED) {
-            return request.firstApprovedBy && request.firstApprovedBy.id !== currentUser.id;
+            return currentUser.email === SECOND_APPROVAL_ADMIN &&
+                request.firstApprovedBy &&
+                request.firstApprovedBy.id !== currentUser.id;
         }
 
         return false;
@@ -131,13 +164,29 @@ const PendingVacationsManager = ({ onUpdate }) => {
     };
 
     const getBlockReason = (request) => {
-        if (request.userId === currentUser?.id) {
+        if (!currentUser || !currentUser.email) {
+            return 'Usuario no identificado';
+        }
+
+        if (request.userId === currentUser.id) {
             return 'No puedes aprobar tu propia solicitud';
         }
-        if (request.status === VacationStatus.FIRST_APPROVED &&
-            request.firstApprovedBy && request.firstApprovedBy.id === currentUser?.id) {
-            return 'Ya diste la primera aprobación. Debe aprobar otro administrador';
+
+        if (request.status === VacationStatus.PENDING) {
+            if (!FIRST_APPROVAL_ADMINS.includes(currentUser.email)) {
+                return 'Solo los administradores autorizados pueden dar la primera aprobación';
+            }
         }
+
+        if (request.status === VacationStatus.FIRST_APPROVED) {
+            if (currentUser.email !== SECOND_APPROVAL_ADMIN) {
+                return 'Solo el administrador final puede dar la segunda aprobación';
+            }
+            if (request.firstApprovedBy && request.firstApprovedBy.id === currentUser.id) {
+                return 'Ya diste la primera aprobación. Debe aprobar otro administrador';
+            }
+        }
+
         return 'No se puede aprobar';
     };
 
@@ -221,19 +270,33 @@ const PendingVacationsManager = ({ onUpdate }) => {
     return (
         <div className="pending-vacations-manager">
             <div className="pending-header">
-                <div className="header-content">
+                <div className="pending-header-content">
                     <h2>
-                        <PendingIcon className="header-icon" />
+                        <PendingIcon className="pending-header-icon" />
                         Solicitudes de Períodos de Vacaciones
                     </h2>
                     <p>Gestiona solicitudes agrupadas por períodos consecutivos</p>
-                    <div className="approval-info-banner">
-                        <PendingSecondIcon className="info-icon" />
+                    <div className="pending-approval-info-banner">
+                        <PendingSecondIcon className="pending-info-icon" />
                         <span>Sistema de doble aprobación: cada período requiere la aprobación de dos administradores diferentes</span>
+                    </div>
+
+                    {/* Banner de permisos específicos */}
+                    <div className="pending-permissions-info-banner">
+                        <PersonIcon className="pending-permissions-icon" />
+                        <div className="pending-permissions-content">
+                            {currentUser?.email && FIRST_APPROVAL_ADMINS.includes(currentUser.email) ? (
+                                <span>🔹 Puedes dar <strong>primera aprobación</strong> a solicitudes nuevas</span>
+                            ) : currentUser?.email === SECOND_APPROVAL_ADMIN ? (
+                                <span>🔹 Puedes dar <strong>segunda aprobación</strong> a solicitudes ya pre-aprobadas</span>
+                            ) : (
+                                <span>⚠️ No tienes permisos para aprobar solicitudes de vacaciones</span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="header-actions">
+                <div className="pending-header-actions">
                     <button
                         className="btn-refresh"
                         onClick={fetchPendingRequests}
@@ -253,8 +316,14 @@ const PendingVacationsManager = ({ onUpdate }) => {
             ) : pendingRequests.length === 0 ? (
                 <div className="empty-state">
                     <PendingIcon className="empty-icon" />
-                    <h3>No hay solicitudes pendientes</h3>
-                    <p>Todas las solicitudes de vacaciones han sido procesadas</p>
+                    <h3>No hay solicitudes pendientes para ti</h3>
+                    {currentUser?.email && FIRST_APPROVAL_ADMINS.includes(currentUser.email) ? (
+                        <p>No hay solicitudes nuevas que requieran primera aprobación</p>
+                    ) : currentUser?.email === SECOND_APPROVAL_ADMIN ? (
+                        <p>No hay solicitudes que requieran segunda aprobación</p>
+                    ) : (
+                        <p>No tienes permisos para ver solicitudes pendientes</p>
+                    )}
                 </div>
             ) : (
                 <div className="content-layout">
@@ -403,12 +472,71 @@ const PendingVacationsManager = ({ onUpdate }) => {
                             <div className="conflicts-summary">
                                 <div className="conflicts-header">
                                     <WarningIcon className="conflicts-icon" />
-                                    <h4>Conflictos Detectados</h4>
+                                    <h4>⚠️ Conflictos de Vacaciones Detectados</h4>
                                 </div>
-                                <p>
-                                    Hay {getSelectedRequestConflicts().length} día(s) donde otros técnicos
-                                    también tienen vacaciones durante este período.
-                                </p>
+
+                                {(() => {
+                                    const conflicts = getSelectedRequestConflicts();
+                                    const groupedByUser = conflicts.reduce((acc, conflict) => {
+                                        const userName = conflict.user?.fullName || 'Usuario desconocido';
+                                        if (!acc[userName]) {
+                                            acc[userName] = [];
+                                        }
+                                        acc[userName].push(conflict);
+                                        return acc;
+                                    }, {});
+
+                                    const userCount = Object.keys(groupedByUser).length;
+                                    const peopleNames = Object.keys(groupedByUser).join(', ');
+
+                                    return (
+                                        <>
+                                            <p>
+                                                Hay conflictos que involucran a <strong>{userCount} persona(s)</strong>:
+                                            </p>
+                                            <div className="conflicts-people-list">
+                                                <span className="conflicts-people">👥 {peopleNames}</span>
+                                            </div>
+
+                                            <div className="conflicts-details">
+                                                {Object.entries(groupedByUser).map(([userName, userConflicts]) => (
+                                                    <div key={userName} className="conflict-user-group">
+                                                        <div className="conflict-user-header">
+                                                            <span className="conflict-user-name">👤 {userName}</span>
+                                                            <span className="conflict-count">
+                                                                {userConflicts.length} conflicto{userConflicts.length > 1 ? 's' : ''}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="conflict-items">
+                                                            {userConflicts.map((conflict, index) => (
+                                                                <div key={index} className="conflict-item">
+                                                                    <span className="conflict-period">
+                                                                        📅 {formatDateRange(conflict.startDate, conflict.endDate)}
+                                                                    </span>
+                                                                    {conflict.description && (
+                                                                        <span className="conflict-description">
+                                                                            💬 {conflict.description}
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="conflict-type">
+                                                                        {conflict.type === 'rest_day' ? '🏖️ Día de descanso' : '💼 Día extra trabajado'}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="conflicts-recommendation">
+                                                <p>
+                                                    💡 <strong>Recomendación:</strong> Coordina con las personas mencionadas antes de aprobar para evitar problemas de cobertura.
+                                                </p>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
                         )}
                     </div>

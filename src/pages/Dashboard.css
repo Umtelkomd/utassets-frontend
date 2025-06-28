@@ -1797,3 +1797,15 @@ body {
         padding: 0.25rem;
     }
 }
+
+/* Financings Card */
+.summary-card.financings-card .summary-icon {
+    background: linear-gradient(135deg, #007aff, #00c6ff);
+}
+
+.summary-subtext {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 400;
+}

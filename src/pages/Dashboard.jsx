@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import Calendar from '../components/Calendar';
 import { getRentals } from '../services/rentalService';
+import financingService, { financingCalculations } from '../services/financingService';
 
 // Importar correctamente los iconos
 import {
@@ -28,7 +29,8 @@ import {
     Block as BlockIcon,
     HelpOutline as HelpOutlineIcon,
     Home as HomeIcon,
-    CalendarToday as CalendarTodayIcon
+    CalendarToday as CalendarTodayIcon,
+    AccountBalance as AccountBalanceIcon
 } from '@mui/icons-material';
 
 const Dashboard = () => {
@@ -45,7 +47,11 @@ const Dashboard = () => {
         vehiclesByStatus: [],
         vehiclesNeedingMaintenance: 0,
         totalUsers: 0,
-        recentUsers: []
+        recentUsers: [],
+        totalFinancings: 0,
+        totalFinanced: 0,
+        totalFinancingPaid: 0,
+        overdueFinancings: 0
     });
     const [isLoading, setIsLoading] = useState(true);
     const [rentals, setRentals] = useState([]);
@@ -54,11 +60,12 @@ const Dashboard = () => {
         const fetchDashboardData = async () => {
             setIsLoading(true);
             try {
-                const [inventoryResponse, vehiclesResponse, usersResponse, rentalsResponse] = await Promise.all([
+                const [inventoryResponse, vehiclesResponse, usersResponse, rentalsResponse, financingSummaryResponse] = await Promise.all([
                     axiosInstance.get('/inventory'),
                     axiosInstance.get('/vehicles'),
                     axiosInstance.get('/users'),
-                    getRentals()
+                    getRentals(),
+                    financingService.getFinancingSummary().catch(() => ({ totalActive: 0, totalFinanced: 0, totalPaid: 0, totalOverdue: 0 }))
                 ]);
 
                 let items = inventoryResponse.data || [];
@@ -150,7 +157,11 @@ const Dashboard = () => {
                     vehiclesByStatus,
                     vehiclesNeedingMaintenance,
                     totalUsers: users.length,
-                    recentUsers: users.slice(0, 5)
+                    recentUsers: users.slice(0, 5),
+                    totalFinancings: financingSummaryResponse.totalActive || 0,
+                    totalFinanced: financingSummaryResponse.totalFinanced || 0,
+                    totalFinancingPaid: financingSummaryResponse.totalPaid || 0,
+                    overdueFinancings: financingSummaryResponse.totalOverdue || 0
                 });
 
                 // Establecer los datos de alquileres
@@ -220,6 +231,12 @@ const Dashboard = () => {
                     <HomeIcon />
                     <span>Ver Viviendas</span>
                 </Link>
+                {/* {hasPermission('canAccessSettings') && (
+                    <Link to="/financings" className="quick-action">
+                        <AccountBalanceIcon />
+                        <span>Financiamientos</span>
+                    </Link>
+                )} */}
                 {hasPermission('canAccessSettings') && (
                     <Link to="/users" className="quick-action">
                         <PersonIcon />
@@ -346,6 +363,27 @@ const Dashboard = () => {
                                         </>
                                     )}
                                 </div>
+
+                                {hasPermission('canAccessSettings') && (
+                                    <div className="summary-card financings-card">
+                                        <div className="summary-icon">
+                                            <AccountBalanceIcon />
+                                        </div>
+                                        <div className="summary-content">
+                                            <h3>Financiamientos</h3>
+                                            <div className="summary-value">{stats.totalFinancings}</div>
+                                            <div className="summary-subtext">
+                                                {financingCalculations.formatCurrency(stats.totalFinanced)} total
+                                            </div>
+                                            {stats.totalFinancings > 0 && (
+                                                <Link to="/financings" className="summary-link">
+                                                    <span>Ver detalles</span>
+                                                    <ArrowForwardIcon />
+                                                </Link>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
 
