@@ -30,7 +30,7 @@
 }
 
 /* Header moderno */
-.page-header {
+.financings-page-header {
     background: var(--surface-color);
     border-radius: var(--radius-xl);
     padding: 2rem;
@@ -39,25 +39,25 @@
     border: 1px solid var(--border-color);
 }
 
-.header-content {
+.financings-header-content {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 2rem;
 }
 
-.header-left {
+.financings-header-left {
     flex: 1;
 }
 
-.page-title {
+.financings-page-title {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 0.5rem;
 }
 
-.page-title h1 {
+.financings-page-title h1 {
     font-size: 2.25rem;
     font-weight: 700;
     color: var(--text-primary);
@@ -65,7 +65,7 @@
     letter-spacing: -0.025em;
 }
 
-.page-title-icon {
+.financings-page-title-icon {
     width: 3rem;
     height: 3rem;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
@@ -77,18 +77,18 @@
     box-shadow: var(--shadow-md);
 }
 
-.page-title-icon svg {
+.financings-page-title-icon svg {
     font-size: 1.5rem;
 }
 
-.page-subtitle {
+.financings-page-subtitle {
     color: var(--text-secondary);
     font-size: 1.125rem;
     margin: 0;
     font-weight: 400;
 }
 
-.header-actions {
+.financings-header-actions {
     display: flex;
     gap: 1rem;
     align-items: center;
@@ -260,7 +260,7 @@
 }
 
 /* Filtros mejorados */
-.filters-section {
+.financings-filters-section {
     background: var(--surface-color);
     border-radius: var(--radius-xl);
     padding: 2rem;
@@ -269,7 +269,7 @@
     box-shadow: var(--shadow-sm);
 }
 
-.filters-header {
+.financings-filters-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -278,7 +278,7 @@
     border-bottom: 1px solid var(--border-color);
 }
 
-.filters-title {
+.financings-filters-title {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -370,20 +370,20 @@
     box-shadow: var(--shadow-sm);
 }
 
-.content-header {
+.financings-content-header {
     padding: 1.5rem 2rem;
     border-bottom: 1px solid var(--border-color);
     background: var(--background-color);
 }
 
-.content-title {
+.financings-content-title {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
 }
 
-.content-subtitle {
+.financings-content-subtitle {
     color: var(--text-secondary);
     font-size: 0.875rem;
     margin: 0.25rem 0 0 0;
@@ -660,12 +660,12 @@
 }
 
 /* Estado vacío mejorado */
-.empty-state {
+.financings-empty-state {
     text-align: center;
     padding: 4rem 2rem;
 }
 
-.empty-icon {
+.financings-empty-icon {
     width: 4rem;
     height: 4rem;
     margin: 0 auto 1.5rem;
@@ -673,14 +673,14 @@
     opacity: 0.5;
 }
 
-.empty-title {
+.financings-empty-title {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 0.5rem 0;
 }
 
-.empty-description {
+.financings-empty-description {
     color: var(--text-secondary);
     font-size: 1rem;
     margin: 0 0 2rem 0;
@@ -713,17 +713,17 @@
         padding: 1rem;
     }
     
-    .header-content {
+    .financings-header-content {
         flex-direction: column;
         gap: 1.5rem;
     }
     
-    .header-actions {
+    .financings-header-actions {
         width: 100%;
         justify-content: space-between;
     }
     
-    .page-title h1 {
+    .financings-page-title h1 {
         font-size: 1.875rem;
     }
     
@@ -750,11 +750,11 @@
 }
 
 @media (max-width: 480px) {
-    .page-header {
+    .financings-page-header {
         padding: 1.5rem;
     }
     
-    .page-title h1 {
+    .financings-page-title h1 {
         font-size: 1.5rem;
     }
     

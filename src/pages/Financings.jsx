@@ -188,20 +188,20 @@ const Financings = () => {
     return (
         <div className="financings-page">
             {/* Header Profesional */}
-            <div className="page-header">
-                <div className="header-content">
-                    <div className="header-left">
-                        <div className="page-title">
-                            <div className="page-title-icon">
+            <div className="financings-page-header">
+                <div className="financings-header-content">
+                    <div className="financings-header-left">
+                        <div className="financings-page-title">
+                            <div className="financings-page-title-icon">
                                 <AccountBalanceIcon />
                             </div>
                             <h1>Gestión de Financiamientos</h1>
                         </div>
-                        <p className="page-subtitle">
+                        <p className="financings-page-subtitle">
                             Control y seguimiento de todos los financiamientos activos y completados
                         </p>
                     </div>
-                    <div className="header-actions">
+                    <div className="financings-header-actions">
                         <button
                             className={`filter-toggle-button ${showFilters ? 'active' : ''}`}
                             onClick={() => setShowFilters(!showFilters)}
@@ -279,9 +279,9 @@ const Financings = () => {
 
             {/* Filtros Mejorados */}
             {showFilters && (
-                <div className="filters-section">
-                    <div className="filters-header">
-                        <h3 className="filters-title">Filtrar Financiamientos</h3>
+                <div className="financings-filters-section">
+                    <div className="financings-filters-header">
+                        <h3 className="financings-filters-title">Filtrar Financiamientos</h3>
                         {hasActiveFilters && (
                             <button className="clear-filters-button" onClick={clearFilters}>
                                 <ClearIcon />
@@ -346,23 +346,23 @@ const Financings = () => {
 
             {/* Contenido Principal */}
             <div className="financings-content">
-                <div className="content-header">
-                    <h2 className="content-title">
+                <div className="financings-content-header">
+                    <h2 className="financings-content-title">
                         Lista de Financiamientos
                     </h2>
-                    <p className="content-subtitle">
+                    <p className="financings-content-subtitle">
                         {filteredFinancings.length} financiamiento{filteredFinancings.length !== 1 ? 's' : ''} encontrado{filteredFinancings.length !== 1 ? 's' : ''}
                         {hasActiveFilters && ' (filtrados)'}
                     </p>
                 </div>
 
                 {filteredFinancings.length === 0 ? (
-                    <div className="empty-state">
-                        <AccountBalanceIcon className="empty-icon" />
-                        <h3 className="empty-title">
+                    <div className="financings-empty-state">
+                        <AccountBalanceIcon className="financings-empty-icon" />
+                        <h3 className="financings-empty-title">
                             {financings.length === 0 ? 'No hay financiamientos registrados' : 'No se encontraron resultados'}
                         </h3>
-                        <p className="empty-description">
+                        <p className="financings-empty-description">
                             {financings.length === 0
                                 ? 'Comience creando su primer financiamiento para realizar el seguimiento de préstamos y pagos.'
                                 : 'Intente ajustar los filtros para encontrar lo que busca, o revise los criterios de búsqueda.'
