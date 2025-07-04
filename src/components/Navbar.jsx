@@ -210,7 +210,8 @@ const Navbar = () => {
                 )}
 
                 {/* Financiamientos - Solo para administradores */}
-                {hasPermission('canAccessSettings') && (
+                {/* Temporalmente ocultado - financiamientos comentados */}
+                {/* {hasPermission('canAccessSettings') && (
                     <Link
                         to="/financings"
                         className={`navbar-item ${isActive('/financings') ? 'active' : ''}`}
@@ -219,7 +220,7 @@ const Navbar = () => {
                         <AccountBalanceIcon className="nav-icon" />
                         <span>Financiamientos</span>
                     </Link>
-                )}
+                )} */}
 
                 {/* Alquileres - Solo para administradores */}
                 {hasPermission('canViewAllRentals') && (

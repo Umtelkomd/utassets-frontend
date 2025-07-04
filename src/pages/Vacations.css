@@ -243,11 +243,15 @@
     padding: 1rem;
     border-radius: 12px;
     background: #f8f9fa;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible;
 }
 
 .days-stat:hover {
     background: #e9ecef;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .stat-label {
@@ -1010,7 +1014,7 @@
 .stat-value-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
 }
 
@@ -1018,69 +1022,99 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
 }
 
 .days-controls {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
+    transform: translateX(10px);
 }
 
 .days-stat:hover .days-controls {
     opacity: 1;
+    transform: translateX(0);
 }
 
 .btn-adjust-days {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border: none;
-    border-radius: 50%;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 0;
-    background: transparent;
-    color: #6c757d;
     backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-adjust-days::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .btn-adjust-days:hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.btn-adjust-days:hover::before {
+    opacity: 1;
+}
+
+.btn-adjust-days:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
 }
 
 .btn-adjust-days.increase {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
 }
 
 .btn-adjust-days.increase:hover {
     background: linear-gradient(135deg, #218838 0%, #1e7e5a 100%);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.35);
 }
 
 .btn-adjust-days.decrease {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.25);
 }
 
 .btn-adjust-days.decrease:hover {
     background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.35);
 }
 
 .btn-adjust-days.edit {
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
 }
 
 .btn-adjust-days.edit:hover {
     background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.35);
 }
 
 /* Estilos para el modo de edición */
@@ -1093,27 +1127,34 @@
 
 .edit-days-input {
     width: 60px;
-    padding: 4px 8px;
+    padding: 8px 12px;
     border: 2px solid #007bff;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     text-align: center;
     background: white;
     color: #2c3e50;
     outline: none;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
 }
 
 .edit-days-input:focus {
     border-color: #0056b3;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25), 0 4px 12px rgba(0, 123, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.edit-days-input:hover {
+    border-color: #0056b3;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
 }
 
 .edit-days-buttons {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
 }
 
 .btn-save-days,
@@ -1121,37 +1162,66 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     border: none;
-    border-radius: 50%;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 0;
     backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-save-days::before,
+.btn-cancel-days::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn-save-days:hover::before,
+.btn-cancel-days:hover::before {
+    opacity: 1;
+}
+
+.btn-save-days:active,
+.btn-cancel-days:active {
+    transform: translateY(0) scale(0.98);
+    transition: all 0.1s ease;
 }
 
 .btn-save-days {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
 }
 
 .btn-save-days:hover {
     background: linear-gradient(135deg, #218838 0%, #1e7e5a 100%);
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.35);
 }
 
 .btn-cancel-days {
     background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.25);
 }
 
 .btn-cancel-days:hover {
     background: linear-gradient(135deg, #495057 0%, #343a40 100%);
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.35);
 }
 
 /* Animaciones y efectos */
@@ -1181,23 +1251,34 @@
 @media (max-width: 768px) {
     .stat-value-with-controls {
         flex-direction: column;
-        gap: 4px;
+        gap: 8px;
+        align-items: stretch;
     }
     
     .days-controls {
         opacity: 1;
+        transform: translateX(0);
+        justify-content: center;
+        gap: 12px;
     }
     
     .edit-days-input {
-        width: 50px;
-        font-size: 12px;
+        width: 60px;
+        font-size: 14px;
+        padding: 8px 12px;
     }
     
     .btn-adjust-days,
     .btn-save-days,
     .btn-cancel-days {
-        width: 28px;
-        height: 28px;
-        font-size: 16px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        border-radius: 10px;
+    }
+    
+    .edit-days-buttons {
+        gap: 12px;
+        justify-content: center;
     }
 } 
