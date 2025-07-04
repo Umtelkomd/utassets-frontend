@@ -10,6 +10,10 @@ import {
     CheckCircle as CheckIcon,
     Cancel as CancelIcon,
     PendingActions as PendingIcon,
+    Remove as RemoveIcon,
+    Edit as EditIcon,
+    Save as SaveIcon,
+    Close as CloseIcon,
 } from '@mui/icons-material';
 import axiosInstance from '../axiosConfig';
 import './Vacations.css';
@@ -55,6 +59,10 @@ const Vacations = () => {
     // Estados para solicitudes pendientes y formulario de técnicos
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [activeTab, setActiveTab] = useState('calendar'); // 'calendar', 'pending', 'request'
+
+    // Estados para edición de días de vacaciones
+    const [editingVacationDays, setEditingVacationDays] = useState(null);
+    const [editingDaysValue, setEditingDaysValue] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -248,6 +256,61 @@ const Vacations = () => {
         fetchData(); // Recargar datos después de cancelar vacaciones
     };
 
+    const handleAdjustVacationDays = async (userId, adjustment) => {
+        try {
+            const user = usersWithDays.find(u => u.id === userId);
+            if (!user) return;
+
+            const newDays = user.totalDays + adjustment;
+            if (newDays < 0) {
+                toast.error('Los días de vacaciones no pueden ser negativos');
+                return;
+            }
+
+            await axiosInstance.put(`/vacations/users/${userId}/vacation-days`, {
+                vacationDays: newDays
+            });
+
+            toast.success(`Días de vacaciones ${adjustment > 0 ? 'aumentados' : 'disminuidos'} correctamente`);
+            fetchData(); // Recargar datos
+        } catch (error) {
+            console.error('Error al ajustar días de vacaciones:', error);
+            toast.error('Error al ajustar días de vacaciones');
+        }
+    };
+
+    const handleStartEditingDays = (userId, currentDays) => {
+        setEditingVacationDays(userId);
+        setEditingDaysValue(currentDays.toString());
+    };
+
+    const handleCancelEditingDays = () => {
+        setEditingVacationDays(null);
+        setEditingDaysValue('');
+    };
+
+    const handleSaveEditingDays = async (userId) => {
+        try {
+            const newDays = parseInt(editingDaysValue);
+            if (isNaN(newDays) || newDays < 0) {
+                toast.error('Por favor ingresa un número válido de días');
+                return;
+            }
+
+            await axiosInstance.put(`/vacations/users/${userId}/vacation-days`, {
+                vacationDays: newDays
+            });
+
+            toast.success('Días de vacaciones actualizados correctamente');
+            setEditingVacationDays(null);
+            setEditingDaysValue('');
+            fetchData(); // Recargar datos
+        } catch (error) {
+            console.error('Error al actualizar días de vacaciones:', error);
+            toast.error('Error al actualizar días de vacaciones');
+        }
+    };
+
     const handleVacationClick = (vacation) => {
         const dayCount = calculateDayCount(vacation.startDate, vacation.endDate);
         const dateRange = dayCount === 1
@@ -421,7 +484,63 @@ const Vacations = () => {
                                     <div className="user-days-stats">
                                         <div className="days-stat">
                                             <span className="stat-label">Total del año</span>
-                                            <span className="stat-value">{user.totalDays} días</span>
+                                            <div className="stat-value-container">
+                                                {editingVacationDays === user.id ? (
+                                                    <div className="edit-days-container">
+                                                        <input
+                                                            type="number"
+                                                            value={editingDaysValue}
+                                                            onChange={(e) => setEditingDaysValue(e.target.value)}
+                                                            className="edit-days-input"
+                                                            min="0"
+                                                            max="365"
+                                                        />
+                                                        <div className="edit-days-buttons">
+                                                            <button
+                                                                className="btn-save-days"
+                                                                onClick={() => handleSaveEditingDays(user.id)}
+                                                                title="Guardar"
+                                                            >
+                                                                <SaveIcon />
+                                                            </button>
+                                                            <button
+                                                                className="btn-cancel-days"
+                                                                onClick={handleCancelEditingDays}
+                                                                title="Cancelar"
+                                                            >
+                                                                <CloseIcon />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="stat-value-with-controls">
+                                                        <span className="stat-value">{user.totalDays} días</span>
+                                                        <div className="days-controls">
+                                                            <button
+                                                                className="btn-adjust-days decrease"
+                                                                onClick={() => handleAdjustVacationDays(user.id, -1)}
+                                                                title="Disminuir 1 día"
+                                                            >
+                                                                <RemoveIcon />
+                                                            </button>
+                                                            <button
+                                                                className="btn-adjust-days increase"
+                                                                onClick={() => handleAdjustVacationDays(user.id, 1)}
+                                                                title="Aumentar 1 día"
+                                                            >
+                                                                <AddIcon />
+                                                            </button>
+                                                            <button
+                                                                className="btn-adjust-days edit"
+                                                                onClick={() => handleStartEditingDays(user.id, user.totalDays)}
+                                                                title="Editar directamente"
+                                                            >
+                                                                <EditIcon />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="days-stat">
                                             <span className="stat-label">Días usados</span>

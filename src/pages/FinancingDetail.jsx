@@ -147,10 +147,10 @@ const FinancingDetail = () => {
     return (
         <div className="financing-detail-page">
             {/* Header */}
-            <div className="detail-header">
-                <div className="header-navigation">
+            <div className="financing-detail-header">
+                <div className="financing-header-navigation">
                     <button
-                        className="back-button"
+                        className="financing-back-button"
                         onClick={() => navigate('/financings')}
                     >
                         <ArrowBackIcon />
@@ -158,24 +158,24 @@ const FinancingDetail = () => {
                     </button>
                 </div>
 
-                <div className="header-content">
-                    <div className="financing-info">
-                        <div className="asset-icon">
+                <div className="financing-header-content">
+                    <div className="financing-detail-info">
+                        <div className="financing-detail-asset-icon">
                             {getAssetIcon(financing.assetType)}
                         </div>
-                        <div className="financing-title">
+                        <div className="financing-detail-title">
                             <h1>{financing.assetName || `${getAssetTypeLabel(financing.assetType)} #${financing.assetId}`}</h1>
-                            <p className="asset-reference">{financing.assetReference}</p>
-                            <div className="financing-status" style={{ color: getStatusColor(financing.status) }}>
+                            <p className="financing-detail-asset-reference">{financing.assetReference}</p>
+                            <div className="financing-detail-status" style={{ color: getStatusColor(financing.status) }}>
                                 {getStatusLabel(financing.status)}
                             </div>
                         </div>
                     </div>
 
                     {hasPermission('canEditFinancings') && (
-                        <div className="header-actions">
+                        <div className="financing-header-actions">
                             <button
-                                className="action-button edit"
+                                className="financing-action-button edit"
                                 onClick={() => navigate(`/financings/${id}/edit`)}
                             >
                                 <EditIcon />
@@ -183,7 +183,7 @@ const FinancingDetail = () => {
                             </button>
                             {financing.paymentsMade === 0 && hasPermission('canDeleteFinancings') && (
                                 <button
-                                    className="action-button delete"
+                                    className="financing-action-button delete"
                                     onClick={handleDeleteFinancing}
                                 >
                                     <DeleteIcon />
@@ -197,64 +197,64 @@ const FinancingDetail = () => {
 
             {/* Summary Cards */}
             {financing.summary && (
-                <div className="summary-section">
-                    <div className="summary-cards">
-                        <div className="summary-card">
-                            <div className="summary-icon">
+                <div className="financing-summary-section">
+                    <div className="financing-summary-cards">
+                        <div className="financing-summary-card">
+                            <div className="financing-summary-icon">
                                 <MonetizationOnIcon />
                             </div>
-                            <div className="summary-content">
+                            <div className="financing-summary-content">
                                 <h3>Monto Financiado</h3>
-                                <div className="summary-value">
+                                <div className="financing-summary-value">
                                     {financingCalculations.formatCurrency(financing.summary.totalFinanced)}
                                 </div>
-                                <div className="summary-subtext">
+                                <div className="financing-summary-subtext">
                                     Cuota inicial: {financingCalculations.formatCurrency(financing.downPayment || 0)}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="summary-card">
-                            <div className="summary-icon">
+                        <div className="financing-summary-card">
+                            <div className="financing-summary-icon">
                                 <CheckCircleIcon />
                             </div>
-                            <div className="summary-content">
+                            <div className="financing-summary-content">
                                 <h3>Total Pagado</h3>
-                                <div className="summary-value">
+                                <div className="financing-summary-value">
                                     {financingCalculations.formatCurrency(financing.summary.totalPaid)}
                                 </div>
-                                <div className="summary-subtext">
+                                <div className="financing-summary-subtext">
                                     {financing.summary.paymentsMade} de {financing.termMonths} cuotas
                                 </div>
                             </div>
                         </div>
 
-                        <div className="summary-card">
-                            <div className="summary-icon">
+                        <div className="financing-summary-card">
+                            <div className="financing-summary-icon">
                                 <TrendingUpIcon />
                             </div>
-                            <div className="summary-content">
+                            <div className="financing-summary-content">
                                 <h3>Saldo Restante</h3>
-                                <div className="summary-value">
+                                <div className="financing-summary-value">
                                     {financingCalculations.formatCurrency(financing.summary.remainingBalance)}
                                 </div>
-                                <div className="summary-subtext">
+                                <div className="financing-summary-subtext">
                                     {financing.summary.paymentsRemaining} cuotas restantes
                                 </div>
                             </div>
                         </div>
 
                         {financing.summary.nextPaymentDate && (
-                            <div className={`summary-card ${financing.summary.isOverdue ? 'overdue' : ''}`}>
-                                <div className="summary-icon">
+                            <div className={`financing-summary-card ${financing.summary.isOverdue ? 'overdue' : ''}`}>
+                                <div className="financing-summary-icon">
                                     {financing.summary.isOverdue ? <WarningIcon /> : <ScheduleIcon />}
                                 </div>
-                                <div className="summary-content">
+                                <div className="financing-summary-content">
                                     <h3>{financing.summary.isOverdue ? 'Pago Vencido' : 'Próximo Pago'}</h3>
-                                    <div className="summary-value">
+                                    <div className="financing-summary-value">
                                         {financingCalculations.formatCurrency(financing.summary.nextPaymentAmount)}
                                     </div>
-                                    <div className="summary-subtext">
+                                    <div className="financing-summary-subtext">
                                         {financingCalculations.formatDate(financing.summary.nextPaymentDate)}
                                     </div>
                                 </div>
@@ -263,18 +263,18 @@ const FinancingDetail = () => {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="progress-section">
-                        <div className="progress-header">
+                    <div className="financing-progress-section">
+                        <div className="financing-progress-header">
                             <span>Progreso del Financiamiento</span>
                             <span>{financing.summary.percentageComplete.toFixed(1)}%</span>
                         </div>
-                        <div className="progress-bar">
+                        <div className="financing-progress-bar">
                             <div
-                                className="progress-fill"
+                                className="financing-progress-fill"
                                 style={{ width: `${financing.summary.percentageComplete}%` }}
                             ></div>
                         </div>
-                        <div className="progress-details">
+                        <div className="financing-progress-details">
                             <span>{financing.summary.monthsRemaining} meses restantes</span>
                             <span>Finaliza: {financingCalculations.formatDate(financing.endDate)}</span>
                         </div>
@@ -283,30 +283,30 @@ const FinancingDetail = () => {
             )}
 
             {/* Tabs */}
-            <div className="detail-tabs">
+            <div className="financing-detail-tabs">
                 <button
-                    className={`tab ${selectedTab === 'overview' ? 'active' : ''}`}
+                    className={`financing-tab ${selectedTab === 'overview' ? 'active' : ''}`}
                     onClick={() => setSelectedTab('overview')}
                 >
                     <InfoIcon />
                     Información General
                 </button>
                 <button
-                    className={`tab ${selectedTab === 'payments' ? 'active' : ''}`}
+                    className={`financing-tab ${selectedTab === 'payments' ? 'active' : ''}`}
                     onClick={() => setSelectedTab('payments')}
                 >
                     <PaymentIcon />
                     Tabla de Pagos
                 </button>
                 <button
-                    className={`tab ${selectedTab === 'amortization' ? 'active' : ''}`}
+                    className={`financing-tab ${selectedTab === 'amortization' ? 'active' : ''}`}
                     onClick={() => setSelectedTab('amortization')}
                 >
                     <TimelineIcon />
                     Tabla de Amortización
                 </button>
                 <button
-                    className={`tab ${selectedTab === 'analytics' ? 'active' : ''}`}
+                    className={`financing-tab ${selectedTab === 'analytics' ? 'active' : ''}`}
                     onClick={() => setSelectedTab('analytics')}
                 >
                     <BarChartIcon />
@@ -315,63 +315,63 @@ const FinancingDetail = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="tab-content">
+            <div className="financing-tab-content">
                 {selectedTab === 'overview' && (
-                    <div className="overview-content">
-                        <div className="info-grid">
-                            <div className="info-section">
+                    <div className="financing-overview-content">
+                        <div className="financing-info-grid">
+                            <div className="financing-info-section">
                                 <h3>
                                     <BusinessIcon />
                                     Información del Prestamista
                                 </h3>
-                                <div className="info-item">
-                                    <span className="label">Prestamista:</span>
-                                    <span className="value">{financing.lender}</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Prestamista:</span>
+                                    <span className="financing-value">{financing.lender}</span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="label">Tasa de Interés:</span>
-                                    <span className="value">{financing.interestRate}% anual</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Tasa de Interés:</span>
+                                    <span className="financing-value">{financing.interestRate}% anual</span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="label">Plazo:</span>
-                                    <span className="value">{financing.termMonths} meses</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Plazo:</span>
+                                    <span className="financing-value">{financing.termMonths} meses</span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="label">Cuota Mensual:</span>
-                                    <span className="value">{financingCalculations.formatCurrency(financing.monthlyPayment || 0)}</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Cuota Mensual:</span>
+                                    <span className="financing-value">{financingCalculations.formatCurrency(financing.monthlyPayment || 0)}</span>
                                 </div>
                             </div>
 
-                            <div className="info-section">
+                            <div className="financing-info-section">
                                 <h3>
                                     <CalendarTodayIcon />
                                     Fechas Importantes
                                 </h3>
-                                <div className="info-item">
-                                    <span className="label">Fecha de Inicio:</span>
-                                    <span className="value">{financingCalculations.formatDate(financing.startDate)}</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Fecha de Inicio:</span>
+                                    <span className="financing-value">{financingCalculations.formatDate(financing.startDate)}</span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="label">Fecha de Finalización:</span>
-                                    <span className="value">{financingCalculations.formatDate(financing.endDate)}</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Fecha de Finalización:</span>
+                                    <span className="financing-value">{financingCalculations.formatDate(financing.endDate)}</span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="label">Creado el:</span>
-                                    <span className="value">{financingCalculations.formatDate(financing.createdAt)}</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Creado el:</span>
+                                    <span className="financing-value">{financingCalculations.formatDate(financing.createdAt)}</span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="label">Creado por:</span>
-                                    <span className="value">{financing.createdBy?.fullName || 'Sistema'}</span>
+                                <div className="financing-info-item">
+                                    <span className="financing-label">Creado por:</span>
+                                    <span className="financing-value">{financing.createdBy?.fullName || 'Sistema'}</span>
                                 </div>
                             </div>
 
                             {financing.notes && (
-                                <div className="info-section notes-section">
+                                <div className="financing-info-section financing-notes-section">
                                     <h3>
                                         <InfoIcon />
                                         Notas Adicionales
                                     </h3>
-                                    <div className="notes-content">
+                                    <div className="financing-notes-content">
                                         {financing.notes}
                                     </div>
                                 </div>
@@ -381,12 +381,12 @@ const FinancingDetail = () => {
                 )}
 
                 {selectedTab === 'payments' && (
-                    <div className="payments-content">
-                        <div className="payments-header">
+                    <div className="financing-payments-content">
+                        <div className="financing-payments-header">
                             <h3>Historial de Pagos</h3>
                             {hasPermission('canRecordPayments') && (
-                                <div className="payments-actions">
-                                    <button className="action-button primary">
+                                <div className="financing-payments-actions">
+                                    <button className="financing-action-button primary">
                                         <PaymentIcon />
                                         Registrar Pago Masivo
                                     </button>
@@ -444,17 +444,17 @@ const FinancingDetail = () => {
                 )}
 
                 {selectedTab === 'amortization' && (
-                    <div className="amortization-content">
-                        <div className="amortization-header">
+                    <div className="financing-amortization-content">
+                        <div className="financing-amortization-header">
                             <h3>Tabla de Amortización</h3>
-                            <div className="amortization-summary">
+                            <div className="financing-amortization-summary">
                                 <span>Total de intereses: {financingCalculations.formatCurrency(getTotalInterest())}</span>
                                 <span> | Total a pagar: {financingCalculations.formatCurrency(getTotalToPay())}</span>
                             </div>
                         </div>
 
-                        <div className="amortization-table-container">
-                            <table className="amortization-table">
+                        <div className="financing-amortization-table-container">
+                            <table className="financing-amortization-table">
                                 <thead>
                                     <tr>
                                         <th>Cuota #</th>
@@ -483,38 +483,38 @@ const FinancingDetail = () => {
                 )}
 
                 {selectedTab === 'analytics' && (
-                    <div className="analytics-content">
-                        <div className="analytics-grid">
-                            <div className="analytics-card">
+                    <div className="financing-analytics-content">
+                        <div className="financing-analytics-grid">
+                            <div className="financing-analytics-card">
                                 <h3>Resumen Financiero</h3>
-                                <div className="analytics-stats">
-                                    <div className="stat-item">
-                                        <span className="stat-label">Total del Préstamo:</span>
-                                        <span className="stat-value">{financingCalculations.formatCurrency(financing.loanAmount || 0)}</span>
+                                <div className="financing-analytics-stats">
+                                    <div className="financing-stat-item">
+                                        <span className="financing-stat-label">Total del Préstamo:</span>
+                                        <span className="financing-stat-value">{financingCalculations.formatCurrency(financing.loanAmount || 0)}</span>
                                     </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Cuota Inicial:</span>
-                                        <span className="stat-value">{financingCalculations.formatCurrency(financing.downPayment || 0)}</span>
+                                    <div className="financing-stat-item">
+                                        <span className="financing-stat-label">Cuota Inicial:</span>
+                                        <span className="financing-stat-value">{financingCalculations.formatCurrency(financing.downPayment || 0)}</span>
                                     </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Monto Financiado:</span>
-                                        <span className="stat-value">{financingCalculations.formatCurrency((financing.loanAmount || 0) - (financing.downPayment || 0))}</span>
+                                    <div className="financing-stat-item">
+                                        <span className="financing-stat-label">Monto Financiado:</span>
+                                        <span className="financing-stat-value">{financingCalculations.formatCurrency((financing.loanAmount || 0) - (financing.downPayment || 0))}</span>
                                     </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Total de Intereses:</span>
-                                        <span className="stat-value">{financingCalculations.formatCurrency(getTotalInterest())}</span>
+                                    <div className="financing-stat-item">
+                                        <span className="financing-stat-label">Total de Intereses:</span>
+                                        <span className="financing-stat-value">{financingCalculations.formatCurrency(getTotalInterest())}</span>
                                     </div>
-                                    <div className="stat-item">
-                                        <span className="stat-label">Total a Pagar:</span>
-                                        <span className="stat-value">{financingCalculations.formatCurrency(getTotalToPay())}</span>
+                                    <div className="financing-stat-item">
+                                        <span className="financing-stat-label">Total a Pagar:</span>
+                                        <span className="financing-stat-value">{financingCalculations.formatCurrency(getTotalToPay())}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="analytics-card">
+                            <div className="financing-analytics-card">
                                 <h3>Progreso de Pagos</h3>
-                                <div className="progress-chart">
-                                    <div className={`progress-segment paid ${(financing.summary?.percentageComplete || 0) < 5 ? 'tiny-segment' :
+                                <div className="financing-progress-chart">
+                                    <div className={`financing-progress-segment paid ${(financing.summary?.percentageComplete || 0) < 5 ? 'tiny-segment' :
                                         (financing.summary?.percentageComplete || 0) < 15 ? 'small-segment' : ''
                                         }`} style={{
                                             width: `${financing.summary?.percentageComplete || 0}%`
@@ -523,7 +523,7 @@ const FinancingDetail = () => {
                                             `Pagado (${(financing.summary?.percentageComplete || 0).toFixed(1)}%)`
                                         }
                                     </div>
-                                    <div className={`progress-segment remaining ${(100 - (financing.summary?.percentageComplete || 0)) < 5 ? 'tiny-segment' :
+                                    <div className={`financing-progress-segment remaining ${(100 - (financing.summary?.percentageComplete || 0)) < 5 ? 'tiny-segment' :
                                         (100 - (financing.summary?.percentageComplete || 0)) < 15 ? 'small-segment' : ''
                                         }`} style={{
                                             width: `${100 - (financing.summary?.percentageComplete || 0)}%`

@@ -669,25 +669,16 @@ const Profile = () => {
                                                 </div>
                                             )}
 
-                                            {/* Información adicional de aprobaciones */}
-                                            {vacation.firstApprovedBy && (
-                                                <div className="approval-info">
-                                                    <div className="approval-step">
-                                                        <CheckCircleIcon className="approval-icon" />
-                                                        <span>1ª Aprobación: {vacation.firstApprovedBy.fullName}</span>
-                                                        <span className="approval-date">
-                                                            {new Date(vacation.firstApprovedDate).toLocaleDateString('es-ES')}
-                                                        </span>
+                                            {/* Motivo de rechazo si la solicitud fue rechazada */}
+                                            {vacation.status === VacationStatus.REJECTED && vacation.rejectionReason && (
+                                                <div className="rejection-info">
+                                                    <CancelScheduleSendIcon className="rejection-icon" />
+                                                    <div className="rejection-details">
+                                                        <span>Motivo del rechazo:</span>
+                                                        <p className="rejection-reason">
+                                                            {vacation.rejectionReason}
+                                                        </p>
                                                     </div>
-                                                    {vacation.secondApprovedBy && (
-                                                        <div className="approval-step">
-                                                            <CheckCircleIcon className="approval-icon" />
-                                                            <span>2ª Aprobación: {vacation.secondApprovedBy.fullName}</span>
-                                                            <span className="approval-date">
-                                                                {new Date(vacation.secondApprovedDate).toLocaleDateString('es-ES')}
-                                                            </span>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             )}
                                         </div>
