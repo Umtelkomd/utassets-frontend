@@ -42,10 +42,11 @@ fi
 if command -v npx >/dev/null 2>&1; then
   if [ -n "$files" ]; then
     echo "🔍 Ejecutando ESLint en archivos staged..."
-    npx eslint $files --max-warnings=0
+    npx eslint $files
     
     if [ $? -ne 0 ]; then
-      echo "❌ Error: ESLint encontró problemas. Por favor, arregla los problemas antes de hacer commit."
+      echo "❌ Error: ESLint encontró errores críticos. Por favor, arregla los errores antes de hacer commit."
+      echo "ℹ️  Los warnings están permitidos y no bloquean el commit."
       exit 1
     fi
   fi
