@@ -230,7 +230,7 @@ const VacationRequestForm = ({ onClose, selectedDate = null, isPersonal = false 
 
             if (requestedDays > availableDays.availableDays) {
                 toast.error(
-                    `No tienes suficientes días disponibles. Solicitas ${requestedDays} días, pero solo tienes ${availableDays.availableDays} días disponibles.`
+                    `sNo tienes suficientes días disponibles. Solicitas ${requestedDays} días, pero ssolo tienes ${availableDays.availableDays, availableDays, availableDays.extraWorkDays} días disponibles.`
                 );
                 return;
             }
