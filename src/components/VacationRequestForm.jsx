@@ -208,8 +208,68 @@ const VacationRequestForm = ({
     };
   };
 
+  // Función helper para verificar si una fecha es sábado
+  const isSaturday = (dateString) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    return date.getDay() === 6; // 6 = sábado
+  };
+
+  // Función helper para obtener el próximo sábado
+  const getNextSaturday = () => {
+    const today = new Date();
+    const daysUntilSaturday = (6 - today.getDay() + 7) % 7 || 7; // Días hasta el próximo sábado
+    const nextSaturday = new Date(today);
+    nextSaturday.setDate(today.getDate() + daysUntilSaturday);
+    return nextSaturday.toISOString().split("T")[0];
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // Validar fecha para días extra
+    if (name === "date" && formData.type === "extra_work_day" && value) {
+      if (!isSaturday(value)) {
+        toast.error(
+          "Para días de trabajo extra solo se pueden seleccionar sábados.",
+        );
+        return;
+      }
+    }
+
+    if (name === "endDate" && formData.type === "extra_work_day" && value) {
+      if (!isSaturday(value)) {
+        toast.error(
+          "Para días de trabajo extra solo se pueden seleccionar sábados.",
+        );
+        return;
+      }
+    }
+
+    // Si cambia el tipo a extra_work_day, limpiar fechas que no sean sábados
+    if (name === "type" && value === "extra_work_day") {
+      const newFormData = {
+        ...formData,
+        [name]: value,
+      };
+
+      // Limpiar fecha de inicio si no es sábado
+      if (formData.date && !isSaturday(formData.date)) {
+        newFormData.date = "";
+        toast.info(
+          "Para días de trabajo extra solo se pueden seleccionar sábados. Por favor, selecciona un sábado.",
+        );
+      }
+
+      // Limpiar fecha de fin si no es sábado
+      if (formData.endDate && !isSaturday(formData.endDate)) {
+        newFormData.endDate = "";
+      }
+
+      setFormData(newFormData);
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -241,7 +301,7 @@ const VacationRequestForm = ({
     if (formData.type === "rest_day" && availableDays) {
       const requestedDays =
         formData.isRange && formData.endDate
-          ? getDaysBetween(formData.date, formData.endDate)
+          ? calculateWorkingDays(formData.date, formData.endDate)
           : 1;
 
       if (requestedDays > availableDays.availableDays) {
@@ -283,7 +343,28 @@ const VacationRequestForm = ({
 
   // formatDate ya importada de utils/dateUtils
 
+  // Función para contar sábados entre dos fechas
+  const calculateSaturdays = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    let count = 0;
+    let current = new Date(start);
+
+    while (current <= end) {
+      if (current.getDay() === 6) {
+        // Es sábado
+        count++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    return count;
+  };
+
   const getDaysBetween = (startDate, endDate) => {
+    if (formData.type === "extra_work_day") {
+      return calculateSaturdays(startDate, endDate);
+    }
     return calculateWorkingDays(startDate, endDate);
   };
 
@@ -392,6 +473,17 @@ const VacationRequestForm = ({
             <label>
               <CalendarIcon />
               Fecha de inicio *
+              {formData.type === "extra_work_day" && (
+                <span
+                  style={{
+                    fontSize: "0.8em",
+                    color: "#f39c12",
+                    marginLeft: "8px",
+                  }}
+                >
+                  (Solo sábados)
+                </span>
+              )}
             </label>
             <input
               type="date"
@@ -401,6 +493,21 @@ const VacationRequestForm = ({
               required
               min={new Date().toISOString().split("T")[0]}
             />
+            {formData.type === "extra_work_day" && (
+              <div
+                style={{
+                  fontSize: "0.85em",
+                  color: "#7f8c8d",
+                  marginTop: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+              >
+                <WarningIcon style={{ fontSize: "16px", color: "#f39c12" }} />
+                Para días de trabajo extra solo puedes seleccionar sábados
+              </div>
+            )}
           </div>
 
           {/* Toggle para rango de fechas */}
@@ -433,6 +540,17 @@ const VacationRequestForm = ({
               <label>
                 <CalendarIcon />
                 Fecha de fin *
+                {formData.type === "extra_work_day" && (
+                  <span
+                    style={{
+                      fontSize: "0.8em",
+                      color: "#f39c12",
+                      marginLeft: "8px",
+                    }}
+                  >
+                    (Solo sábados)
+                  </span>
+                )}
               </label>
               <input
                 type="date"
@@ -442,6 +560,21 @@ const VacationRequestForm = ({
                 required={formData.isRange}
                 min={formData.date || new Date().toISOString().split("T")[0]}
               />
+              {formData.type === "extra_work_day" && (
+                <div
+                  style={{
+                    fontSize: "0.85em",
+                    color: "#7f8c8d",
+                    marginTop: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                >
+                  <WarningIcon style={{ fontSize: "16px", color: "#f39c12" }} />
+                  Solo puedes seleccionar sábados para días de trabajo extra
+                </div>
+              )}
               {formData.date && formData.endDate && (
                 <div className="date-range-info">
                   <CalendarIcon />
@@ -449,7 +582,8 @@ const VacationRequestForm = ({
                     formData.date,
                     formData.endDate,
                   )}{" "}
-                  día(s) del {formatDate(formData.date)} al{" "}
+                  {formData.type === "extra_work_day" ? "sábado(s)" : "día(s)"}{" "}
+                  del {formatDate(formData.date)} al{" "}
                   {formatDate(formData.endDate)}
                 </div>
               )}
