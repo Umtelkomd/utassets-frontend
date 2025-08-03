@@ -124,7 +124,11 @@ const Login = () => {
             // Si hay una redirectUrl, usar el endpoint de SSO
             if (formData.redirectUrl) {
                 // Usar fetch directamente para el login con redirección
-                const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5051';
+                const backendUrl = process.env.REACT_APP_BACKEND_URL || 'https://glassfaser-utk.de:5051';
+                
+                console.log('🔗 SSO Debug - redirectUrl:', formData.redirectUrl);
+                console.log('🔗 SSO Debug - backendUrl:', backendUrl);
+                
                 const response = await fetch(`${backendUrl}/api/auth/login-redirect?redirect=${encodeURIComponent(formData.redirectUrl)}`, {
                     method: 'POST',
                     headers: {
@@ -138,9 +142,18 @@ const Login = () => {
                     redirect: 'manual' // No seguir redirecciones automáticamente
                 });
 
+                console.log('🔗 SSO Debug - response status:', response.status);
+                console.log('🔗 SSO Debug - response type:', response.type);
+
                 if (response.type === 'opaqueredirect' || response.status === 302) {
-                    // El servidor está intentando redirigir, seguir la redirección
-                    window.location.href = response.url || formData.redirectUrl;
+                    // El servidor está intentando redirigir, extraer URL del header Location
+                    const locationHeader = response.headers.get('Location');
+                    console.log('🔗 SSO Debug - Location header:', locationHeader);
+                    
+                    const redirectTarget = locationHeader || formData.redirectUrl;
+                    console.log('🔗 SSO Debug - Redirigiendo a:', redirectTarget);
+                    
+                    window.location.href = redirectTarget;
                     return;
                 } else if (!response.ok) {
                     const errorData = await response.json();
