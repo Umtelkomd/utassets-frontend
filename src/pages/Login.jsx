@@ -9,7 +9,8 @@ import '../pages/Login.css';
 const Login = () => {
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
+        redirectUrl: null
     });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +24,13 @@ const Login = () => {
     // Manejar parámetros de URL para mostrar mensajes apropiados
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
-        console.log('Parámetros URL detectados:', Object.fromEntries(urlParams.entries()));
+
+        // Verificar si hay una URL de redirección para SSO
+        const redirectUrl = urlParams.get('redirect');
+        if (redirectUrl) {
+            // Guardar la URL de redirección en el estado local
+            setFormData(prev => ({ ...prev, redirectUrl }));
+        }
 
         if (urlParams.get('expired') === 'true') {
             toast.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', {
@@ -67,7 +74,6 @@ const Login = () => {
     // Redirigir si el usuario ya está autenticado
     useEffect(() => {
         if (isAuthInitialized && currentUser) {
-            console.log('Usuario ya autenticado, redirigiendo a dashboard...');
             navigate('/', { replace: true });
         }
     }, [currentUser, isAuthInitialized, navigate]);
@@ -115,6 +121,38 @@ const Login = () => {
         setIsSubmitting(true);
 
         try {
+            // Si hay una redirectUrl, usar el endpoint de SSO
+            if (formData.redirectUrl) {
+                // Usar fetch directamente para el login con redirección
+                const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5051';
+                const response = await fetch(`${backendUrl}/api/auth/login-redirect?redirect=${encodeURIComponent(formData.redirectUrl)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: formData.email.trim(),
+                        password: formData.password,
+                        redirect: formData.redirectUrl
+                    }),
+                    redirect: 'manual' // No seguir redirecciones automáticamente
+                });
+
+                if (response.type === 'opaqueredirect' || response.status === 302) {
+                    // El servidor está intentando redirigir, seguir la redirección
+                    window.location.href = response.url || formData.redirectUrl;
+                    return;
+                } else if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error en autenticación SSO');
+                }
+
+                // Si llegamos aquí, hubo algún problema
+                toast.error('Error en la redirección SSO');
+                return;
+            }
+
+            // Login normal sin redirección
             const response = await login({
                 email: formData.email.trim(),
                 password: formData.password
