@@ -34,7 +34,7 @@ const Login = () => {
 
       // Si ya hay un usuario autenticado, proceder inmediatamente
       if (currentUser && isAuthInitialized) {
-        handleImmediateRedirection(currentUser, redirectUrl);
+        window.location.href = redirectUrl;
       }
     }
   }, []);
@@ -48,43 +48,9 @@ const Login = () => {
       isAuthInitialized &&
       !isSubmitting
     ) {
-      handleImmediateRedirection(currentUser, formData.redirectUrl);
+      window.location.href = formData.redirectUrl;
     }
   }, [currentUser, isAuthInitialized, formData.redirectUrl, isSubmitting]);
-
-  // Función para manejar redirección inmediata
-  const handleImmediateRedirection = async (user, redirectUrl) => {
-    try {
-      // Mostrar mensaje inmediato
-      toast.info("🔄 Redirigiendo automáticamente a CostControl...", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-
-      // Generar token temporal inmediatamente
-      const tokenData = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        timestamp: Date.now(),
-      };
-
-      const tempToken = btoa(JSON.stringify(tokenData));
-      const redirectUrlWithToken = `${redirectUrl}?token=${tempToken}&temp=true`;
-
-      // Limpiar URL y redirigir inmediatamente
-      window.history.replaceState({}, "", window.location.pathname);
-
-      // Redirección más rápida
-      setTimeout(() => {
-        window.location.href = redirectUrlWithToken;
-      }, 100);
-    } catch (error) {
-      console.error("❌ [UTAssets] Error en redirección inmediata:", error);
-      // Fallback: redirigir sin token
-      window.location.href = redirectUrl;
-    }
-  };
 
   // Manejar parámetros de URL para mostrar mensajes apropiados
   useEffect(() => {
@@ -95,8 +61,6 @@ const Login = () => {
     if (redirectUrl) {
       // Guardar la URL de redirección en el estado local
       setFormData((prev) => ({ ...prev, redirectUrl }));
-
-      // NO limpiar la URL todavía si hay redirección - la limpiaremos después
       return;
     }
 
@@ -145,115 +109,6 @@ const Login = () => {
     }
   }, [location.search]);
 
-  // Redirigir si el usuario ya está autenticado
-  useEffect(() => {
-    const handleAuthenticatedUser = async () => {
-      // Asegurar que todo esté inicializado antes de proceder
-      if (!isAuthInitialized) {
-        return;
-      }
-
-      if (!currentUser) {
-        return;
-      }
-
-      // Si hay una URL de redirección SSO, generar token y redirigir
-      if (formData.redirectUrl && !isSubmitting) {
-        try {
-          setIsSubmitting(true);
-
-          // Método alternativo: usar el endpoint /me para obtener info del usuario actual
-          const backendUrl =
-            process.env.REACT_APP_BACKEND_URL ||
-            "https://glassfaser-utk.de:5051";
-          const response = await fetch(`${backendUrl}/api/auth/me`, {
-            method: "GET",
-            credentials: "include", // Incluir cookies de autenticación
-          });
-
-          if (response.ok) {
-            const userData = await response.json();
-
-            // Generar un token simple usando la información del usuario
-            // Esto es temporal hasta que el servidor se actualice
-            const tokenData = {
-              id: userData.id,
-              email: userData.email,
-              role: userData.role,
-              timestamp: Date.now(),
-            };
-
-            // Crear un "token" temporal (base64 encoded)
-            const tempToken = btoa(JSON.stringify(tokenData));
-
-            const redirectUrlWithToken = `${formData.redirectUrl}?token=${tempToken}&temp=true`;
-
-            // Limpiar la URL antes de redireccionar
-            window.history.replaceState({}, "", window.location.pathname);
-
-            // Mostrar mensaje de redirección
-            toast.info("✅ Redirigiendo a CostControl...", {
-              position: "top-right",
-              autoClose: 2000,
-            });
-
-            // Redirigir con el token temporal
-            setTimeout(() => {
-              window.location.href = redirectUrlWithToken;
-            }, 500);
-          } else {
-            console.error(
-              "❌ [UTAssets] Error obteniendo info del usuario:",
-              response.status,
-            );
-
-            // Fallback: redirigir sin token y que CostControl maneje el login
-            toast.info(
-              "Redirigiendo a CostControl para completar autenticación...",
-              {
-                position: "top-right",
-                autoClose: 3000,
-              },
-            );
-
-            // Limpiar la URL antes de redireccionar
-            window.history.replaceState({}, "", window.location.pathname);
-
-            setTimeout(() => {
-              window.location.href = formData.redirectUrl;
-            }, 1500);
-          }
-        } catch (error) {
-          console.error("❌ [UTAssets] Error en auto-redirección:", error);
-
-          // Fallback final: redirigir de todos modos
-          toast.info("Redirigiendo a CostControl...", {
-            position: "top-right",
-            autoClose: 2000,
-          });
-
-          // Limpiar la URL antes de redireccionar
-          window.history.replaceState({}, "", window.location.pathname);
-
-          setTimeout(() => {
-            window.location.href = formData.redirectUrl;
-          }, 1000);
-        }
-      } else if (!formData.redirectUrl) {
-        // No hay redirección SSO, ir al dashboard normal
-        navigate("/", { replace: true });
-      }
-    };
-
-    handleAuthenticatedUser();
-  }, [
-    currentUser,
-    isAuthInitialized,
-    formData.redirectUrl,
-    isSubmitting,
-    navigate,
-  ]);
-
   const validateForm = () => {
     const newErrors = {};
 
@@ -297,47 +152,7 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      // Si hay una redirectUrl, usar el endpoint de SSO
-      if (formData.redirectUrl) {
-        // Usar fetch directamente para el login con redirección
-        const backendUrl =
-          process.env.REACT_APP_BACKEND_URL || "https://glassfaser-utk.de:5051";
-
-        const response = await fetch(
-          `${backendUrl}/api/auth/login-redirect?redirect=${encodeURIComponent(formData.redirectUrl)}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: formData.email.trim(),
-              password: formData.password,
-              redirect: formData.redirectUrl,
-            }),
-            redirect: "manual", // No seguir redirecciones automáticamente
-          },
-        );
-
-        if (response.type === "opaqueredirect" || response.status === 302) {
-          // El servidor está intentando redirigir, extraer URL del header Location
-          const locationHeader = response.headers.get("Location");
-
-          const redirectTarget = locationHeader || formData.redirectUrl;
-
-          window.location.href = redirectTarget;
-          return;
-        } else if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Error en autenticación SSO");
-        }
-
-        // Si llegamos aquí, hubo algún problema
-        toast.error("Error en la redirección SSO");
-        return;
-      }
-
-      // Login normal sin redirección
+      // Login normal (sin /login-redirect)
       const response = await login({
         email: formData.email.trim(),
         password: formData.password,
@@ -351,6 +166,10 @@ const Login = () => {
             autoClose: 3000,
           },
         );
+        if (formData.redirectUrl) {
+          window.location.href = formData.redirectUrl;
+          return;
+        }
         navigate("/");
       } else {
         // Limpiar solo el campo de contraseña
@@ -366,7 +185,6 @@ const Login = () => {
             general: response.error,
           });
 
-          // Mostrar mensaje diferente si se envió un nuevo correo automáticamente
           if (response.newEmailSent) {
             toast.success(
               "¡Nuevo correo de confirmación enviado! Revisa tu bandeja de entrada.",
@@ -375,7 +193,6 @@ const Login = () => {
                 autoClose: 6000,
               },
             );
-            // Mensaje secundario con más información
             setTimeout(() => {
               toast.info(
                 "Revisa también tu carpeta de spam. El enlace expira en 24 horas.",
@@ -388,7 +205,7 @@ const Login = () => {
           } else {
             toast.error(response.error, {
               position: "top-right",
-              autoClose: 5000,
+              autoClose: 3000,
             });
           }
         } else {
@@ -418,7 +235,7 @@ const Login = () => {
 
   const EyeClosedIcon = (
     <svg viewBox="0 0 24 24" width="24" height="24">
-      <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+      <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27z" />
     </svg>
   );
 
