@@ -34,12 +34,6 @@ const SSORedirectHandler = () => {
       }
 
       try {
-        // Mostrar mensaje de redirección
-        toast.info("🔄 Redirigiendo automáticamente a CostControl...", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-
         // Generar token temporal
         const tokenData = {
           id: currentUser.id,
@@ -49,7 +43,8 @@ const SSORedirectHandler = () => {
         };
 
         const tempToken = btoa(JSON.stringify(tokenData));
-        const redirectUrlWithToken = `${redirectUrl}?token=${tempToken}&temp=true`;
+        const sep = redirectUrl.includes("?") ? "&" : "?";
+        const redirectUrlWithToken = `${redirectUrl}${sep}token=${encodeURIComponent(tempToken)}&temp=true`;
 
         // Limpiar URL y redirigir
         window.history.replaceState({}, "", window.location.pathname);
@@ -58,7 +53,6 @@ const SSORedirectHandler = () => {
           window.location.href = redirectUrlWithToken;
         }, 500);
       } catch (error) {
-        console.error("❌ [SSO] Error generando token:", error);
         // Fallback: redirigir sin token
         toast.error(
           "Error generando token, redirigiendo sin autenticación...",
