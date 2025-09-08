@@ -21,6 +21,11 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const buildSSORedirectUrl = (redirectUrl) => {
+    // Ruta interna dentro de la SPA con basename /utassets
+    return `/sso-redirect?redirect=${encodeURIComponent(redirectUrl)}`;
+  };
+
   // 🚨 VERIFICACIÓN INMEDIATA DE REDIRECCIÓN SSO
   // Esta verificación se ejecuta inmediatamente cuando el componente se monta
   // ANTES de cualquier otro useEffect
@@ -32,9 +37,9 @@ const Login = () => {
       // Guardar inmediatamente en el estado
       setFormData((prev) => ({ ...prev, redirectUrl }));
 
-      // Si ya hay un usuario autenticado, proceder inmediatamente
+      // Si ya hay un usuario autenticado, proceder inmediatamente via /sso-redirect
       if (currentUser && isAuthInitialized) {
-        window.location.href = redirectUrl;
+        navigate(buildSSORedirectUrl(redirectUrl), { replace: true });
       }
     }
   }, []);
@@ -48,7 +53,7 @@ const Login = () => {
       isAuthInitialized &&
       !isSubmitting
     ) {
-      window.location.href = formData.redirectUrl;
+      navigate(buildSSORedirectUrl(formData.redirectUrl), { replace: true });
     }
   }, [currentUser, isAuthInitialized, formData.redirectUrl, isSubmitting]);
 
@@ -167,7 +172,10 @@ const Login = () => {
           },
         );
         if (formData.redirectUrl) {
-          window.location.href = formData.redirectUrl;
+          // Si venimos de CostControl, pasar por /sso-redirect para emitir token temporal
+          navigate(buildSSORedirectUrl(formData.redirectUrl), {
+            replace: true,
+          });
           return;
         }
         navigate("/");
