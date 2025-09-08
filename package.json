@@ -2,7 +2,7 @@
   "name": "panda-assets-client",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/utassets",
+  "homepage": "/",
   "dependencies": {
     "@auth0/auth0-react": "^2.3.0",
     "@emotion/react": "^11.11.0",
