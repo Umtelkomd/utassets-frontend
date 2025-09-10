@@ -1,4 +1,4 @@
-import axiosInstance from '../utils/axiosConfig';
+import axiosInstance from '../axiosConfig';
 
 export const financingService = {
     // Financiamientos

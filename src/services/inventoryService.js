@@ -1,4 +1,9 @@
-import apiClient from '../utils/axiosConfig';
+import { BaseService } from './baseService';
+import { API_BASE_URL } from '../config/constants';
+import axios from 'axios';
+import apiClient from '../axiosConfig';
+
+const INVENTORY_ENDPOINT = `${API_BASE_URL}/inventory`;
 
 /**
  * Normaliza un objeto de inventario para asegurarse de que tenga un formato consistente
@@ -13,7 +18,6 @@ const normalizeInventoryItem = (item) => {
             try {
                 responsibleUsers = JSON.parse(item.responsibleUsers);
             } catch (e) {
-                
                 responsibleUsers = [];
             }
         } else if (Array.isArray(item.responsibleUsers)) {
@@ -44,12 +48,22 @@ const normalizeInventoryItem = (item) => {
     };
 };
 
+// Servicios de inventario con normalización
 export const getInventory = async () => {
     try {
-        const response = await apiClient.get('/inventory');
+        // Intentar con el endpoint directo primero (por compatibilidad)
+        const response = await axios.get(INVENTORY_ENDPOINT);
         return response.data.map(item => normalizeInventoryItem(item));
     } catch (error) {
-        throw error;
+        console.error('Error al obtener items del inventario:', error);
+        // Si falla, intentar con apiClient
+        try {
+            const response = await apiClient.get('/inventory');
+            return response.data.map(item => normalizeInventoryItem(item));
+        } catch (secondError) {
+            console.error('Error con apiClient también:', secondError);
+            throw error;
+        }
     }
 };
 
@@ -58,6 +72,7 @@ export const getInventoryItemById = async (id) => {
         const response = await apiClient.get(`/inventory/${id}`);
         return normalizeInventoryItem(response.data);
     } catch (error) {
+        console.error(`Error al obtener item ${id}:`, error);
         throw error;
     }
 };
@@ -96,4 +111,4 @@ export const getCategories = async () => {
     } catch (error) {
         throw error;
     }
-}; 
+};

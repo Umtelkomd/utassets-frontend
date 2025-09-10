@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 import RentalList from './pages/RentalList';
 import RentalForm from './pages/RentalForm';
 
-const AppRoutes: React.FC = () => {
+const AppRoutes = () => {
   return (
     <div className="App">
       <Navbar />
@@ -41,4 +41,4 @@ const AppRoutes: React.FC = () => {
   );
 };
 
-export default AppRoutes; 
+export default AppRoutes;

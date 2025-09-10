@@ -54,7 +54,7 @@ const performAutoLogout = (reason = 'expired') => {
     
     // Obtener la URL base actual y construir la ruta de login correctamente
     const currentPath = window.location.pathname;
-    const basePath = process.env.PUBLIC_URL || currentPath.includes('/utassets') ? '/utassets' : '';
+    const basePath = process.env.PUBLIC_URL || '';
     
     // Redirigir solo si no estamos ya en login
     if (!currentPath.includes('/login')) {

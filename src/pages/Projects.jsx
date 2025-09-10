@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import ProjectsForm from './ProjectsForm';
 import './Projects.css';
 import LoadingSpinner from '../components/LoadingSpinner';
-import * as projectService from '../services/projectService.ts';
+import * as projectService from '../services/projectService.js';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import { useJsApiLoader } from '@react-google-maps/api';
 

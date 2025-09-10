@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './RentalForm.css';
 import 'react-calendar/dist/Calendar.css';
-import axiosInstance from '../utils/axiosConfig';
+import axiosInstance from '../axiosConfig';
 import DateRangeCalendar from '../components/DateRangeCalendar';
 
 // Iconos

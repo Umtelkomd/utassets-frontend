@@ -6,7 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import DateRangeCalendar from '../components/DateRangeCalendar';
-import axiosInstance from '../utils/axiosConfig';
+import axiosInstance from '../axiosConfig';
 
 // Iconos
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePermissions } from '../context/PermissionsContext';
 import financingService, { financingCalculations } from '../services/financingService';
 import { financingUtils } from '../utils/financingUtils';
-import axiosInstance from '../utils/axiosConfig';
+import axiosInstance from '../axiosConfig';
 import LoadingSpinner from '../components/LoadingSpinner';
 import './AddFinancing.css';
 

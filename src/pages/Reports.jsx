@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import './Reports.css';
 import LoadingSpinner from '../components/LoadingSpinner';
-import * as reportService from '../services/reportService.ts';
+import * as reportService from '../services/reportService.js';
 import * as vehicleService from '../services/vehicleService';
 import * as inventoryService from '../services/inventoryService';
 import { useAuth } from '../context/AuthContext';

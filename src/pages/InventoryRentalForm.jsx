@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import './RentalForm.css';
 import LoadingSpinner from '../components/LoadingSpinner';
 import DateRangeCalendar from '../components/DateRangeCalendar';
-import axiosInstance from '../utils/axiosConfig';
+import axiosInstance from '../axiosConfig';
 import { getInventory } from '../services/inventoryService';
 
 // Iconos
@@ -222,12 +222,6 @@ const InventoryRentalForm = () => {
                 metadata: formData.metadata
             };
 
-            console.log('Datos que se envían al backend:', rentalData);
-            console.log('InventoryId específico:', {
-                value: rentalData.inventoryId,
-                type: typeof rentalData.inventoryId,
-                fromFormData: formData.inventoryId
-            });
 
             if (isEditing) {
                 await axiosInstance.put(`/rentals/${id}`, rentalData);

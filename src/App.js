@@ -68,7 +68,7 @@ const PageContainer = ({ children }) => (
 
 function App() {
   return (
-    <Router basename="/utassets">
+    <Router basename={process.env.PUBLIC_URL}>
       <AuthProvider>
         <PermissionsProvider>
           <ToastContainer position="bottom-right" />
