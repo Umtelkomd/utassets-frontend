@@ -1,0 +1,884 @@
+/* PendingVacationsManager.css */
+.pending-vacations-manager {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    /* Aislamos el componente de variables CSS globales */
+    --text-primary: #ffffff !important;
+    --text-secondary: #ffffff !important;
+    --surface-color: transparent !important;
+    --background-color: transparent !important;
+    /* Protección adicional contra interferencias */
+    isolation: isolate;
+}
+
+/* Regla de emergencia para forzar colores en el header */
+.pending-vacations-manager .pending-header,
+.pending-vacations-manager .pending-header *:not(.requests-section):not(.calendar-section):not(.requests-section *):not(.calendar-section *) {
+    color: #ffffff !important;
+    /* Sobreescribir cualquier variable CSS */
+    --text-primary: #ffffff !important;
+    --text-secondary: #ffffff !important;
+    --text-muted: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+    color: white !important;
+    padding: 2rem;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 1.5rem !important;
+}
+
+/* Asegurar que todo el contenido del header sea blanco */
+.pending-header,
+.pending-header *,
+.pending-header h1,
+.pending-header h2,
+.pending-header h3,
+.pending-header p,
+.pending-header span,
+.pending-header .header-content,
+.pending-header .header-content h2,
+.pending-header .header-content p {
+    color: #ffffff !important;
+}
+
+/* Estilos específicos con nombres únicos para evitar conflictos */
+.pending-vacations-manager .pending-header-content {
+    color: #ffffff !important;
+    /* Asegurar que no sea sobrescrito por estilos de financing */
+    display: block !important;
+    /* No aplicar estilos de flex del componente financing */
+}
+
+/* Sobreescribir específicamente variables CSS que puedan estar interfiriendo */
+.pending-vacations-manager .pending-header {
+    --text-primary: #ffffff !important;
+    --text-secondary: #ffffff !important;
+    --text-muted: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-header * {
+    color: #ffffff !important;
+    /* Forzar que no use variables CSS para colores */
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.pending-vacations-manager .pending-header-content h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-header-icon {
+    font-size: 2rem !important;
+    color: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-header-content p {
+    margin: 0 0 1rem 0;
+    opacity: 0.9;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-approval-info-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    color: #ffffff !important;
+    backdrop-filter: blur(10px);
+}
+
+.pending-vacations-manager .pending-info-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    color: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-approval-info-banner span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-approval-info-banner * {
+    color: #ffffff !important;
+}
+
+/* Proteger banners de variables CSS externas */
+.pending-vacations-manager .pending-approval-info-banner {
+    --text-primary: #ffffff !important;
+    --text-secondary: #ffffff !important;
+    --text-muted: #ffffff !important;
+}
+
+/* Banner de permisos específicos */
+.pending-vacations-manager .pending-permissions-info-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 1rem 0 0 0;
+    color: #ffffff !important;
+    backdrop-filter: blur(10px);
+}
+
+.pending-vacations-manager .pending-permissions-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    color: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-permissions-content span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-permissions-content strong {
+    color: #f8f9fa !important;
+    font-weight: 600;
+}
+
+.pending-vacations-manager .pending-permissions-info-banner * {
+    color: #ffffff !important;
+}
+
+/* Proteger banner de permisos de variables CSS externas */
+.pending-vacations-manager .pending-permissions-info-banner {
+    --text-primary: #ffffff !important;
+    --text-secondary: #ffffff !important;
+    --text-muted: #ffffff !important;
+}
+
+.pending-vacations-manager .pending-header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pending-vacations-manager .btn-refresh {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pending-vacations-manager .btn-refresh:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Layout principal */
+.pending-vacations-manager .content-layout {
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    gap: 2rem;
+    padding: 2rem;
+    min-height: 600px;
+}
+
+/* Sección de solicitudes */
+.pending-vacations-manager .requests-section {
+    min-width: 0;
+}
+
+.requests-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1.5rem 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.request-item {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.request-item:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.request-item.selected {
+    border-color: #007aff;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(88, 86, 214, 0.05));
+    box-shadow: 0 8px 32px rgba(0, 122, 255, 0.15);
+}
+
+.item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-icon {
+    color: #6c757d;
+    font-size: 1.25rem !important;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(248, 249, 250, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+}
+
+.status-icon {
+    font-size: 1.1rem !important;
+}
+
+.status-text {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.item-details {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.detail-icon {
+    font-size: 1.1rem !important;
+}
+
+.detail-icon.vacation {
+    color: #17a2b8;
+}
+
+.detail-icon.work {
+    color: #6f42c1;
+}
+
+.item-description {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 3px solid #6c757d;
+}
+
+.description-icon {
+    color: #6c757d;
+    font-size: 1rem !important;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.approval-info {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.approval-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.approval-step:last-child {
+    margin-bottom: 0;
+}
+
+.approval-step.completed {
+    color: #28a745;
+}
+
+.approval-step.pending {
+    color: #ffc107;
+}
+
+.approval-icon {
+    font-size: 1rem !important;
+}
+
+.approval-date {
+    margin-left: auto;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+    min-width: 140px;
+}
+
+.btn-approve {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-approve:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-approve:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-reject {
+    background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-reject:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-reject:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-blocked {
+    background: #6c757d;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+/* Sección del calendario */
+.calendar-section {
+    border-left: 1px solid #e9ecef;
+    padding-left: 2rem;
+}
+
+.calendar-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1.5rem 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.conflicts-summary {
+    margin-top: 1.5rem;
+    background: rgba(255, 149, 0, 0.1);
+    border: 1px solid rgba(255, 149, 0, 0.3);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.conflicts-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.conflicts-icon {
+    color: #ff9500;
+    font-size: 1.25rem !important;
+}
+
+.conflicts-header h4 {
+    margin: 0;
+    color: #ff9500;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.conflicts-summary p {
+    margin: 0;
+    color: #8b5a00;
+    line-height: 1.4;
+}
+
+/* Estilos para conflictos detallados */
+.conflicts-people-list {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: rgba(255, 193, 7, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.conflicts-people {
+    font-weight: 600;
+    color: #f57c00;
+    font-size: 0.9rem;
+}
+
+.conflicts-details {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.conflict-user-group {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.conflict-user-group:last-child {
+    margin-bottom: 0;
+}
+
+.conflict-user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.conflict-user-name {
+    font-weight: 600;
+    color: #856404;
+    font-size: 0.95rem;
+}
+
+.conflict-count {
+    background: rgba(255, 193, 7, 0.2);
+    color: #856404;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.conflict-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.conflict-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: rgba(255, 193, 7, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 193, 7, 0.15);
+}
+
+.conflict-period {
+    font-weight: 600;
+    color: #856404;
+    font-size: 0.9rem;
+}
+
+.conflict-description {
+    font-style: italic;
+    color: #6c6c6c;
+    font-size: 0.85rem;
+    margin-left: 1.5rem;
+}
+
+.conflict-type {
+    font-size: 0.8rem;
+    color: #999;
+    margin-left: 1.5rem;
+}
+
+.conflicts-recommendation {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    margin-top: 1rem;
+}
+
+.conflicts-recommendation p {
+    margin: 0;
+    color: #856404;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+/* Estados de carga y vacío */
+.pending-vacations-manager .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.pending-vacations-manager .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007aff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.pending-vacations-manager .loading-spinner.small {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    margin: 0;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.pending-vacations-manager .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.pending-vacations-manager .empty-icon {
+    font-size: 4rem !important;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.pending-vacations-manager .empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+    font-size: 1.5rem;
+}
+
+.pending-vacations-manager .empty-state p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+/* Modal de rechazo */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.reject-modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    padding: 2rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modal-header p {
+    margin: 0 0 1rem 0;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.period-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    color: #495057;
+    font-weight: 500;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007aff;
+}
+
+.modal-actions {
+    padding: 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .pending-vacations-manager .content-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .pending-vacations-manager .calendar-section {
+        border-left: none;
+        border-top: 1px solid #e9ecef;
+        padding-left: 0;
+        padding-top: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .pending-vacations-manager .pending-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .pending-vacations-manager .content-layout {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+
+    .pending-vacations-manager .item-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .pending-vacations-manager .item-details {
+        gap: 1rem;
+    }
+
+    .pending-vacations-manager .item-actions {
+        flex-direction: row;
+        min-width: auto;
+    }
+
+    .pending-vacations-manager .request-item {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .pending-vacations-manager .modal-overlay {
+        padding: 0.5rem;
+    }
+
+    .pending-vacations-manager .modal-header,
+    .pending-vacations-manager .modal-body,
+    .pending-vacations-manager .modal-actions {
+        padding: 1.5rem;
+    }
+
+    .pending-vacations-manager .modal-actions {
+        flex-direction: column;
+    }
+} 

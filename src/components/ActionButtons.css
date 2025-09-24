@@ -1,0 +1,93 @@
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    color: #666;
+}
+
+.btn-action:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+}
+
+.btn-action.edit {
+    color: #2196f3;
+}
+
+.btn-action.edit:hover {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+.btn-action.delete {
+    color: #f44336;
+}
+
+.btn-action.delete:hover {
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+.btn-action.view-button {
+    color: #4caf50;
+}
+
+.btn-action.view-button:hover {
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.btn-action.view {
+    color: #4caf50;
+}
+
+.btn-action.view:hover {
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* Estilos específicos para VehicleList */
+.vehicle-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    color: #666;
+    margin: 0 4px;
+}
+
+.vehicle-action-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: scale(1.05);
+}
+
+.vehicle-action-button.vehicle-edit-button {
+    color: #2196f3;
+}
+
+.vehicle-action-button.vehicle-edit-button:hover {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+.vehicle-action-button.vehicle-delete-button {
+    color: #f44336;
+}
+
+.vehicle-action-button.vehicle-delete-button:hover {
+    background-color: rgba(244, 67, 54, 0.1);
+}
+
+.vehicle-action-button.vehicle-view-button {
+    color: #4caf50;
+}
+
+.vehicle-action-button.vehicle-view-button:hover {
+    background-color: rgba(76, 175, 80, 0.1);
+} 

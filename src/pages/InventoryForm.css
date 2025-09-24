@@ -1,0 +1,131 @@
+/* src/pages/InventoryForm.css */
+.inventory-form-page {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  .inventory-form .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  @media (max-width: 768px) {
+    .inventory-form .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .form-group.full-width {
+    grid-column: span 2;
+  }
+  
+  @media (max-width: 768px) {
+    .form-group.full-width {
+      grid-column: span 1;
+    }
+  }
+  
+  .form-control.error {
+    border-color: var(--danger-color);
+  }
+  
+  .error-message {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 5px;
+  }
+  
+  .form-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+  }
+  
+  .image-upload-group {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+  }
+  
+  .image-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .upload-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    width: fit-content;
+  }
+  
+  .upload-button:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  .hidden-input {
+    display: none;
+  }
+  
+  .file-name {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+  
+  .image-preview-container {
+    margin-top: 1rem;
+    max-width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .image-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+  }
+  
+  .btn svg {
+    margin-right: 8px;
+    font-size: 1.2rem;
+    vertical-align: middle;
+  }
+  
+  /* FormGroup para responsibleUsers con z-index modificado */
+  .form-group:has(label[for="responsibleUsers"]) {
+    position: relative;
+    z-index: 10;
+  }
+  
+  .users-select-input.disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+  
+  .users-select-input.disabled .user-chip {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+  }
+  
+  .form-help {
+    display: block;
+    margin-top: 0.5rem;
+    color: #666;
+    font-size: 0.875rem;
+    font-style: italic;
+  }

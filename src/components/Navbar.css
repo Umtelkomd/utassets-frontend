@@ -1,0 +1,494 @@
+/* src/components/Navbar.css */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #243447;
+  color: white;
+  padding: 0.8rem 2rem;
+  height: 60px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  text-decoration: none;
+  margin-left: 1rem;
+}
+
+.dashboard-icon {
+  margin-right: 8px;
+  font-size: 24px;
+  color: #3498db;
+}
+
+.logo span {
+  background: linear-gradient(45deg, #3498db, #2ecc71);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.menu-toggle {
+  cursor: pointer;
+  display: none;
+  color: white;
+  font-size: 1.5rem;
+  transition: transform 0.3s;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-toggle:hover {
+  transform: rotate(90deg);
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 1.5rem;
+  padding: 0 2rem;
+}
+
+.navbar-item {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.8rem 1.2rem;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s;
+  position: relative;
+  margin-right: 0.25rem;
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.navbar-item:hover {
+  color: #3498db;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-item.active {
+  color: #3498db;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  animation: slideIn 0.3s forwards;
+}
+
+@keyframes slideIn {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.nav-icon {
+  margin-right: 0.8rem;
+  font-size: 1.4rem;
+  color: white;
+}
+
+/* Quitar margen específicamente del Home icon */
+.nav-icon.home-icon {
+  margin-right: 0;
+}
+
+.navbar-item:hover .nav-icon {
+  transform: translateY(-2px);
+}
+
+/* Perfil */
+.navbar-end {
+  display: flex;
+  align-items: center;
+}
+
+.profile-dropdown {
+  position: relative;
+  margin-left: 2rem;
+}
+
+.profile-trigger {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+  gap: 1rem;
+  min-height: 44px;
+}
+
+.profile-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3498db, #2ecc71);
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s, border 0.3s;
+  flex-shrink: 0;
+}
+
+.profile-trigger:hover .avatar {
+  transform: scale(1.05);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-trigger .user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.profile-trigger .username {
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+}
+
+.profile-trigger .user-role {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: -2px;
+}
+
+.profile-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  z-index: 1001;
+  margin-top: 0.8rem;
+  overflow: hidden;
+  animation: fadeIn 0.3s;
+  transform-origin: top right;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.2rem;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.3s;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.profile-item:hover {
+  background-color: #f5f7fa;
+  color: #3498db;
+}
+
+.profile-item.logout {
+  color: #e74c3c;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.profile-item.logout:hover {
+  background-color: #fcf0f0;
+}
+
+.menu-icon {
+  margin-right: 0.8rem;
+  font-size: 1.2rem;
+}
+
+/* Estilos para los menús desplegables */
+.navbar-dropdown {
+  position: relative;
+  cursor: pointer;
+  margin-right: 0.25rem;
+}
+
+.navbar-dropdown.active .navbar-dropdown-trigger {
+  color: #3498db;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;  
+  padding: 0.8rem 0.8rem;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.navbar-dropdown-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #3498db;
+}
+
+.dropdown-arrow {
+  margin-left: auto;
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.navbar-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 220px;
+  z-index: 100;
+  overflow: hidden;
+  animation: fadeInMenu 0.3s ease;
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  padding: 0.8rem;
+  min-width: 220px;
+}
+
+@keyframes fadeInMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  color: #243447;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.dropdown-item.active {
+  color: #3498db;
+  background-color: rgba(52, 152, 219, 0.1);
+  font-weight: 600;
+}
+
+.dropdown-icon {
+  font-size: 1.4rem;
+  margin-right: 0.8rem;
+}
+
+/* Responsive para tablets */
+@media (max-width: 992px) {
+  .profile-trigger .user-info {
+    display: none;
+  }
+  
+  .profile-dropdown {
+    margin-left: 1rem;
+  }
+  
+  .profile-trigger {
+    padding: 0.6rem;
+  }
+  
+  .navbar {
+    padding: 0.8rem 1.5rem;
+  }
+  
+  .navbar-menu {
+    gap: 0.8rem;
+    padding: 0 1rem;
+  }
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  .navbar {
+    padding: 0.8rem 1rem;
+  }
+
+  .navbar-menu {
+    position: fixed;
+    top: 60px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 60px);
+    background-color: #1c2938;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem 0;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .navbar-menu.is-open {
+    left: 0;
+  }
+
+  .navbar-item {
+    width: 100%;
+    height: auto;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-right: 0;
+  }
+
+  .navbar-item.active::after {
+    display: none;
+  }
+
+  .navbar-item.active {
+    border-left: 3px solid #3498db;
+    padding-left: 1.2rem;
+  }
+
+  .user-info {
+    display: none;
+  }
+  
+  .logo span {
+    font-size: 1.25rem;
+  }
+
+  .navbar-dropdown-menu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 0;
+  }
+  
+  .dropdown-item {
+    padding-left: 2.5rem;
+  }
+  
+  .navbar-dropdown-trigger {
+    width: 100%;
+  }
+  
+  .profile-menu {
+    right: -1rem;
+    width: 200px;
+  }
+}
+
+/* Responsive para móviles pequeños */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.8rem 0.6rem;
+  }
+  
+  .logo {
+    margin-left: 0.5rem;
+    font-size: 1.2rem;
+  }
+  
+  .dashboard-icon {
+    font-size: 20px;
+  }
+  
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .profile-menu {
+    width: 180px;
+    right: -0.5rem;
+  }
+}
+
+/* Responsive para móviles muy pequeños */
+@media (max-width: 320px) {
+  .navbar {
+    padding: 0.8rem 0.4rem;
+  }
+  
+  .logo span {
+    font-size: 1rem;
+  }
+  
+  .dashboard-icon {
+    font-size: 18px;
+    margin-right: 4px;
+  }
+  
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+}

@@ -1,0 +1,820 @@
+.financing-detail-page {
+    padding: 24px;
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header */
+.financing-detail-header {
+    margin-bottom: 32px;
+}
+
+.financing-header-navigation {
+    margin-bottom: 16px;
+}
+
+.financing-back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: white;
+    border: 2px solid #e5e5e7;
+    border-radius: 8px;
+    color: #007aff;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.financing-back-button:hover {
+    border-color: #007aff;
+    background: #f0f8ff;
+}
+
+.financing-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+}
+
+.financing-detail-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.financing-detail-asset-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #007aff, #00c6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.financing-detail-asset-icon svg {
+    font-size: 32px;
+}
+
+.financing-detail-title h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-detail-asset-reference {
+    margin: 0 0 8px 0;
+    color: #8e8e93;
+    font-size: 1rem;
+}
+
+.financing-detail-status {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.financing-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.financing-action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.financing-action-button.edit {
+    background: #ff9500;
+    color: white;
+}
+
+.financing-action-button.edit:hover {
+    background: #e6830e;
+}
+
+.financing-action-button.delete {
+    background: #ff3b30;
+    color: white;
+}
+
+.financing-action-button.delete:hover {
+    background: #d70015;
+}
+
+/* Summary Section */
+.financing-summary-section {
+    margin-bottom: 32px;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+}
+
+.financing-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.financing-summary-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s ease;
+}
+
+.financing-summary-card:hover {
+    transform: translateY(-2px);
+}
+
+.financing-summary-card.overdue {
+    background: linear-gradient(135deg, #fff0f0, #ffe6e6);
+    border: 1px solid #ff3b30;
+}
+
+.financing-summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #007aff, #00c6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.financing-summary-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #8e8e93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.financing-summary-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin-bottom: 4px;
+}
+
+.financing-summary-subtext {
+    font-size: 0.8rem;
+    color: #8e8e93;
+}
+
+/* Progress Section */
+.financing-progress-section {
+    border-top: 1px solid #e5e5e7;
+    padding-top: 24px;
+}
+
+.financing-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #e5e5e7;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.financing-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007aff, #00c6ff);
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+.financing-progress-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #8e8e93;
+}
+
+/* Tabs */
+.financing-detail-tabs {
+    display: flex;
+    background: white;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+}
+
+.financing-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 20px;
+    background: white;
+    border: none;
+    color: #8e8e93;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.financing-tab:hover {
+    background: #f8f9fa;
+    color: #007aff;
+}
+
+.financing-tab.active {
+    color: #007aff;
+    border-bottom-color: #007aff;
+    background: #f0f8ff;
+}
+
+.financing-tab svg {
+    font-size: 20px;
+}
+
+/* Tab Content */
+.financing-tab-content {
+    background: white;
+    border-radius: 0 0 16px 16px;
+    padding: 32px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+    min-height: 400px;
+}
+
+/* Overview Content */
+.financing-overview-content {
+    max-width: 100%;
+}
+
+.financing-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.financing-info-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.financing-info-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 20px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-info-section h3 svg {
+    color: #007aff;
+}
+
+.financing-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.financing-info-item:last-child {
+    border-bottom: none;
+}
+
+.financing-info-item .financing-label {
+    font-weight: 500;
+    color: #8e8e93;
+}
+
+.financing-info-item .financing-value {
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-notes-section {
+    grid-column: 1 / -1;
+}
+
+.financing-notes-content {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #e5e5e7;
+    color: #1d1d1f;
+    line-height: 1.5;
+}
+
+/* Payments Content */
+.financing-payments-content {
+    max-width: 100%;
+}
+
+.financing-payments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.financing-payments-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-payments-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.financing-action-button.primary {
+    background: #007aff;
+    color: white;
+}
+
+.financing-action-button.primary:hover {
+    background: #0056b3;
+}
+
+/* ✅ REFORZADO: Estilos específicos para financiamientos con mayor especificidad */
+.financing-detail-page .payments-table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #e5e5e7;
+}
+
+.financing-detail-page .payments-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.financing-detail-page .payments-table th {
+    background: #f8f9fa !important;
+    padding: 16px 12px !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    color: #1d1d1f !important;
+    border-bottom: 2px solid #e5e5e7 !important;
+    white-space: nowrap !important;
+}
+
+.financing-detail-page .payments-table td {
+    padding: 16px 12px !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    color: #1d1d1f !important;
+}
+
+.financing-detail-page .payment-row:hover {
+    background: #f8f9fa !important;
+}
+
+.financing-detail-page .payment-row.paid {
+    background: #f0fff4 !important;
+}
+
+.financing-detail-page .payment-row.overdue {
+    background: #fff5f5 !important;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.status-badge.paid {
+    background: #e8f5e8;
+    color: #2d5a2d;
+}
+
+.status-badge.pending {
+    background: #e8f4ff;
+    color: #1f5582;
+}
+
+.status-badge.overdue {
+    background: #ffe8e8;
+    color: #8b1a1a;
+}
+
+.record-payment-btn {
+    padding: 6px 12px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.record-payment-btn:hover {
+    background: #0056b3;
+}
+
+/* Amortization Content */
+.financing-amortization-content {
+    max-width: 100%;
+}
+
+.financing-amortization-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.financing-amortization-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-amortization-summary {
+    font-weight: 600;
+    color: #007aff;
+}
+
+/* ✅ REFORZADO: Tabla de amortización con mayor especificidad */
+.financing-detail-page .financing-amortization-table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #e5e5e7;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.financing-detail-page .financing-amortization-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.financing-detail-page .financing-amortization-table th {
+    background: #f8f9fa !important;
+    padding: 12px !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    color: #1d1d1f !important;
+    border-bottom: 2px solid #e5e5e7 !important;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.financing-detail-page .financing-amortization-table td {
+    padding: 12px !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+    color: #1d1d1f !important;
+    text-align: right !important;
+}
+
+.financing-detail-page .financing-amortization-table tr.paid {
+    background: #f0fff4 !important;
+}
+
+.financing-detail-page .financing-amortization-table tr:hover {
+    background: #f8f9fa !important;
+}
+
+/* Analytics Content */
+.financing-analytics-content {
+    max-width: 100%;
+}
+
+.financing-analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.financing-analytics-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.financing-analytics-card h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-analytics-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.financing-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e5e7;
+}
+
+.financing-stat-item:last-child {
+    border-bottom: none;
+}
+
+.financing-stat-label {
+    font-weight: 500;
+    color: #8e8e93;
+}
+
+.financing-stat-value {
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.financing-progress-chart {
+    display: flex;
+    height: 40px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #e5e5e7;
+}
+
+.financing-progress-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.financing-progress-segment.paid {
+    background: linear-gradient(90deg, #007aff, #00c6ff);
+}
+
+.financing-progress-segment.remaining {
+    background: #8e8e93;
+}
+
+/* Payment Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.payment-modal {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 0 24px;
+    border-bottom: 1px solid #e5e5e7;
+    margin-bottom: 24px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #8e8e93;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-button:hover {
+    color: #1d1d1f;
+}
+
+.payment-form {
+    padding: 0 24px 24px 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #1d1d1f;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e5e5e7;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007aff;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 4px;
+    color: #8e8e93;
+    font-size: 0.8rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.cancel-button {
+    padding: 12px 24px;
+    background: transparent;
+    border: 2px solid #e5e5e7;
+    border-radius: 8px;
+    color: #8e8e93;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+    border-color: #d1d1d6;
+    background: #f5f5f7;
+}
+
+.submit-button {
+    padding: 12px 24px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.submit-button:hover {
+    background: #0056b3;
+}
+
+/* Error State */
+.financing-detail-error {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.financing-detail-error h2 {
+    color: #1d1d1f;
+    margin-bottom: 16px;
+}
+
+.financing-detail-error a {
+    color: #007aff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.financing-detail-error a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .financing-detail-page {
+        padding: 16px;
+    }
+    
+    .financing-header-content {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+    
+    .financing-detail-info {
+        width: 100%;
+    }
+    
+    .financing-header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .financing-summary-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .financing-detail-tabs {
+        flex-direction: column;
+    }
+    
+    .financing-tab {
+        border-bottom: 1px solid #e5e5e7;
+        border-radius: 0;
+    }
+    
+    .financing-tab.active {
+        border-bottom-color: #007aff;
+    }
+    
+    .financing-info-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+        .financing-analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .financing-detail-page .payments-table-container,
+    .financing-detail-page .financing-amortization-table-container {
+        font-size: 0.9rem;
+    }
+
+    .financing-detail-page .payments-table th,
+    .financing-detail-page .payments-table td,
+    .financing-detail-page .financing-amortization-table th,
+    .financing-detail-page .financing-amortization-table td {
+        padding: 8px 6px !important;
+    }
+    
+    .payment-modal {
+        width: 95%;
+        margin: 20px;
+    }
+} 

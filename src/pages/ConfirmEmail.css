@@ -1,0 +1,134 @@
+.confirm-email-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.confirm-email-content {
+    width: 100%;
+    max-width: 500px;
+}
+
+.confirm-email-card {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    text-align: center;
+}
+
+.loading-state, .success-state, .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.success-icon, .error-icon {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+
+.success-icon {
+    color: #10b981;
+}
+
+.error-icon {
+    color: #ef4444;
+}
+
+.confirm-email-card h2 {
+    color: #1f2937;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.confirm-email-card p {
+    color: #6b7280;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.login-button, .register-button {
+    display: inline-block;
+    padding: 12px 24px;
+    margin: 8px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.login-button {
+    background-color: #2563eb;
+    color: white;
+}
+
+.login-button:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.register-button {
+    background-color: #10b981;
+    color: white;
+}
+
+.register-button:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+}
+
+.error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .confirm-email-container {
+        padding: 10px;
+    }
+    
+    .confirm-email-card {
+        padding: 30px 20px;
+    }
+    
+    .confirm-email-card h2 {
+        font-size: 1.5rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .login-button, .register-button {
+        width: 100%;
+        max-width: 200px;
+    }
+} 

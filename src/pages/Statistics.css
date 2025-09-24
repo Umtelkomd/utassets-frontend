@@ -1,0 +1,235 @@
+/* Importando los estilos de los botones de acción */
+@import '../components/ActionButtons.css';
+
+/* Estilos para la página de Estadísticas */
+
+.statistics-page {
+  padding: 24px;
+  background-color: #f5f8fa;
+  min-height: calc(100vh - 60px);
+}
+
+.statistics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.header-title-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.statistics-title {
+  display: flex;
+  align-items: center;
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.title-icon {
+  margin-right: 10px;
+  color: #007bff;
+}
+
+.header-subtitle {
+  display: flex;
+  align-items: center;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.header-subtitle svg {
+  margin-right: 5px;
+  font-size: 1rem;
+  color: #5856d6;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Se mantienen solo los estilos específicos para los botones de estadísticas */
+.action-button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.action-button.refresh svg {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.filters-panel {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  margin-bottom: 8px;
+  color: #666;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.filter-group select,
+.filter-group input[type="text"] {
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #e5e5e5;
+  font-size: 0.9rem;
+  background-color: white;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  margin-right: 6px;
+}
+
+.chart-container {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.chart-title svg {
+  margin-right: 8px;
+  color: #007bff;
+}
+
+.chart-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.chart-period-selector {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #e5e5e5;
+  font-size: 0.85rem;
+  background-color: white;
+}
+
+.view-toggle-button {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #e5e5e5;
+  background-color: white;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.view-toggle-button svg {
+  margin-right: 4px;
+}
+
+.view-toggle-button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.two-column-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 920px) {
+  .two-column-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.distribution-chart, 
+.location-chart {
+  height: 100%;
+}
+
+.kpi-dashboard {
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .statistics-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    margin-top: 15px;
+    width: 100%;
+  }
+  
+  .chart-container {
+    padding: 15px;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .chart-actions {
+    margin-top: 10px;
+    width: 100%;
+    justify-content: space-between;
+  }
+} 

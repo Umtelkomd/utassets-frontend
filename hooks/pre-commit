@@ -1,0 +1,69 @@
+#!/bin/sh
+
+# Hook de pre-commit para UTAssets Frontend
+# Guardar este archivo como .git/hooks/pre-commit y hacer ejecutable (chmod +x .git/hooks/pre-commit)
+
+echo "Ejecutando verificaciones de pre-commit..."
+
+# 1. Verificar si hay console.log en archivos a commitear (excepto en archivos específicos)
+files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|jsx|ts|tsx)$' | grep -v "axiosConfig\|reportWebVitals\|ErrorBoundary")
+
+if [ -n "$files" ]; then
+  # Buscar console.log en archivos staged
+  console_logs=$(grep -l "console.log" $files | grep -v "axiosConfig\|reportWebVitals\|ErrorBoundary")
+  
+  if [ -n "$console_logs" ]; then
+    echo "❌ Error: Se encontraron console.log en los siguientes archivos:"
+    echo "$console_logs"
+    echo ""
+    echo "Por favor, elimina todos los console.log antes de hacer commit,"
+    echo "o usa --no-verify para bypasear esta verificación (no recomendado)."
+    exit 1
+  fi
+fi
+
+# 2. Verificar si hay archivos sensibles
+sensitive_files=$(git diff --cached --name-only | grep -E '(\.env|\.key|password|secret|credential)')
+
+if [ -n "$sensitive_files" ]; then
+  echo "⚠️ Advertencia: Estás intentando commitear archivos que podrían contener información sensible:"
+  echo "$sensitive_files"
+  echo ""
+  echo "¿Estás seguro de que quieres commitear estos archivos? (s/N)"
+  read -r response
+  
+  if [ "$response" != "s" ] && [ "$response" != "S" ]; then
+    echo "Commit abortado."
+    exit 1
+  fi
+fi
+
+# 3. Ejecutar ESLint en archivos staged
+if command -v npx >/dev/null 2>&1; then
+  if [ -n "$files" ]; then
+    echo "🔍 Ejecutando ESLint en archivos staged..."
+    npx eslint $files
+    
+    if [ $? -ne 0 ]; then
+      echo "❌ Error: ESLint encontró errores críticos. Por favor, arregla los errores antes de hacer commit."
+      echo "ℹ️  Los warnings están permitidos y no bloquean el commit."
+      exit 1
+    fi
+  fi
+else
+  echo "⚠️ npx no está disponible, saltando verificación de ESLint."
+fi
+
+# 4. Ejecutar Prettier en archivos staged
+if command -v npx >/dev/null 2>&1; then
+  if [ -n "$files" ]; then
+    echo "💅 Formateando código con Prettier..."
+    npx prettier --write $files
+    git add $files
+  fi
+else
+  echo "⚠️ npx no está disponible, saltando formateo con Prettier."
+fi
+
+echo "✅ Todas las verificaciones pasaron! Procediendo con el commit..."
+exit 0 

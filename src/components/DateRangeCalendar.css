@@ -1,0 +1,62 @@
+.date-range-calendar .date-picker-container {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background: #fff;
+}
+
+.date-range-calendar .rental-calendar {
+    width: 100%;
+    border: none;
+    font-family: inherit;
+}
+
+.react-calendar{
+    width: 100% !important;
+}
+
+.date-range-calendar .rental-calendar .react-calendar__tile {
+    padding: 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.date-range-calendar .rental-calendar .react-calendar__tile:hover {
+    background-color: #f0f0f0;
+}
+
+.date-range-calendar .rental-calendar .react-calendar__tile--active {
+    background: #007bff;
+    color: white;
+}
+
+.date-range-calendar .rental-calendar .react-calendar__tile--rangeStart,
+.date-range-calendar .rental-calendar .react-calendar__tile--rangeEnd {
+    background: #007bff;
+    color: white;
+}
+
+.date-range-calendar .rental-calendar .react-calendar__tile--range {
+    background: rgba(0, 123, 255, 0.2);
+    color: #007bff;
+}
+
+.date-range-calendar .days-info {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.date-range-calendar .days-count {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.date-range-calendar .error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+} 

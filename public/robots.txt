@@ -1,0 +1,13 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Rutas que no deberían ser indexadas
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /error
+
+# Sitemap
+Sitemap: https://tu-dominio.com/sitemap.xml

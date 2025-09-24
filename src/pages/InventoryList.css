@@ -1,0 +1,808 @@
+/* src/pages/InventoryList.css */
+.inventory-list-page {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.inventory-list-page .card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 2rem;
+}
+
+.inventory-list-page .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.inventory-list-page .card-title {
+  font-size: 1.8rem;
+  color: var(--primary-dark);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.inventory-list-page .header-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.inventory-list-page .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-list-page .btn-primary:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Nuevos estilos basados en VehicleList.css */
+.inventory-list-page .search-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 1.5rem;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.inventory-list-page .search-container {
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inventory-list-page .search-icon {
+  position: absolute;
+  left: 12px;
+  color: #666;
+}
+
+.inventory-list-page .search-input {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.inventory-list-page .search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.inventory-list-page .filter-dropdown {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  height: 40px;
+  min-width: 220px;
+  width: auto;
+}
+
+.inventory-list-page .filter-icon {
+  margin-left: 12px;
+  margin-right: 4px;
+  color: #666;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.inventory-list-page .filter-select {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 0.9rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+}
+
+.inventory-list-page .filter-select:focus {
+  outline: none;
+}
+
+.inventory-list-page .btn-secondary {
+  padding: 0.5rem 1rem;
+  background-color: #e9ecef;
+  color: #495057;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.inventory-list-page .btn-secondary:hover {
+  background-color: #dee2e6;
+}
+
+.inventory-list-page .table-container {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-top: 1rem;
+}
+
+.inventory-list-page table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.inventory-list-page th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #444;
+  padding: 1.2rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid #e0e0e0;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.inventory-list-page td {
+  padding: 1.2rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.inventory-list-page tr:hover {
+  background-color: rgba(52, 152, 219, 0.03);
+}
+
+.inventory-list-page .sortable {
+  cursor: pointer;
+  position: relative;
+  padding-right: 25px;
+  transition: color 0.3s;
+  user-select: none;
+}
+
+.inventory-list-page .sortable:hover {
+  color: var(--primary-color);
+}
+
+.inventory-list-page .sort-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.3s;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.inventory-list-page .sort-icon.desc {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.inventory-list-page .status-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.inventory-list-page .status-badge.excelente {
+  background-color: #e6f7e6;
+  color: #2e7d32;
+}
+
+.inventory-list-page .status-badge.bueno {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.inventory-list-page .status-badge.regular {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.inventory-list-page .status-badge.necesita-reparacion {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.inventory-list-page .status-badge.fuera-de-servicio {
+  background-color: #f5f5f5;
+  color: #616161;
+}
+
+.inventory-list-page .action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.inventory-list-page .btn-action.maintain {
+  background: linear-gradient(135deg, #f39c12, #d35400);
+  color: white;
+}
+
+.inventory-list-page .no-items {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-style: italic;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-top: 1rem;
+}
+
+.inventory-list-page .item-name {
+  font-weight: 500;
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+}
+
+.inventory-list-page .responsible-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.inventory-list-page .user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 12px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-list-page .user-chip .user-icon {
+  font-size: 1.1rem;
+  color: white;
+}
+
+.inventory-list-page .user-chip:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para el selector de usuarios */
+.inventory-list-page .users-select-container {
+  position: relative;
+  width: 100%;
+  z-index: 9999;
+}
+
+.inventory-list-page .users-select-input {
+  position: relative;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  min-height: 40px;
+  transition: all 0.3s ease;
+}
+
+.inventory-list-page .users-select-input:hover {
+  border-color: var(--primary-color);
+}
+
+.inventory-list-page .selected-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-height: 24px;
+}
+
+.inventory-list-page .placeholder {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.inventory-list-page .dropdown-icon {
+  color: #666;
+  margin-left: auto;
+}
+
+.inventory-list-page .users-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  margin-top: 4px;
+}
+
+.inventory-list-page .user-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inventory-list-page .user-option:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.inventory-list-page .user-option.selected {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.inventory-list-page .user-option.selected .user-icon {
+  color: white;
+}
+
+.inventory-list-page .user-icon {
+  color: #666;
+  font-size: 1.25rem;
+}
+
+/* Estilos para el scroll del dropdown */
+.inventory-list-page .users-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.inventory-list-page .users-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.inventory-list-page .users-dropdown::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.inventory-list-page .users-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .inventory-list-page .search-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .inventory-list-page .search-container,
+  .inventory-list-page .filter-dropdown {
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .inventory-list-page .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .inventory-list-page .users-select-input {
+    padding: 6px 10px;
+  }
+
+  .inventory-list-page .user-chip {
+    max-width: 150px;
+  }
+
+  .inventory-list-page .users-dropdown {
+    max-height: 200px;
+  }
+
+  .inventory-list-page .btn-action {
+    width: 38px;
+    height: 38px;
+    margin-right: 6px;
+  }
+  
+  .inventory-list-page .btn-action svg {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .inventory-list-page {
+    padding: 10px 8px;
+  }
+  
+  .inventory-list-page .card-header {
+    padding-bottom: 0.7rem;
+    margin-bottom: 1rem;
+  }
+  
+  .inventory-list-page .card-title {
+    font-size: 1.3rem;
+  }
+  
+  .inventory-list-page .btn-primary {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .inventory-list-page .header-buttons {
+    gap: 8px;
+  }
+  
+  .inventory-list-page .filter-icon,
+  .inventory-list-page .search-icon {
+    font-size: 1rem;
+  }
+  
+  .inventory-list-page .search-input,
+  .inventory-list-page .filter-select {
+    font-size: 0.85rem;
+  }
+  
+  .items-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .item-card {
+    flex-direction: row;
+    height: auto;
+  }
+  
+  .item-card-image {
+    height: 80px;
+    width: 80px;
+    min-width: 80px;
+    border-radius: 8px;
+    margin-right: 10px;
+  }
+  
+  .item-card-content {
+    padding: 0;
+    flex: 1;
+  }
+  
+  .item-name {
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+    -webkit-line-clamp: 1;
+  }
+  
+  .item-details {
+    gap: 0.2rem;
+    margin-bottom: 0.2rem;
+  }
+  
+  .item-detail {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  
+  .detail-label {
+    font-size: 0.7rem;
+  }
+  
+  .detail-value {
+    font-size: 0.8rem;
+  }
+  
+  .item-card-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0.4rem;
+    background: none;
+    border-top: none;
+  }
+  
+  .btn-action {
+    width: 34px;
+    height: 34px;
+    margin-right: 4px;
+  }
+  
+  .btn-action svg {
+    font-size: 1.2rem;
+  }
+  
+  .item-code {
+    font-size: 0.7rem;
+    margin-bottom: 0.1rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .inventory-list-page {
+    padding: 8px 5px;
+  }
+  
+  .inventory-list-page .card {
+    padding: 0.8rem;
+  }
+  
+  .inventory-list-page .search-section {
+    padding: 0.6rem;
+    gap: 8px;
+  }
+  
+  .inventory-list-page .card-title {
+    font-size: 1.2rem;
+  }
+  
+  .inventory-list-page .btn-primary {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.8rem;
+  }
+  
+  .inventory-list-page .header-buttons {
+    gap: 6px;
+  }
+  
+  .item-card-image {
+    height: 70px;
+    width: 70px;
+    min-width: 70px;
+  }
+  
+  .item-name {
+    font-size: 0.85rem;
+  }
+  
+  .detail-label {
+    font-size: 0.65rem;
+  }
+  
+  .detail-value {
+    font-size: 0.75rem;
+  }
+  
+  .btn-action {
+    width: 24px;
+    height: 24px;
+    font-size: 0.9rem;
+  }
+  
+  .item-card-actions {
+    padding: 0.3rem;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para la vista de tarjetas */
+.items-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+    width: 100%;
+}
+
+.item-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid #eaeaea;
+    gap: 8px;
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.item-card-image {
+    height: 180px;
+    overflow: hidden;
+    background-color: #f5f5f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.item-card:hover .item-image {
+    transform: scale(1.05);
+}
+
+.item-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f5;
+    color: #a0a0a0;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.item-card-content {
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    flex-grow: 1;
+}
+
+.item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-code {
+    font-size: 0.85rem;
+    color: #666;
+    background-color: #f5f5f7;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.item-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    min-height: 2.9rem;
+}
+
+.item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.item-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.item-detail:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 2px;
+}
+
+.detail-value {
+    color: #333;
+    text-align: right;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60%;
+}
+
+.item-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid #eaeaea;
+    margin-top: auto;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .items-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .items-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+        padding: 0.7rem;
+    }
+    
+    .item-card-content {
+        padding: 1rem;
+    }
+    
+    .item-name {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .items-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .item-card-image {
+        height: 160px;
+    }
+}
