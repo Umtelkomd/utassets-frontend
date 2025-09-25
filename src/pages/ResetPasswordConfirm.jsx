@@ -10,7 +10,7 @@ const API_URL = process.env.REACT_APP_API_URL || config.apiUrl;
 const ResetPasswordConfirm = () => {
     const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
-        token: '',
+        email: '',
         newPassword: '',
         confirmPassword: ''
     });
@@ -21,15 +21,19 @@ const ResetPasswordConfirm = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = searchParams.get('token');
-        if (!token) {
-            setError('Token de recuperación no válido. Por favor, solicita un nuevo enlace de recuperación.');
-            return;
+        // Obtener email de los parámetros de URL si existe
+        const email = searchParams.get('email');
+        if (email) {
+            setFormData(prev => ({ ...prev, email }));
         }
-        setFormData(prev => ({ ...prev, token }));
     }, [searchParams]);
 
     const validateForm = () => {
+        if (!formData.email) {
+            setError('El email es requerido.');
+            return false;
+        }
+        
         if (!formData.newPassword) {
             setError('La nueva contraseña es requerida.');
             return false;
@@ -68,10 +72,24 @@ const ResetPasswordConfirm = () => {
         try {
             setLoading(true);
             
-            await axios.post(`${API_URL}/users/reset-password`, {
-                token: formData.token,
-                newPassword: formData.newPassword
+            console.log('🔄 [FRONTEND] Enviando solicitud de reset de contraseña');
+            console.log('🌐 [FRONTEND] API URL:', API_URL);
+            console.log('📋 [FRONTEND] Datos a enviar:', {
+                email: formData.email ? 'PRESENTE' : 'AUSENTE',
+                emailLength: formData.email?.length || 0,
+                newPassword: formData.newPassword ? 'PRESENTE' : 'AUSENTE',
+                passwordLength: formData.newPassword?.length || 0
             });
+            
+            const requestData = {
+                email: formData.email,
+                newPassword: formData.newPassword
+            };
+            
+            console.log('📦 [FRONTEND] Payload completo:', requestData);
+            
+            const response = await axios.post(`${API_URL}/users/reset-password`, requestData);
+            console.log('✅ [FRONTEND] Respuesta exitosa:', response.data);
 
             toast.success('¡Contraseña restablecida exitosamente! Ya puedes iniciar sesión.', {
                 position: 'top-right',
@@ -80,6 +98,11 @@ const ResetPasswordConfirm = () => {
             
             navigate('/login');
         } catch (err) {
+            console.log('❌ [FRONTEND] Error en la solicitud:', err);
+            console.log('📋 [FRONTEND] Status del error:', err.response?.status);
+            console.log('📋 [FRONTEND] Datos del error:', err.response?.data);
+            console.log('📋 [FRONTEND] Mensaje del error:', err.response?.data?.message);
+            
             const errorMessage = err.response?.data?.message || 'Error al restablecer la contraseña. El enlace puede haber expirado.';
             setError(errorMessage);
             toast.error(errorMessage, {
@@ -111,26 +134,6 @@ const ResetPasswordConfirm = () => {
         </svg>
     );
 
-    if (!formData.token) {
-        return (
-            <div className="reset-password-container">
-                <div className="reset-password-form-container">
-                    <div className="reset-password-header">
-                        <div className="panda-logo">
-                            <span>Utassets</span>
-                        </div>
-                        <h1>Enlace Inválido</h1>
-                        <div className="error-message">
-                            {error || 'Token de recuperación no válido. Por favor, solicita un nuevo enlace.'}
-                        </div>
-                        <div className="back-to-login">
-                            <Link to="/reset-password">Solicitar Nuevo Enlace</Link>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="reset-password-container">
@@ -148,6 +151,20 @@ const ResetPasswordConfirm = () => {
                 {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="reset-password-form">
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            placeholder="tu@email.com"
+                            disabled={loading}
+                        />
+                    </div>
+
                     <div className="form-group">
                         <label htmlFor="newPassword">Nueva Contraseña</label>
                         <div className="password-input-container">
