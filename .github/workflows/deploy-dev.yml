@@ -17,6 +17,10 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SERVER_PORT }}
         script: |
+          # Cargar NVM y Node
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          
           echo "🔧 Starting DEV deployment..."
           
           cd /home/deploy/apps/utassets-dev/
