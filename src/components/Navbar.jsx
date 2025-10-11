@@ -87,7 +87,7 @@ const Navbar = () => {
         </div>
         <Link to="/" className="logo">
           <DashboardIcon className="dashboard-icon" />
-          <span>UTK Assets</span>
+          <span>UTK</span>
         </Link>
       </div>
 
