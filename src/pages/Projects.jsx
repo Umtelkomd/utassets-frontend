@@ -106,79 +106,7 @@ const Projects = () => {
         libraries: ['places', 'geometry']
     });
 
-    /* Ubicaciones importantes para la empresa */
-    const companyLocations = [
-        {
-            country: 'Colombia',
-            city: 'Manizales',
-            name: 'Oficina Central',
-            description: 'Sede principal de la empresa',
-            coordinates: { lat: 5.0689, lng: -75.5174 },
-            address: 'Calle 23 # 23-23'
-        },
-        {
-            country: 'Colombia',
-            city: 'Manizales',
-            name: 'Taller de Mantenimiento',
-            description: 'Centro de reparación y mantenimiento',
-            coordinates: { lat: 5.0689, lng: -75.5174 },
-            address: 'Calle 24 # 24-24'
-        },
-        {
-            country: 'Colombia',
-            city: 'Bogotá',
-            name: 'Oficina Central',
-            description: 'Sede principal de la empresa',
-            coordinates: { lat: 4.6097, lng: -74.0845 },
-            address: 'Carrera 7 # 7-7'
-        },
-        {
-            country: 'Colombia',
-            city: 'Bogotá',
-            name: 'Almacén de Suministros',
-            description: 'Depósito de materiales y herramientas',
-            coordinates: { lat: 4.6097, lng: -74.0845 },
-            address: 'Carrera 8 # 8-8'
-        },
-        {
-            country: 'Alemania',
-            city: 'Berlín',
-            name: 'Oficina Central',
-            description: 'Sede principal en Europa',
-            coordinates: { lat: 52.5200, lng: 13.4050 },
-            address: 'Unter den Linden 1'
-        },
-        {
-            country: 'Alemania',
-            city: 'Berlín',
-            name: 'Centro de Distribución',
-            description: 'Centro logístico principal',
-            coordinates: { lat: 52.5200, lng: 13.4050 },
-            address: 'Friedrichstraße 2'
-        },
-        {
-            country: 'Alemania',
-            city: 'Múnich',
-            name: 'Oficina Regional',
-            description: 'Sede regional sur de Alemania',
-            coordinates: { lat: 48.1351, lng: 11.5820 },
-            address: 'Marienplatz 1'
-        }
-    ];
 
-    // Agrupar ubicaciones por país y ciudad
-    const locationsByCountry = companyLocations.reduce((acc, location) => {
-        const country = location.country || 'Desconocido';
-        const city = location.city || 'Desconocida';
-        if (!acc[country]) {
-            acc[country] = {};
-        }
-        if (!acc[country][city]) {
-            acc[country][city] = [];
-        }
-        acc[country][city].push(location);
-        return acc;
-    }, {});
 
     const getGoogleMapsLink = (location) => {
         if (!location.coordinates || typeof location.coordinates.lat !== 'number' || typeof location.coordinates.lng !== 'number') {
@@ -473,53 +401,6 @@ const Projects = () => {
                         ))}
                     </div>
                 )}
-            </div>
-
-            {/* Ubicaciones importantes */}
-            <div className="card locations-card">
-                <div className="card-header">
-                    <h2 className="card-title">
-                        <LocationOnIcon />
-                        Ubicaciones Importantes de la Empresa
-                    </h2>
-                </div>
-                <div className="locations-container">
-                    {Object.entries(locationsByCountry).map(([country, cities]) => (
-                        <div key={country} className="country-group">
-                            <h3 className="country-name">{country}</h3>
-                            {Object.entries(cities).map(([city, locations]) => (
-                                <div key={city} className="city-group">
-                                    <h4 className="city-name">{city}</h4>
-                                    <div className="city-locations">
-                                        {locations.map((location, index) => (
-                                            <a
-                                                key={`${location.name}-${index}`}
-                                                href={getGoogleMapsLink(location)}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="location-tile"
-                                                title={`Abrir ${location.name} en Google Maps`}
-                                            >
-                                                <div className="location-tile-content">
-                                                    <div className="location-tile-header">
-                                                        <LocationOnIcon className="location-icon" />
-                                                        <div className="location-tile-info">
-                                                            <h4>{location.name || 'Nombre no disponible'}</h4>
-                                                            <p>{location.description || 'Sin descripción'}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="location-tile-address">
-                                                        <span>{location.address || 'Dirección no disponible'}</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ))}
-                </div>
             </div>
 
             {/* Modal de formulario */}

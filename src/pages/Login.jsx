@@ -375,7 +375,7 @@ const Login = () => {
               </div>
             )}
             <div className="forgot-password-link">
-              <Link to="/reset-password">¿Olvidaste ppp contraseña?</Link>
+              <Link to="/reset-password">¿Olvidaste tu contraseña?</Link>
             </div>
 
             <div className="register-link">
