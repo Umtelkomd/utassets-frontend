@@ -375,7 +375,7 @@ const Login = () => {
               </div>
             )}
             <div className="forgot-password-link">
-              <Link to="/reset-password">¿Olvidaste mix contraseña?</Link>
+              <Link to="/reset-password">¿Olvidaste nuestra contraseña?</Link>
             </div>
 
             <div className="register-link">

@@ -19,15 +19,25 @@ jobs:
         script: |
           echo "🔧 Starting DEV deployment..."
           
-          cd /home/deploy/apps/utassets-dev/
+          cd /home/deploy/apps/utassets-dev
           
           # Pull latest changes
           echo "📥 Pulling latest code..."
           git pull origin develop
           
+          # Backend
+          echo "🔨 Building backend..."
+          cd backend
+          npm ci
+          npm run build
+          
+          # Restart backend
+          echo "🔄 Restarting backend..."
+          pm2 restart utassets-api-dev
+          
           # Frontend
           echo "🎨 Building frontend..."
-          cd /home/deploy/apps/utassets-dev/frontend
+          cd ../frontend
           npm ci
           npm run build
           
