@@ -27,7 +27,6 @@ jobs:
           
           # Frontend
           echo "🎨 Building frontend..."
-          cd /home/deploy/apps/utassets-dev/frontend
           npm ci
           npm run build
           
