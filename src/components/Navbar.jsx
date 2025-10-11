@@ -228,7 +228,7 @@ const Navbar = () => {
         {/* Menú desplegable de Servicios */}
         {hasPermission("canAccessSettings") && (
           <div
-            className={`navbar-dropdown ${isActive("/financings") ? "active" : ""}`}
+            className={`navbar-dropdown ${isActive("/financings") || isActive("/projects") ? "active" : ""}`}
           >
             <div
               className="navbar-dropdown-trigger"
@@ -262,6 +262,17 @@ const Navbar = () => {
                   <AccountBalanceIcon className="dropdown-icon" />
                   <span>Financiamientos</span>
                 </Link>
+                <Link
+                  to="/projects"
+                  className={`dropdown-item ${isActive("/projects") ? "active" : ""}`}
+                  onClick={() => {
+                    closeMenu();
+                    setServicesMenuOpen(false);
+                  }}
+                >
+                  <AssignmentIcon className="dropdown-icon" />
+                  <span>Proyectos</span>
+                </Link>
               </div>
             )}
           </div>
@@ -276,18 +287,6 @@ const Navbar = () => {
           >
             <CalendarMonthIcon className="nav-icon" />
             <span>Alquileres</span>
-          </Link>
-        )}
-
-        {/* Enlace directo a Proyectos */}
-        {hasPermission("canViewReports") && (
-          <Link
-            to="/projects"
-            className={`navbar-item ${isActive("/projects") ? "active" : ""}`}
-            onClick={closeMenu}
-          >
-            <AssignmentIcon className="nav-icon" />
-            <span>Proyectos</span>
           </Link>
         )}
       </div>
