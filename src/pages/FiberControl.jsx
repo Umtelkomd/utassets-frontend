@@ -20,45 +20,58 @@ import "./FiberControl.css";
 
 const INITIAL_ACTIVITIES = [
   {
-    id: 1,
-    name: "Excavación y canalización",
+    id: "1",
+    description: "Excavación y canalización",
     unit: "metros",
-    materialCost: 15000,
-    laborCost: 8000,
-    equipmentCost: 5000,
+    price: 15000,
   },
   {
-    id: 2,
-    name: "Instalación de cable de fibra óptica",
+    id: "2",
+    description: "Instalación de cable de fibra óptica",
     unit: "metros",
-    materialCost: 12000,
-    laborCost: 6000,
-    equipmentCost: 3000,
+    price: 12000,
   },
   {
-    id: 3,
-    name: "Fusión de fibra óptica",
+    id: "3",
+    description: "Fusión de fibra óptica",
     unit: "fusiones",
-    materialCost: 8000,
-    laborCost: 15000,
-    equipmentCost: 10000,
+    price: 8000,
   },
   {
-    id: 4,
-    name: "Instalación de caja de empalme",
+    id: "4",
+    description: "Instalación de caja de empalme",
     unit: "unidades",
-    materialCost: 50000,
-    laborCost: 20000,
-    equipmentCost: 5000,
+    price: 50000,
   },
   {
-    id: 5,
-    name: "Pruebas y certificación OTDR",
+    id: "5",
+    description: "Pruebas y certificación OTDR",
     unit: "pruebas",
-    materialCost: 5000,
-    laborCost: 25000,
-    equipmentCost: 15000,
+    price: 5000,
   },
+];
+
+const INITIAL_TECHNICIANS = [
+  { id: "1", name: "Juan Pérez", costPerHour: 25 },
+  { id: "2", name: "María García", costPerHour: 28 },
+  { id: "3", name: "Carlos López", costPerHour: 22 },
+];
+
+const INITIAL_EQUIPMENT = [
+  { id: "1", name: "Excavadora", costPerHour: 50 },
+  { id: "2", name: "Fusionadora", costPerHour: 30 },
+  { id: "3", name: "OTDR", costPerHour: 40 },
+];
+
+const INITIAL_MATERIALS = [
+  { id: "1", name: "Cable de fibra óptica", unit: "metros", cost: 10 },
+  { id: "2", name: "Caja de empalme", unit: "unidades", cost: 200 },
+  { id: "3", name: "Conectores", unit: "unidades", cost: 5 },
+];
+
+const INITIAL_SUBCONTRACTORS = [
+  { id: "1", name: "SubFibra S.A.", contact: "contacto@subfibra.com" },
+  { id: "2", name: "Telecom Solutions", contact: "info@telecomsol.com" },
 ];
 
 const FiberControl = () => {
@@ -79,19 +92,19 @@ const FiberControl = () => {
   });
   const [technicians, setTechnicians] = useState(() => {
     const saved = localStorage.getItem("fiberControl_technicians");
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : INITIAL_TECHNICIANS;
   });
   const [equipment, setEquipment] = useState(() => {
     const saved = localStorage.getItem("fiberControl_equipment");
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : INITIAL_EQUIPMENT;
   });
   const [materials, setMaterials] = useState(() => {
     const saved = localStorage.getItem("fiberControl_materials");
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : INITIAL_MATERIALS;
   });
   const [subcontractors, setSubcontractors] = useState(() => {
     const saved = localStorage.getItem("fiberControl_subcontractors");
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : INITIAL_SUBCONTRACTORS;
   });
 
   const [showForm, setShowForm] = useState(false);
@@ -145,8 +158,25 @@ const FiberControl = () => {
   const avgMargin =
     workOrders.length > 0
       ? workOrders.reduce((sum, order) => {
-          const costs = fiberService.calculateWorkOrderCosts(order, settings);
-          return sum + costs.marginPercentage;
+          const costs = fiberService.calculateWorkOrderCosts(
+            order,
+            settings,
+            technicians,
+            equipment,
+            materials,
+          );
+          const income = fiberService.calculateWorkOrderIncome(
+            order,
+            activities,
+          );
+          const profitability = fiberService.calculateProfitability(
+            income,
+            costs.totalCost,
+          );
+          return (
+            sum +
+            (isFinite(profitability.percentage) ? profitability.percentage : 0)
+          );
         }, 0) / workOrders.length
       : 0;
   const totalBilled = workOrders.reduce(
@@ -343,6 +373,17 @@ const FiberControl = () => {
                       const costs = fiberService.calculateWorkOrderCosts(
                         order,
                         settings,
+                        technicians,
+                        equipment,
+                        materials,
+                      );
+                      const income = fiberService.calculateWorkOrderIncome(
+                        order,
+                        activities,
+                      );
+                      const profitability = fiberService.calculateProfitability(
+                        income,
+                        costs.totalCost,
                       );
                       return (
                         <tr key={order.id}>
@@ -366,17 +407,20 @@ const FiberControl = () => {
                                 )
                               : "-"}
                           </td>
-                          <td>{formatCurrency(costs.totalCosts)}</td>
+                          <td>{formatCurrency(costs.totalCost)}</td>
                           <td>{formatCurrency(order.billedAmount || 0)}</td>
                           <td>
                             <span
                               className={
-                                costs.marginPercentage >= 20
+                                profitability.percentage >= 20
                                   ? "positive-margin"
                                   : "negative-margin"
                               }
                             >
-                              {costs.marginPercentage.toFixed(1)}%
+                              {isFinite(profitability.percentage)
+                                ? profitability.percentage.toFixed(1)
+                                : "N/A"}
+                              %
                             </span>
                           </td>
                           <td>
