@@ -1,64 +1,6 @@
-import api from "./api";
-
-// ==================== WORK ORDERS ====================
-
-export const getWorkOrders = async () => {
-  try {
-    const response = await api.get("/fiber-control/work-orders");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching work orders:", error);
-    throw error;
-  }
-};
-
-export const getWorkOrderById = async (id) => {
-  try {
-    const response = await api.get(`/fiber-control/work-orders/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching work order:", error);
-    throw error;
-  }
-};
-
-export const createWorkOrder = async (workOrderData) => {
-  try {
-    const response = await api.post(
-      "/fiber-control/work-orders",
-      workOrderData,
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error creating work order:", error);
-    throw error;
-  }
-};
-
-export const updateWorkOrder = async (id, workOrderData) => {
-  try {
-    const response = await api.put(
-      `/fiber-control/work-orders/${id}`,
-      workOrderData,
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error updating work order:", error);
-    throw error;
-  }
-};
-
-export const deleteWorkOrder = async (id) => {
-  try {
-    const response = await api.delete(`/fiber-control/work-orders/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting work order:", error);
-    throw error;
-  }
-};
-
 // ==================== CALCULATIONS ====================
+// FiberControl uses localStorage for data persistence
+// API functions will be added when backend is ready
 
 export const calculateWorkOrderIncome = (workOrder, activities) => {
   if (!workOrder || !workOrder.activities) return 0;
