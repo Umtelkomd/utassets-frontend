@@ -369,203 +369,312 @@ const FiberControlForm = ({
                       {/* Technicians */}
                       <div className="log-section">
                         <div className="log-section-header">
-                          <strong>Técnicos</strong>
+                          <strong>
+                            <PeopleIcon
+                              fontSize="small"
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "6px",
+                              }}
+                            />
+                            Técnicos
+                          </strong>
                           <button
                             type="button"
                             onClick={() => addDailyLogEntry(logIndex, "time")}
                             className="btn-mini"
+                            title="Agregar técnico existente"
                           >
-                            +
+                            + Técnico
                           </button>
                         </div>
-                        {log.time.map((entry, entryIndex) => (
-                          <div key={entryIndex} className="log-entry">
-                            <select
-                              value={entry.technicianId}
-                              onChange={(e) =>
-                                updateDailyLogEntry(
-                                  logIndex,
-                                  "time",
-                                  entryIndex,
-                                  "technicianId",
-                                  e.target.value,
-                                )
-                              }
-                            >
-                              <option value="">Seleccionar...</option>
-                              {technicians.map((t) => (
-                                <option key={t.id} value={t.id}>
-                                  {t.name}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              type="number"
-                              value={entry.hours}
-                              onChange={(e) =>
-                                updateDailyLogEntry(
-                                  logIndex,
-                                  "time",
-                                  entryIndex,
-                                  "hours",
-                                  parseFloat(e.target.value) || 0,
-                                )
-                              }
-                              placeholder="Horas"
-                              min="0"
-                              step="0.5"
+                        {log.time.length === 0 && (
+                          <div className="empty-state">
+                            <PeopleIcon
+                              style={{ opacity: 0.3, fontSize: "2rem" }}
                             />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                removeDailyLogEntry(
-                                  logIndex,
-                                  "time",
-                                  entryIndex,
-                                )
-                              }
-                              className="btn-mini-danger"
-                            >
-                              ×
-                            </button>
+                            <p>
+                              No hay técnicos asignados. Haz clic en "+ Técnico"
+                              para agregar uno.
+                            </p>
                           </div>
-                        ))}
+                        )}
+                        {log.time.map((entry, entryIndex) => {
+                          const selectedTech = technicians.find(
+                            (t) => t.id === entry.technicianId,
+                          );
+                          return (
+                            <div key={entryIndex} className="log-entry">
+                              <div className="log-entry-select">
+                                <select
+                                  value={entry.technicianId}
+                                  onChange={(e) =>
+                                    updateDailyLogEntry(
+                                      logIndex,
+                                      "time",
+                                      entryIndex,
+                                      "technicianId",
+                                      e.target.value,
+                                    )
+                                  }
+                                >
+                                  <option value="">
+                                    🔍 Seleccionar técnico existente...
+                                  </option>
+                                  {technicians.map((t) => (
+                                    <option key={t.id} value={t.id}>
+                                      👷 {t.name} - €{t.costPerHour}/h
+                                    </option>
+                                  ))}
+                                </select>
+                                {selectedTech && (
+                                  <small className="selected-info">
+                                    Coste: €{selectedTech.costPerHour}/h
+                                  </small>
+                                )}
+                              </div>
+                              <input
+                                type="number"
+                                value={entry.hours}
+                                onChange={(e) =>
+                                  updateDailyLogEntry(
+                                    logIndex,
+                                    "time",
+                                    entryIndex,
+                                    "hours",
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                                placeholder="⏱️ Horas trabajadas"
+                                min="0"
+                                step="0.5"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeDailyLogEntry(
+                                    logIndex,
+                                    "time",
+                                    entryIndex,
+                                  )
+                                }
+                                className="btn-mini-danger"
+                                title="Eliminar técnico"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       {/* Equipment */}
                       <div className="log-section">
                         <div className="log-section-header">
-                          <strong>Equipos</strong>
+                          <strong>
+                            <BuildIcon
+                              fontSize="small"
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "6px",
+                              }}
+                            />
+                            Equipos
+                          </strong>
                           <button
                             type="button"
                             onClick={() =>
                               addDailyLogEntry(logIndex, "equipment")
                             }
                             className="btn-mini"
+                            title="Agregar equipo existente"
                           >
-                            +
+                            + Equipo
                           </button>
                         </div>
-                        {log.equipment.map((entry, entryIndex) => (
-                          <div key={entryIndex} className="log-entry">
-                            <select
-                              value={entry.equipmentId}
-                              onChange={(e) =>
-                                updateDailyLogEntry(
-                                  logIndex,
-                                  "equipment",
-                                  entryIndex,
-                                  "equipmentId",
-                                  e.target.value,
-                                )
-                              }
-                            >
-                              <option value="">Seleccionar...</option>
-                              {equipment.map((e) => (
-                                <option key={e.id} value={e.id}>
-                                  {e.name}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              type="number"
-                              value={entry.hours}
-                              onChange={(e) =>
-                                updateDailyLogEntry(
-                                  logIndex,
-                                  "equipment",
-                                  entryIndex,
-                                  "hours",
-                                  parseFloat(e.target.value) || 0,
-                                )
-                              }
-                              placeholder="Horas"
-                              min="0"
-                              step="0.5"
+                        {log.equipment.length === 0 && (
+                          <div className="empty-state">
+                            <BuildIcon
+                              style={{ opacity: 0.3, fontSize: "2rem" }}
                             />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                removeDailyLogEntry(
-                                  logIndex,
-                                  "equipment",
-                                  entryIndex,
-                                )
-                              }
-                              className="btn-mini-danger"
-                            >
-                              ×
-                            </button>
+                            <p>
+                              No hay equipos asignados. Haz clic en "+ Equipo"
+                              para agregar uno.
+                            </p>
                           </div>
-                        ))}
+                        )}
+                        {log.equipment.map((entry, entryIndex) => {
+                          const selectedEquip = equipment.find(
+                            (e) => e.id === entry.equipmentId,
+                          );
+                          return (
+                            <div key={entryIndex} className="log-entry">
+                              <div className="log-entry-select">
+                                <select
+                                  value={entry.equipmentId}
+                                  onChange={(e) =>
+                                    updateDailyLogEntry(
+                                      logIndex,
+                                      "equipment",
+                                      entryIndex,
+                                      "equipmentId",
+                                      e.target.value,
+                                    )
+                                  }
+                                >
+                                  <option value="">
+                                    🔍 Seleccionar equipo existente...
+                                  </option>
+                                  {equipment.map((e) => (
+                                    <option key={e.id} value={e.id}>
+                                      🔧 {e.name} - €{e.costPerHour}/h
+                                    </option>
+                                  ))}
+                                </select>
+                                {selectedEquip && (
+                                  <small className="selected-info">
+                                    Coste: €{selectedEquip.costPerHour}/h
+                                  </small>
+                                )}
+                              </div>
+                              <input
+                                type="number"
+                                value={entry.hours}
+                                onChange={(e) =>
+                                  updateDailyLogEntry(
+                                    logIndex,
+                                    "equipment",
+                                    entryIndex,
+                                    "hours",
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                                placeholder="⏱️ Horas de uso"
+                                min="0"
+                                step="0.5"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeDailyLogEntry(
+                                    logIndex,
+                                    "equipment",
+                                    entryIndex,
+                                  )
+                                }
+                                className="btn-mini-danger"
+                                title="Eliminar equipo"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
 
                       {/* Materials */}
                       <div className="log-section">
                         <div className="log-section-header">
-                          <strong>Materiales</strong>
+                          <strong>
+                            <InventoryIcon
+                              fontSize="small"
+                              style={{
+                                verticalAlign: "middle",
+                                marginRight: "6px",
+                              }}
+                            />
+                            Materiales
+                          </strong>
                           <button
                             type="button"
                             onClick={() =>
                               addDailyLogEntry(logIndex, "materials")
                             }
                             className="btn-mini"
+                            title="Agregar material existente"
                           >
-                            +
+                            + Material
                           </button>
                         </div>
-                        {log.materials.map((entry, entryIndex) => (
-                          <div key={entryIndex} className="log-entry">
-                            <select
-                              value={entry.materialId}
-                              onChange={(e) =>
-                                updateDailyLogEntry(
-                                  logIndex,
-                                  "materials",
-                                  entryIndex,
-                                  "materialId",
-                                  e.target.value,
-                                )
-                              }
-                            >
-                              <option value="">Seleccionar...</option>
-                              {materials.map((m) => (
-                                <option key={m.id} value={m.id}>
-                                  {m.name}
-                                </option>
-                              ))}
-                            </select>
-                            <input
-                              type="number"
-                              value={entry.quantity}
-                              onChange={(e) =>
-                                updateDailyLogEntry(
-                                  logIndex,
-                                  "materials",
-                                  entryIndex,
-                                  "quantity",
-                                  parseFloat(e.target.value) || 0,
-                                )
-                              }
-                              placeholder="Cantidad"
-                              min="0"
-                              step="0.01"
+                        {log.materials.length === 0 && (
+                          <div className="empty-state">
+                            <InventoryIcon
+                              style={{ opacity: 0.3, fontSize: "2rem" }}
                             />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                removeDailyLogEntry(
-                                  logIndex,
-                                  "materials",
-                                  entryIndex,
-                                )
-                              }
-                              className="btn-mini-danger"
-                            >
-                              ×
-                            </button>
+                            <p>
+                              No hay materiales asignados. Haz clic en "+
+                              Material" para agregar uno.
+                            </p>
                           </div>
-                        ))}
+                        )}
+                        {log.materials.map((entry, entryIndex) => {
+                          const selectedMat = materials.find(
+                            (m) => m.id === entry.materialId,
+                          );
+                          return (
+                            <div key={entryIndex} className="log-entry">
+                              <div className="log-entry-select">
+                                <select
+                                  value={entry.materialId}
+                                  onChange={(e) =>
+                                    updateDailyLogEntry(
+                                      logIndex,
+                                      "materials",
+                                      entryIndex,
+                                      "materialId",
+                                      e.target.value,
+                                    )
+                                  }
+                                >
+                                  <option value="">
+                                    🔍 Seleccionar material existente...
+                                  </option>
+                                  {materials.map((m) => (
+                                    <option key={m.id} value={m.id}>
+                                      📦 {m.name} - €{m.cost}/{m.unit}
+                                    </option>
+                                  ))}
+                                </select>
+                                {selectedMat && (
+                                  <small className="selected-info">
+                                    Coste: €{selectedMat.cost}/
+                                    {selectedMat.unit}
+                                  </small>
+                                )}
+                              </div>
+                              <input
+                                type="number"
+                                value={entry.quantity}
+                                onChange={(e) =>
+                                  updateDailyLogEntry(
+                                    logIndex,
+                                    "materials",
+                                    entryIndex,
+                                    "quantity",
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                                placeholder="📊 Cantidad usada"
+                                min="0"
+                                step="0.01"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeDailyLogEntry(
+                                    logIndex,
+                                    "materials",
+                                    entryIndex,
+                                  )
+                                }
+                                className="btn-mini-danger"
+                                title="Eliminar material"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
