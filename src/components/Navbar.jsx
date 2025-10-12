@@ -30,6 +30,7 @@ import {
   BeachAccess as BeachAccessIcon,
   Home,
   AccountBalance as AccountBalanceIcon,
+  Cable as CableIcon,
 } from "@mui/icons-material";
 
 const Navbar = () => {
@@ -272,6 +273,17 @@ const Navbar = () => {
                 >
                   <AssignmentIcon className="dropdown-icon" />
                   <span>Proyectos</span>
+                </Link>
+                <Link
+                  to="/fibercontrol"
+                  className={`dropdown-item ${isActive("/fibercontrol") ? "active" : ""}`}
+                  onClick={() => {
+                    closeMenu();
+                    setServicesMenuOpen(false);
+                  }}
+                >
+                  <CableIcon className="dropdown-icon" />
+                  <span>FiberControl</span>
                 </Link>
               </div>
             )}

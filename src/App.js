@@ -49,6 +49,7 @@ import FinancingDetail from "./pages/FinancingDetail";
 import AddFinancing from "./pages/AddFinancing";
 import EditFinancing from "./pages/EditFinancing";
 import SSORedirectHandler from "./pages/SSORedirectHandler";
+import FiberControl from "./pages/FiberControl";
 
 // Contextos
 import { AuthProvider } from "./context/AuthContext";
@@ -78,7 +79,10 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/reset-password-confirm" element={<ResetPasswordConfirm />} />
+            <Route
+              path="/reset-password-confirm"
+              element={<ResetPasswordConfirm />}
+            />
             <Route path="/confirm-email" element={<ConfirmEmail />} />
             <Route path="/access-denied" element={<AccessDenied />} />
             <Route path="/categories" element={<Categories />} />
@@ -312,6 +316,21 @@ function App() {
                   element={
                     <PageContainer>
                       <Projects />
+                    </PageContainer>
+                  }
+                  requiredPermission="canViewReports"
+                />
+              }
+            />
+
+            {/* Ruta de FiberControl */}
+            <Route
+              path="/fibercontrol"
+              element={
+                <ProtectedRoute
+                  element={
+                    <PageContainer>
+                      <FiberControl />
                     </PageContainer>
                   }
                   requiredPermission="canViewReports"
