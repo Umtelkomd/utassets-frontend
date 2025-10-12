@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import * as fiberService from "../services/fiberControlService";
 import {
   Settings as SettingsIcon,
   Add as AddIcon,
@@ -18,16 +19,16 @@ import "./FiberControlSettings.css";
 
 const FiberControlSettings = ({
   settings,
-  setSettings,
+  onSettingsSave,
   activities,
   technicians,
-  setTechnicians,
+  onTechniciansChange,
   equipment,
-  setEquipment,
+  onEquipmentChange,
   materials,
-  setMaterials,
+  onMaterialsChange,
   subcontractors,
-  setSubcontractors,
+  onSubcontractorsChange,
 }) => {
   const [activeTab, setActiveTab] = useState("costes");
   const [editingItem, setEditingItem] = useState(null);
@@ -43,9 +44,16 @@ const FiberControlSettings = ({
     { id: "subcontratas", label: "Subcontratas", icon: <BusinessIcon /> },
   ];
 
-  const handleSettingsChange = (field, value) => {
-    setSettings((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
-    toast.success("Configuracion actualizada");
+  const handleSettingsChange = async (field, value) => {
+    const newSettings = { ...settings, [field]: parseFloat(value) || 0 };
+    try {
+      await fiberService.updateSettings(newSettings);
+      onSettingsSave(newSettings);
+      toast.success("Configuracion actualizada");
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      toast.error("Error al actualizar la configuración");
+    }
   };
 
   const openAddModal = (type) => {
@@ -76,141 +84,166 @@ const FiberControlSettings = ({
     setShowModal(true);
   };
 
-  const handleSaveItem = () => {
-    if (!editingItem) {
-      // Add new item
-      const newId = Date.now().toString();
-      const newItem = { ...formData, id: newId };
+  const handleSaveItem = async () => {
+    try {
+      if (!editingItem) {
+        // Add new item
+        switch (activeTab) {
+          case "tecnicos":
+            if (!formData.name || formData.costPerHour <= 0) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const newTech = await fiberService.createTechnician(formData);
+            onTechniciansChange((prev) => [...prev, newTech]);
+            toast.success("Tecnico agregado exitosamente");
+            break;
+          case "equipos":
+            if (!formData.name || formData.costPerHour <= 0) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const newEquip = await fiberService.createEquipment(formData);
+            onEquipmentChange((prev) => [...prev, newEquip]);
+            toast.success("Equipo agregado exitosamente");
+            break;
+          case "materiales":
+            if (!formData.name || !formData.unit || formData.cost <= 0) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const newMat = await fiberService.createMaterial(formData);
+            onMaterialsChange((prev) => [...prev, newMat]);
+            toast.success("Material agregado exitosamente");
+            break;
+          case "subcontratas":
+            if (!formData.name) {
+              toast.error("El nombre es requerido");
+              return;
+            }
+            const newSub = await fiberService.createSubcontractor(formData);
+            onSubcontractorsChange((prev) => [...prev, newSub]);
+            toast.success("Subcontratista agregado exitosamente");
+            break;
+          default:
+            break;
+        }
+      } else {
+        // Edit existing item
+        switch (editingItem.type || activeTab) {
+          case "tecnicos":
+            if (!formData.name || formData.costPerHour <= 0) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const updatedTech = await fiberService.updateTechnician(
+              editingItem.id,
+              formData,
+            );
+            onTechniciansChange((prev) =>
+              prev.map((item) =>
+                item.id === editingItem.id ? updatedTech : item,
+              ),
+            );
+            toast.success("Tecnico actualizado exitosamente");
+            break;
+          case "equipos":
+            if (!formData.name || formData.costPerHour <= 0) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const updatedEquip = await fiberService.updateEquipment(
+              editingItem.id,
+              formData,
+            );
+            onEquipmentChange((prev) =>
+              prev.map((item) =>
+                item.id === editingItem.id ? updatedEquip : item,
+              ),
+            );
+            toast.success("Equipo actualizado exitosamente");
+            break;
+          case "materiales":
+            if (!formData.name || !formData.unit || formData.cost <= 0) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const updatedMat = await fiberService.updateMaterial(
+              editingItem.id,
+              formData,
+            );
+            onMaterialsChange((prev) =>
+              prev.map((item) =>
+                item.id === editingItem.id ? updatedMat : item,
+              ),
+            );
+            toast.success("Material actualizado exitosamente");
+            break;
+          case "subcontratas":
+            if (!formData.name) {
+              toast.error("El nombre es requerido");
+              return;
+            }
+            const updatedSub = await fiberService.updateSubcontractor(
+              editingItem.id,
+              formData,
+            );
+            onSubcontractorsChange((prev) =>
+              prev.map((item) =>
+                item.id === editingItem.id ? updatedSub : item,
+              ),
+            );
+            toast.success("Subcontratista actualizado exitosamente");
+            break;
+          default:
+            break;
+        }
+      }
 
-      switch (activeTab) {
-        case "tecnicos":
-          if (!formData.name || formData.costPerHour <= 0) {
-            toast.error("Complete todos los campos correctamente");
-            return;
-          }
-          setTechnicians((prev) => [...prev, newItem]);
-          toast.success("Tecnico agregado exitosamente");
-          break;
-        case "equipos":
-          if (!formData.name || formData.costPerHour <= 0) {
-            toast.error("Complete todos los campos correctamente");
-            return;
-          }
-          setEquipment((prev) => [...prev, newItem]);
-          toast.success("Equipo agregado exitosamente");
-          break;
-        case "materiales":
-          if (!formData.name || !formData.unit || formData.cost <= 0) {
-            toast.error("Complete todos los campos correctamente");
-            return;
-          }
-          setMaterials((prev) => [...prev, newItem]);
-          toast.success("Material agregado exitosamente");
-          break;
-        case "subcontratas":
-          if (!formData.name) {
-            toast.error("El nombre es requerido");
-            return;
-          }
-          setSubcontractors((prev) => [...prev, newItem]);
-          toast.success("Subcontratista agregado exitosamente");
-          break;
-        default:
-          break;
-      }
-    } else {
-      // Edit existing item
-      switch (editingItem.type || activeTab) {
-        case "tecnicos":
-          if (!formData.name || formData.costPerHour <= 0) {
-            toast.error("Complete todos los campos correctamente");
-            return;
-          }
-          setTechnicians((prev) =>
-            prev.map((item) =>
-              item.id === editingItem.id
-                ? { ...formData, id: editingItem.id }
-                : item,
-            ),
-          );
-          toast.success("Tecnico actualizado exitosamente");
-          break;
-        case "equipos":
-          if (!formData.name || formData.costPerHour <= 0) {
-            toast.error("Complete todos los campos correctamente");
-            return;
-          }
-          setEquipment((prev) =>
-            prev.map((item) =>
-              item.id === editingItem.id
-                ? { ...formData, id: editingItem.id }
-                : item,
-            ),
-          );
-          toast.success("Equipo actualizado exitosamente");
-          break;
-        case "materiales":
-          if (!formData.name || !formData.unit || formData.cost <= 0) {
-            toast.error("Complete todos los campos correctamente");
-            return;
-          }
-          setMaterials((prev) =>
-            prev.map((item) =>
-              item.id === editingItem.id
-                ? { ...formData, id: editingItem.id }
-                : item,
-            ),
-          );
-          toast.success("Material actualizado exitosamente");
-          break;
-        case "subcontratas":
-          if (!formData.name) {
-            toast.error("El nombre es requerido");
-            return;
-          }
-          setSubcontractors((prev) =>
-            prev.map((item) =>
-              item.id === editingItem.id
-                ? { ...formData, id: editingItem.id }
-                : item,
-            ),
-          );
-          toast.success("Subcontratista actualizado exitosamente");
-          break;
-        default:
-          break;
-      }
+      setShowModal(false);
+      setFormData({});
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Error saving item:", error);
+      toast.error("Error al guardar el elemento");
     }
-
-    setShowModal(false);
-    setFormData({});
-    setEditingItem(null);
   };
 
-  const handleDeleteItem = (id, type) => {
+  const handleDeleteItem = async (id, type) => {
     if (!window.confirm("Esta seguro de eliminar este elemento?")) {
       return;
     }
 
-    switch (type) {
-      case "tecnicos":
-        setTechnicians((prev) => prev.filter((item) => item.id !== id));
-        toast.success("Tecnico eliminado exitosamente");
-        break;
-      case "equipos":
-        setEquipment((prev) => prev.filter((item) => item.id !== id));
-        toast.success("Equipo eliminado exitosamente");
-        break;
-      case "materiales":
-        setMaterials((prev) => prev.filter((item) => item.id !== id));
-        toast.success("Material eliminado exitosamente");
-        break;
-      case "subcontratas":
-        setSubcontractors((prev) => prev.filter((item) => item.id !== id));
-        toast.success("Subcontratista eliminado exitosamente");
-        break;
-      default:
-        break;
+    try {
+      switch (type) {
+        case "tecnicos":
+          await fiberService.deleteTechnician(id);
+          onTechniciansChange((prev) => prev.filter((item) => item.id !== id));
+          toast.success("Tecnico eliminado exitosamente");
+          break;
+        case "equipos":
+          await fiberService.deleteEquipment(id);
+          onEquipmentChange((prev) => prev.filter((item) => item.id !== id));
+          toast.success("Equipo eliminado exitosamente");
+          break;
+        case "materiales":
+          await fiberService.deleteMaterial(id);
+          onMaterialsChange((prev) => prev.filter((item) => item.id !== id));
+          toast.success("Material eliminado exitosamente");
+          break;
+        case "subcontratas":
+          await fiberService.deleteSubcontractor(id);
+          onSubcontractorsChange((prev) =>
+            prev.filter((item) => item.id !== id),
+          );
+          toast.success("Subcontratista eliminado exitosamente");
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("Error al eliminar el elemento");
     }
   };
 

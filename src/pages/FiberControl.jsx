@@ -18,135 +18,76 @@ import FiberControlSettings from "../components/FiberControlSettings";
 import * as fiberService from "../services/fiberControlService";
 import "./FiberControl.css";
 
-const INITIAL_ACTIVITIES = [
-  {
-    id: "1",
-    description: "Excavación y canalización",
-    unit: "metros",
-    price: 15000,
-  },
-  {
-    id: "2",
-    description: "Instalación de cable de fibra óptica",
-    unit: "metros",
-    price: 12000,
-  },
-  {
-    id: "3",
-    description: "Fusión de fibra óptica",
-    unit: "fusiones",
-    price: 8000,
-  },
-  {
-    id: "4",
-    description: "Instalación de caja de empalme",
-    unit: "unidades",
-    price: 50000,
-  },
-  {
-    id: "5",
-    description: "Pruebas y certificación OTDR",
-    unit: "pruebas",
-    price: 5000,
-  },
-];
-
-const INITIAL_TECHNICIANS = [
-  { id: "1", name: "Juan Pérez", costPerHour: 25 },
-  { id: "2", name: "María García", costPerHour: 28 },
-  { id: "3", name: "Carlos López", costPerHour: 22 },
-];
-
-const INITIAL_EQUIPMENT = [
-  { id: "1", name: "Excavadora", costPerHour: 50 },
-  { id: "2", name: "Fusionadora", costPerHour: 30 },
-  { id: "3", name: "OTDR", costPerHour: 40 },
-];
-
-const INITIAL_MATERIALS = [
-  { id: "1", name: "Cable de fibra óptica", unit: "metros", cost: 10 },
-  { id: "2", name: "Caja de empalme", unit: "unidades", cost: 200 },
-  { id: "3", name: "Conectores", unit: "unidades", cost: 5 },
-];
-
-const INITIAL_SUBCONTRACTORS = [
-  { id: "1", name: "SubFibra S.A.", contact: "contacto@subfibra.com" },
-  { id: "2", name: "Telecom Solutions", contact: "info@telecomsol.com" },
-];
-
 const FiberControl = () => {
   const [activeView, setActiveView] = useState("dashboard");
-  const [workOrders, setWorkOrders] = useState(() => {
-    const saved = localStorage.getItem("fiberControl_workOrders");
-    return saved ? JSON.parse(saved) : [];
+  const [workOrders, setWorkOrders] = useState([]);
+  const [settings, setSettings] = useState({
+    indirectCostRate: 25,
+    subcontractorIndirectCostRate: 10,
   });
-  const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem("fiberControl_settings");
-    return saved
-      ? JSON.parse(saved)
-      : { indirectCostRate: 25, subcontractorIndirectCostRate: 10 };
-  });
-  const [activities, setActivities] = useState(() => {
-    const saved = localStorage.getItem("fiberControl_activities");
-    return saved ? JSON.parse(saved) : INITIAL_ACTIVITIES;
-  });
-  const [technicians, setTechnicians] = useState(() => {
-    const saved = localStorage.getItem("fiberControl_technicians");
-    return saved ? JSON.parse(saved) : INITIAL_TECHNICIANS;
-  });
-  const [equipment, setEquipment] = useState(() => {
-    const saved = localStorage.getItem("fiberControl_equipment");
-    return saved ? JSON.parse(saved) : INITIAL_EQUIPMENT;
-  });
-  const [materials, setMaterials] = useState(() => {
-    const saved = localStorage.getItem("fiberControl_materials");
-    return saved ? JSON.parse(saved) : INITIAL_MATERIALS;
-  });
-  const [subcontractors, setSubcontractors] = useState(() => {
-    const saved = localStorage.getItem("fiberControl_subcontractors");
-    return saved ? JSON.parse(saved) : INITIAL_SUBCONTRACTORS;
-  });
+  const [activities, setActivities] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  const [equipment, setEquipment] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [subcontractors, setSubcontractors] = useState([]);
 
   const [showForm, setShowForm] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Save to localStorage whenever data changes
+  // Load all data from API on mount
   useEffect(() => {
-    localStorage.setItem("fiberControl_workOrders", JSON.stringify(workOrders));
-  }, [workOrders]);
+    loadAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  useEffect(() => {
-    localStorage.setItem("fiberControl_settings", JSON.stringify(settings));
-  }, [settings]);
+  const loadAllData = async () => {
+    setLoading(true);
+    try {
+      const [
+        workOrdersData,
+        settingsData,
+        activitiesData,
+        techniciansData,
+        equipmentData,
+        materialsData,
+        subcontractorsData,
+      ] = await Promise.all([
+        fiberService.getAllWorkOrders(),
+        fiberService.getSettings(),
+        fiberService.getAllActivities(),
+        fiberService.getAllTechnicians(),
+        fiberService.getAllEquipment(),
+        fiberService.getAllMaterials(),
+        fiberService.getAllSubcontractors(),
+      ]);
 
-  useEffect(() => {
-    localStorage.setItem("fiberControl_activities", JSON.stringify(activities));
-  }, [activities]);
+      setWorkOrders(workOrdersData);
+      setSettings(settingsData);
+      setActivities(activitiesData);
+      setTechnicians(techniciansData);
+      setEquipment(equipmentData);
+      setMaterials(materialsData);
+      setSubcontractors(subcontractorsData);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast.error("Error al cargar los datos. Intentando inicializar...");
 
-  useEffect(() => {
-    localStorage.setItem(
-      "fiberControl_technicians",
-      JSON.stringify(technicians),
-    );
-  }, [technicians]);
-
-  useEffect(() => {
-    localStorage.setItem("fiberControl_equipment", JSON.stringify(equipment));
-  }, [equipment]);
-
-  useEffect(() => {
-    localStorage.setItem("fiberControl_materials", JSON.stringify(materials));
-  }, [materials]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "fiberControl_subcontractors",
-      JSON.stringify(subcontractors),
-    );
-  }, [subcontractors]);
+      // Try to initialize default data if loading fails
+      try {
+        await fiberService.initializeDefaultData();
+        // Retry loading after initialization
+        await loadAllData();
+      } catch (initError) {
+        console.error("Error initializing data:", initError);
+        toast.error("Error al inicializar los datos");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate KPIs
   const activeOrders = workOrders.filter(
@@ -199,42 +140,59 @@ const FiberControl = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (orderToDelete) {
-      setWorkOrders(
-        workOrders.filter((order) => order.id !== orderToDelete.id),
-      );
-      toast.success("Orden de trabajo eliminada exitosamente");
-      setShowDeleteModal(false);
-      setOrderToDelete(null);
+      try {
+        await fiberService.deleteWorkOrder(orderToDelete.id);
+        setWorkOrders(
+          workOrders.filter((order) => order.id !== orderToDelete.id),
+        );
+        toast.success("Orden de trabajo eliminada exitosamente");
+      } catch (error) {
+        console.error("Error deleting work order:", error);
+        toast.error("Error al eliminar la orden de trabajo");
+      } finally {
+        setShowDeleteModal(false);
+        setOrderToDelete(null);
+      }
     }
   };
 
-  const handleSaveOrder = (orderData) => {
-    if (editingOrder) {
-      setWorkOrders(
-        workOrders.map((order) =>
-          order.id === editingOrder.id
-            ? { ...orderData, id: editingOrder.id }
-            : order,
-        ),
-      );
-      toast.success("Orden de trabajo actualizada exitosamente");
-    } else {
-      const newOrder = {
-        ...orderData,
-        id: Date.now(),
-      };
-      setWorkOrders([...workOrders, newOrder]);
-      toast.success("Orden de trabajo creada exitosamente");
+  const handleSaveOrder = async (orderData) => {
+    try {
+      if (editingOrder) {
+        const updatedOrder = await fiberService.updateWorkOrder(
+          editingOrder.id,
+          orderData,
+        );
+        setWorkOrders(
+          workOrders.map((order) =>
+            order.id === editingOrder.id ? updatedOrder : order,
+          ),
+        );
+        toast.success("Orden de trabajo actualizada exitosamente");
+      } else {
+        const newOrder = await fiberService.createWorkOrder(orderData);
+        setWorkOrders([...workOrders, newOrder]);
+        toast.success("Orden de trabajo creada exitosamente");
+      }
+      setShowForm(false);
+      setEditingOrder(null);
+    } catch (error) {
+      console.error("Error saving work order:", error);
+      toast.error("Error al guardar la orden de trabajo");
     }
-    setShowForm(false);
-    setEditingOrder(null);
   };
 
-  const handleSettingsSave = (newSettings) => {
-    setSettings(newSettings);
-    toast.success("Configuración guardada exitosamente");
+  const handleSettingsSave = async (newSettings) => {
+    try {
+      const updatedSettings = await fiberService.updateSettings(newSettings);
+      setSettings(updatedSettings);
+      toast.success("Configuración guardada exitosamente");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast.error("Error al guardar la configuración");
+    }
   };
 
   const getStatusBadgeClass = (status) => {
