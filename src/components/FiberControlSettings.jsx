@@ -331,7 +331,7 @@ const FiberControlSettings = ({
                       <td>{activity.id}</td>
                       <td>{activity.description}</td>
                       <td>{activity.unit}</td>
-                      <td>{(activity.price || 0).toFixed(2)}</td>
+                      <td>{(Number(activity.price) || 0).toFixed(2)}</td>
                     </tr>
                   ))
                 )}
@@ -373,7 +373,7 @@ const FiberControlSettings = ({
                   technicians.map((tech) => (
                     <tr key={tech.id}>
                       <td>{tech.name}</td>
-                      <td>{(tech.costPerHour || 0).toFixed(2)}</td>
+                      <td>{(Number(tech.costPerHour) || 0).toFixed(2)}</td>
                       <td className="action-buttons">
                         <button
                           onClick={() => openEditModal(tech, "tecnicos")}
@@ -431,7 +431,7 @@ const FiberControlSettings = ({
                   equipment.map((equip) => (
                     <tr key={equip.id}>
                       <td>{equip.name}</td>
-                      <td>{(equip.costPerHour || 0).toFixed(2)}</td>
+                      <td>{(Number(equip.costPerHour) || 0).toFixed(2)}</td>
                       <td className="action-buttons">
                         <button
                           onClick={() => openEditModal(equip, "equipos")}
@@ -491,7 +491,7 @@ const FiberControlSettings = ({
                     <tr key={mat.id}>
                       <td>{mat.name}</td>
                       <td>{mat.unit}</td>
-                      <td>{(mat.cost || 0).toFixed(2)}</td>
+                      <td>{(Number(mat.cost) || 0).toFixed(2)}</td>
                       <td className="action-buttons">
                         <button
                           onClick={() => openEditModal(mat, "materiales")}

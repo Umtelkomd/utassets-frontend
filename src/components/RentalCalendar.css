@@ -72,7 +72,7 @@
     padding: 0;
 }
 
-.nav-button {
+.rental-calendar .nav-button {
     background: #f6f6f6;
     border: none;
     width: 28px;
@@ -86,14 +86,14 @@
     color: #6e6e73;
 }
 
-.nav-button:hover {
+.rental-calendar .nav-button:hover {
     background: #007aff;
     color: white;
     transform: scale(1.1);
     box-shadow: 0 1px 4px rgba(0, 122, 255, 0.3);
 }
 
-.nav-button svg {
+.rental-calendar .nav-button svg {
     font-size: 1rem !important;
 }
 
@@ -326,13 +326,13 @@
     .day-number {
         font-size: 0.65rem;
     }
-    
-    .nav-button {
+
+    .rental-calendar .nav-button {
         width: 24px;
         height: 24px;
     }
-    
-    .nav-button svg {
+
+    .rental-calendar .nav-button svg {
         font-size: 0.9rem !important;
     }
 }

@@ -123,7 +123,7 @@
     margin-bottom: 1rem;
 }
 
-.nav-button {
+.vacation-pending-calendar .nav-button {
     background: #f6f6f6;
     border: none;
     width: 32px;
@@ -137,14 +137,14 @@
     color: #6e6e73;
 }
 
-.nav-button:hover {
+.vacation-pending-calendar .nav-button:hover {
     background: #007aff;
     color: white;
     transform: scale(1.1);
     box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 }
 
-.nav-button svg {
+.vacation-pending-calendar .nav-button svg {
     font-size: 1.1rem !important;
 }
 
