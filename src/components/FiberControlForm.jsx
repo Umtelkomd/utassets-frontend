@@ -425,6 +425,7 @@ const FiberControlForm = ({
                           return (
                             <div key={entryIndex} className="log-entry">
                               <div className="log-entry-select">
+                                <label>Técnico</label>
                                 <select
                                   value={entry.technicianId}
                                   onChange={(e) =>
@@ -451,40 +452,45 @@ const FiberControlForm = ({
                                 </select>
                                 {selectedTech && (
                                   <small className="selected-info">
-                                    Coste: €{selectedTech.costPerHour}/h
+                                    💰 Coste: €{selectedTech.costPerHour}/h
                                   </small>
                                 )}
                               </div>
-                              <input
-                                type="number"
-                                value={entry.hours}
-                                onChange={(e) =>
-                                  updateDailyLogEntry(
-                                    logIndex,
-                                    "time",
-                                    entryIndex,
-                                    "hours",
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
-                                placeholder="⏱️ Horas trabajadas"
-                                min="0"
-                                step="0.5"
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeDailyLogEntry(
-                                    logIndex,
-                                    "time",
-                                    entryIndex,
-                                  )
-                                }
-                                className="btn-mini-danger"
-                                title="Eliminar técnico"
-                              >
-                                ×
-                              </button>
+                              <div className="log-entry-fields">
+                                <div className="log-entry-input-group">
+                                  <label>Horas trabajadas</label>
+                                  <input
+                                    type="number"
+                                    value={entry.hours}
+                                    onChange={(e) =>
+                                      updateDailyLogEntry(
+                                        logIndex,
+                                        "time",
+                                        entryIndex,
+                                        "hours",
+                                        parseFloat(e.target.value) || 0,
+                                      )
+                                    }
+                                    placeholder="Ej: 8"
+                                    min="0"
+                                    step="0.5"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeDailyLogEntry(
+                                      logIndex,
+                                      "time",
+                                      entryIndex,
+                                    )
+                                  }
+                                  className="btn-mini-danger"
+                                  title="Eliminar técnico"
+                                >
+                                  ×
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
@@ -538,6 +544,7 @@ const FiberControlForm = ({
                           return (
                             <div key={entryIndex} className="log-entry">
                               <div className="log-entry-select">
+                                <label>Equipo</label>
                                 <select
                                   value={entry.equipmentId}
                                   onChange={(e) =>
@@ -564,40 +571,45 @@ const FiberControlForm = ({
                                 </select>
                                 {selectedEquip && (
                                   <small className="selected-info">
-                                    Coste: €{selectedEquip.costPerHour}/h
+                                    💰 Coste: €{selectedEquip.costPerHour}/h
                                   </small>
                                 )}
                               </div>
-                              <input
-                                type="number"
-                                value={entry.hours}
-                                onChange={(e) =>
-                                  updateDailyLogEntry(
-                                    logIndex,
-                                    "equipment",
-                                    entryIndex,
-                                    "hours",
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
-                                placeholder="⏱️ Horas de uso"
-                                min="0"
-                                step="0.5"
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeDailyLogEntry(
-                                    logIndex,
-                                    "equipment",
-                                    entryIndex,
-                                  )
-                                }
-                                className="btn-mini-danger"
-                                title="Eliminar equipo"
-                              >
-                                ×
-                              </button>
+                              <div className="log-entry-fields">
+                                <div className="log-entry-input-group">
+                                  <label>Horas de uso</label>
+                                  <input
+                                    type="number"
+                                    value={entry.hours}
+                                    onChange={(e) =>
+                                      updateDailyLogEntry(
+                                        logIndex,
+                                        "equipment",
+                                        entryIndex,
+                                        "hours",
+                                        parseFloat(e.target.value) || 0,
+                                      )
+                                    }
+                                    placeholder="Ej: 4"
+                                    min="0"
+                                    step="0.5"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeDailyLogEntry(
+                                      logIndex,
+                                      "equipment",
+                                      entryIndex,
+                                    )
+                                  }
+                                  className="btn-mini-danger"
+                                  title="Eliminar equipo"
+                                >
+                                  ×
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
@@ -651,6 +663,7 @@ const FiberControlForm = ({
                           return (
                             <div key={entryIndex} className="log-entry">
                               <div className="log-entry-select">
+                                <label>Material</label>
                                 <select
                                   value={entry.materialId}
                                   onChange={(e) =>
@@ -677,41 +690,52 @@ const FiberControlForm = ({
                                 </select>
                                 {selectedMat && (
                                   <small className="selected-info">
-                                    Coste: €{selectedMat.cost}/
+                                    💰 Coste: €{selectedMat.cost}/
                                     {selectedMat.unit}
                                   </small>
                                 )}
                               </div>
-                              <input
-                                type="number"
-                                value={entry.quantity}
-                                onChange={(e) =>
-                                  updateDailyLogEntry(
-                                    logIndex,
-                                    "materials",
-                                    entryIndex,
-                                    "quantity",
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
-                                placeholder="📊 Cantidad usada"
-                                min="0"
-                                step="0.01"
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeDailyLogEntry(
-                                    logIndex,
-                                    "materials",
-                                    entryIndex,
-                                  )
-                                }
-                                className="btn-mini-danger"
-                                title="Eliminar material"
-                              >
-                                ×
-                              </button>
+                              <div className="log-entry-fields">
+                                <div className="log-entry-input-group">
+                                  <label>
+                                    Cantidad usada (
+                                    {selectedMat
+                                      ? selectedMat.unit
+                                      : "unidades"}
+                                    )
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={entry.quantity}
+                                    onChange={(e) =>
+                                      updateDailyLogEntry(
+                                        logIndex,
+                                        "materials",
+                                        entryIndex,
+                                        "quantity",
+                                        parseFloat(e.target.value) || 0,
+                                      )
+                                    }
+                                    placeholder="Ej: 100"
+                                    min="0"
+                                    step="0.01"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeDailyLogEntry(
+                                      logIndex,
+                                      "materials",
+                                      entryIndex,
+                                    )
+                                  }
+                                  className="btn-mini-danger"
+                                  title="Eliminar material"
+                                >
+                                  ×
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
