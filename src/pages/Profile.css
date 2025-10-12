@@ -63,7 +63,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.header-content h1 {
+.profile-container .header-content h1 {
   font-size: 2.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   background-clip: text;
@@ -73,14 +73,14 @@
   font-weight: 700;
 }
 
-.header-subtitle {
+.profile-container .header-subtitle {
   color: #6c757d;
   font-size: 1.1rem;
   margin: 0;
   font-weight: 400;
 }
 
-.header-actions {
+.profile-container .header-actions {
   display: flex;
   gap: 1rem;
 }
@@ -750,11 +750,11 @@
     padding: 1.5rem;
   }
 
-  .header-content h1 {
+  .profile-container .header-content h1 {
     font-size: 2rem;
   }
 
-  .header-actions {
+  .profile-container .header-actions {
     justify-content: center;
   }
 
@@ -872,7 +872,7 @@
     border-radius: 12px;
   }
   
-  .header-content h1 {
+  .profile-container .header-content h1 {
     font-size: 1.75rem;
   }
   

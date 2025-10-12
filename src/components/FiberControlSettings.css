@@ -51,9 +51,9 @@
 }
 
 .tab-button.active {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
-    background-color: #f8fafc;
+    color: white;
+    border-bottom-color: white;
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .tab-button svg {
