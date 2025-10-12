@@ -426,22 +426,21 @@ const FiberControl = () => {
       )}
 
       {/* Modals */}
-      {showForm && (
-        <FiberControlForm
-          order={editingOrder}
-          activities={activities}
-          technicians={technicians}
-          equipment={equipment}
-          materials={materials}
-          subcontractors={subcontractors}
-          settings={settings}
-          onSave={handleSaveOrder}
-          onClose={() => {
-            setShowForm(false);
-            setEditingOrder(null);
-          }}
-        />
-      )}
+      <FiberControlForm
+        isOpen={showForm}
+        workOrder={editingOrder}
+        activities={activities}
+        technicians={technicians}
+        equipment={equipment}
+        materials={materials}
+        subcontractors={subcontractors}
+        settings={settings}
+        onSave={handleSaveOrder}
+        onClose={() => {
+          setShowForm(false);
+          setEditingOrder(null);
+        }}
+      />
 
       {showDeleteModal && (
         <DeleteConfirmationModal
