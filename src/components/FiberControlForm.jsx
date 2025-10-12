@@ -94,6 +94,19 @@ const FiberControlForm = ({
 
   // Daily Logs
   const addDailyLog = () => {
+    // Check if there's an unsaved daily log (empty log without any entries)
+    const hasUnsavedLog = (formData.dailyLogs || []).some(
+      (log) =>
+        log.time.length === 0 &&
+        log.equipment.length === 0 &&
+        log.materials.length === 0,
+    );
+
+    if (hasUnsavedLog) {
+      toast.warning("Completa el reporte actual antes de agregar uno nuevo");
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       dailyLogs: [
@@ -399,6 +412,12 @@ const FiberControlForm = ({
                             </p>
                           </div>
                         )}
+                        {technicians.length === 0 && log.time.length > 0 && (
+                          <div className="warning-message">
+                            ⚠️ No hay técnicos disponibles. Ve a Configuración →
+                            Técnicos para agregar uno.
+                          </div>
+                        )}
                         {log.time.map((entry, entryIndex) => {
                           const selectedTech = technicians.find(
                             (t) => t.id === entry.technicianId,
@@ -417,9 +436,12 @@ const FiberControlForm = ({
                                       e.target.value,
                                     )
                                   }
+                                  disabled={technicians.length === 0}
                                 >
                                   <option value="">
-                                    🔍 Seleccionar técnico existente...
+                                    {technicians.length === 0
+                                      ? "⚠️ No hay técnicos disponibles"
+                                      : "🔍 Seleccionar técnico existente..."}
                                   </option>
                                   {technicians.map((t) => (
                                     <option key={t.id} value={t.id}>
@@ -503,6 +525,12 @@ const FiberControlForm = ({
                             </p>
                           </div>
                         )}
+                        {equipment.length === 0 && log.equipment.length > 0 && (
+                          <div className="warning-message">
+                            ⚠️ No hay equipos disponibles. Ve a Configuración →
+                            Equipos para agregar uno.
+                          </div>
+                        )}
                         {log.equipment.map((entry, entryIndex) => {
                           const selectedEquip = equipment.find(
                             (e) => e.id === entry.equipmentId,
@@ -521,9 +549,12 @@ const FiberControlForm = ({
                                       e.target.value,
                                     )
                                   }
+                                  disabled={equipment.length === 0}
                                 >
                                   <option value="">
-                                    🔍 Seleccionar equipo existente...
+                                    {equipment.length === 0
+                                      ? "⚠️ No hay equipos disponibles"
+                                      : "🔍 Seleccionar equipo existente..."}
                                   </option>
                                   {equipment.map((e) => (
                                     <option key={e.id} value={e.id}>
@@ -607,6 +638,12 @@ const FiberControlForm = ({
                             </p>
                           </div>
                         )}
+                        {materials.length === 0 && log.materials.length > 0 && (
+                          <div className="warning-message">
+                            ⚠️ No hay materiales disponibles. Ve a Configuración
+                            → Materiales para agregar uno.
+                          </div>
+                        )}
                         {log.materials.map((entry, entryIndex) => {
                           const selectedMat = materials.find(
                             (m) => m.id === entry.materialId,
@@ -625,9 +662,12 @@ const FiberControlForm = ({
                                       e.target.value,
                                     )
                                   }
+                                  disabled={materials.length === 0}
                                 >
                                   <option value="">
-                                    🔍 Seleccionar material existente...
+                                    {materials.length === 0
+                                      ? "⚠️ No hay materiales disponibles"
+                                      : "🔍 Seleccionar material existente..."}
                                   </option>
                                   {materials.map((m) => (
                                     <option key={m.id} value={m.id}>
