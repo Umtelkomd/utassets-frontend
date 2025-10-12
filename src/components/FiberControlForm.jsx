@@ -457,25 +457,6 @@ const FiberControlForm = ({
                                 )}
                               </div>
                               <div className="log-entry-fields">
-                                <div className="log-entry-input-group">
-                                  <label>Horas trabajadas</label>
-                                  <input
-                                    type="number"
-                                    value={entry.hours}
-                                    onChange={(e) =>
-                                      updateDailyLogEntry(
-                                        logIndex,
-                                        "time",
-                                        entryIndex,
-                                        "hours",
-                                        parseFloat(e.target.value) || 0,
-                                      )
-                                    }
-                                    placeholder="Ej: 8"
-                                    min="0"
-                                    step="0.5"
-                                  />
-                                </div>
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -576,25 +557,6 @@ const FiberControlForm = ({
                                 )}
                               </div>
                               <div className="log-entry-fields">
-                                <div className="log-entry-input-group">
-                                  <label>Horas de uso</label>
-                                  <input
-                                    type="number"
-                                    value={entry.hours}
-                                    onChange={(e) =>
-                                      updateDailyLogEntry(
-                                        logIndex,
-                                        "equipment",
-                                        entryIndex,
-                                        "hours",
-                                        parseFloat(e.target.value) || 0,
-                                      )
-                                    }
-                                    placeholder="Ej: 4"
-                                    min="0"
-                                    step="0.5"
-                                  />
-                                </div>
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -696,31 +658,6 @@ const FiberControlForm = ({
                                 )}
                               </div>
                               <div className="log-entry-fields">
-                                <div className="log-entry-input-group">
-                                  <label>
-                                    Cantidad usada (
-                                    {selectedMat
-                                      ? selectedMat.unit
-                                      : "unidades"}
-                                    )
-                                  </label>
-                                  <input
-                                    type="number"
-                                    value={entry.quantity}
-                                    onChange={(e) =>
-                                      updateDailyLogEntry(
-                                        logIndex,
-                                        "materials",
-                                        entryIndex,
-                                        "quantity",
-                                        parseFloat(e.target.value) || 0,
-                                      )
-                                    }
-                                    placeholder="Ej: 100"
-                                    min="0"
-                                    step="0.01"
-                                  />
-                                </div>
                                 <button
                                   type="button"
                                   onClick={() =>
