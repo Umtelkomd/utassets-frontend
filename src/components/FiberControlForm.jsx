@@ -94,16 +94,21 @@ const FiberControlForm = ({
 
   // Daily Logs
   const addDailyLog = () => {
-    // Check if there's an unsaved daily log (empty log without any entries)
-    const hasUnsavedLog = (formData.dailyLogs || []).some(
+    // Check if there's an incomplete daily log (log without at least one entry in time, equipment or materials)
+    const hasIncompleteLog = (formData.dailyLogs || []).some(
       (log) =>
         log.time.length === 0 &&
         log.equipment.length === 0 &&
         log.materials.length === 0,
     );
 
-    if (hasUnsavedLog) {
-      toast.warning("Completa el reporte actual antes de agregar uno nuevo");
+    if (hasIncompleteLog) {
+      toast.warning(
+        "⚠️ Completa el reporte actual antes de agregar uno nuevo. Debes agregar al menos un técnico, equipo o material.",
+        {
+          autoClose: 4000,
+        },
+      );
       return;
     }
 
@@ -279,49 +284,51 @@ const FiberControlForm = ({
                   <button
                     type="button"
                     onClick={addActivity}
-                    className="btn-small"
+                    className="fiber-btn-add"
                   >
                     <AddIcon /> Añadir
                   </button>
                 </div>
-                {formData.activities.map((act, index) => (
-                  <div key={index} className="activity-row">
-                    <select
-                      value={act.activityId}
-                      onChange={(e) =>
-                        updateActivity(index, "activityId", e.target.value)
-                      }
-                    >
-                      <option value="">Seleccionar actividad...</option>
-                      {activities.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.id} - {a.description}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      value={act.quantity}
-                      onChange={(e) =>
-                        updateActivity(
-                          index,
-                          "quantity",
-                          parseFloat(e.target.value) || 0,
-                        )
-                      }
-                      placeholder="Cantidad"
-                      min="0"
-                      step="0.01"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeActivity(index)}
-                      className="btn-icon-danger"
-                    >
-                      <DeleteIcon />
-                    </button>
-                  </div>
-                ))}
+                <div className="fiber-activity-list">
+                  {formData.activities.map((act, index) => (
+                    <div key={index} className="fiber-activity-row">
+                      <select
+                        value={act.activityId}
+                        onChange={(e) =>
+                          updateActivity(index, "activityId", e.target.value)
+                        }
+                      >
+                        <option value="">Seleccionar actividad...</option>
+                        {activities.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.id} - {a.description}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        value={act.quantity}
+                        onChange={(e) =>
+                          updateActivity(
+                            index,
+                            "quantity",
+                            parseFloat(e.target.value) || 0,
+                          )
+                        }
+                        placeholder="Cantidad"
+                        min="0"
+                        step="0.01"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeActivity(index)}
+                        className="fiber-btn-remove"
+                      >
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Executor Type */}
@@ -329,17 +336,17 @@ const FiberControlForm = ({
                 <h3>
                   <PeopleIcon /> Tipo de Ejecución
                 </h3>
-                <div className="executor-buttons">
+                <div className="fiber-executor-buttons">
                   <button
                     type="button"
-                    className={`executor-btn ${formData.executorType === "internal" ? "active" : ""}`}
+                    className={`fiber-executor-btn ${formData.executorType === "internal" ? "active" : ""}`}
                     onClick={() => handleExecutorChange("internal")}
                   >
                     <PeopleIcon /> Personal Interno
                   </button>
                   <button
                     type="button"
-                    className={`executor-btn ${formData.executorType === "subcontractor" ? "active" : ""}`}
+                    className={`fiber-executor-btn ${formData.executorType === "subcontractor" ? "active" : ""}`}
                     onClick={() => handleExecutorChange("subcontractor")}
                   >
                     <BusinessIcon /> Subcontrata
@@ -355,390 +362,367 @@ const FiberControlForm = ({
                     <button
                       type="button"
                       onClick={addDailyLog}
-                      className="btn-small"
+                      className="fiber-btn-add"
                     >
                       <AddIcon /> Nuevo Reporte
                     </button>
                   </div>
-                  {(formData.dailyLogs || []).map((log, logIndex) => (
-                    <div key={logIndex} className="daily-log-card">
-                      <div className="daily-log-header">
-                        <input
-                          type="date"
-                          value={log.date}
-                          onChange={(e) =>
-                            updateDailyLogDate(logIndex, e.target.value)
-                          }
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeDailyLog(logIndex)}
-                          className="btn-icon-danger"
-                        >
-                          <DeleteIcon />
-                        </button>
-                      </div>
-
-                      {/* Technicians */}
-                      <div className="log-section">
-                        <div className="log-section-header">
-                          <strong>
-                            <PeopleIcon
-                              fontSize="small"
-                              style={{
-                                verticalAlign: "middle",
-                                marginRight: "6px",
-                              }}
-                            />
-                            Técnicos
-                          </strong>
+                  <div className="fiber-daily-logs-container">
+                    {(formData.dailyLogs || []).map((log, logIndex) => (
+                      <div key={logIndex} className="fiber-daily-log-card">
+                        <div className="fiber-daily-log-header">
+                          <input
+                            type="date"
+                            value={log.date}
+                            onChange={(e) =>
+                              updateDailyLogDate(logIndex, e.target.value)
+                            }
+                          />
                           <button
                             type="button"
-                            onClick={() => addDailyLogEntry(logIndex, "time")}
-                            className="btn-mini"
-                            title="Agregar técnico existente"
+                            onClick={() => removeDailyLog(logIndex)}
+                            className="fiber-btn-remove"
                           >
-                            + Técnico
+                            <DeleteIcon />
                           </button>
                         </div>
-                        {log.time.length === 0 && (
-                          <div className="empty-state">
-                            <PeopleIcon
-                              style={{ opacity: 0.3, fontSize: "2rem" }}
-                            />
-                            <p>
-                              No hay técnicos asignados. Haz clic en "+ Técnico"
-                              para agregar uno.
-                            </p>
+
+                        {/* Technicians */}
+                        <div className="fiber-log-section">
+                          <div className="fiber-log-section-header">
+                            <div className="fiber-log-section-title">
+                              <PeopleIcon />
+                              Técnicos
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => addDailyLogEntry(logIndex, "time")}
+                              className="fiber-btn-add-entry"
+                              title="Agregar técnico existente"
+                            >
+                              + Técnico
+                            </button>
                           </div>
-                        )}
-                        {technicians.length === 0 && log.time.length > 0 && (
-                          <div className="warning-message">
-                            ⚠️ No hay técnicos disponibles. Ve a Configuración →
-                            Técnicos para agregar uno.
-                          </div>
-                        )}
-                        {log.time.map((entry, entryIndex) => {
-                          const selectedTech = technicians.find(
-                            (t) => t.id === entry.technicianId,
-                          );
-                          return (
-                            <div key={entryIndex} className="log-entry">
-                              <div className="log-entry-select">
-                                <label>Técnico</label>
-                                <select
-                                  value={entry.technicianId}
-                                  onChange={(e) =>
-                                    updateDailyLogEntry(
-                                      logIndex,
-                                      "time",
-                                      entryIndex,
-                                      "technicianId",
-                                      e.target.value,
-                                    )
-                                  }
-                                  disabled={technicians.length === 0}
-                                >
-                                  <option value="">
-                                    {technicians.length === 0
-                                      ? "⚠️ No hay técnicos disponibles"
-                                      : "🔍 Seleccionar técnico existente..."}
-                                  </option>
-                                  {technicians.map((t) => (
-                                    <option key={t.id} value={t.id}>
-                                      👷 {t.name} - €{t.costPerHour}/h
-                                    </option>
-                                  ))}
-                                </select>
-                                {selectedTech && (
-                                  <small className="selected-info">
-                                    💰 Coste: €{selectedTech.costPerHour}/h
-                                  </small>
-                                )}
-                              </div>
-                              <div className="log-entry-fields">
-                                <div>
-                                  <label>⏰ Horas</label>
-                                  <input
-                                    type="number"
-                                    value={entry.hours || 0}
+                          {log.time.length === 0 && (
+                            <div className="fiber-empty-state">
+                              <PeopleIcon />
+                              <p>
+                                No hay técnicos asignados. Haz clic en "+
+                                Técnico" para agregar uno.
+                              </p>
+                            </div>
+                          )}
+                          {technicians.length === 0 && log.time.length > 0 && (
+                            <div className="fiber-warning-message">
+                              ⚠️ No hay técnicos disponibles. Ve a Configuración
+                              → Técnicos para agregar uno.
+                            </div>
+                          )}
+                          {log.time.map((entry, entryIndex) => {
+                            const selectedTech = technicians.find(
+                              (t) => t.id === entry.technicianId,
+                            );
+                            return (
+                              <div key={entryIndex} className="fiber-log-entry">
+                                <div className="fiber-log-entry-select-wrapper">
+                                  <label>Técnico</label>
+                                  <select
+                                    value={entry.technicianId}
                                     onChange={(e) =>
                                       updateDailyLogEntry(
                                         logIndex,
                                         "time",
                                         entryIndex,
-                                        "hours",
-                                        parseFloat(e.target.value) || 0,
+                                        "technicianId",
+                                        e.target.value,
                                       )
                                     }
-                                    min="0"
-                                    step="0.5"
-                                    placeholder="0"
-                                    style={{ width: "80px" }}
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    removeDailyLogEntry(
-                                      logIndex,
-                                      "time",
-                                      entryIndex,
-                                    )
-                                  }
-                                  className="btn-mini-danger"
-                                  title="Eliminar técnico"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Equipment */}
-                      <div className="log-section">
-                        <div className="log-section-header">
-                          <strong>
-                            <BuildIcon
-                              fontSize="small"
-                              style={{
-                                verticalAlign: "middle",
-                                marginRight: "6px",
-                              }}
-                            />
-                            Equipos
-                          </strong>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addDailyLogEntry(logIndex, "equipment")
-                            }
-                            className="btn-mini"
-                            title="Agregar equipo existente"
-                          >
-                            + Equipo
-                          </button>
-                        </div>
-                        {log.equipment.length === 0 && (
-                          <div className="empty-state">
-                            <BuildIcon
-                              style={{ opacity: 0.3, fontSize: "2rem" }}
-                            />
-                            <p>
-                              No hay equipos asignados. Haz clic en "+ Equipo"
-                              para agregar uno.
-                            </p>
-                          </div>
-                        )}
-                        {equipment.length === 0 && log.equipment.length > 0 && (
-                          <div className="warning-message">
-                            ⚠️ No hay equipos disponibles. Ve a Configuración →
-                            Equipos para agregar uno.
-                          </div>
-                        )}
-                        {log.equipment.map((entry, entryIndex) => {
-                          const selectedEquip = equipment.find(
-                            (e) => e.id === entry.equipmentId,
-                          );
-                          return (
-                            <div key={entryIndex} className="log-entry">
-                              <div className="log-entry-select">
-                                <label>Equipo</label>
-                                <select
-                                  value={entry.equipmentId}
-                                  onChange={(e) =>
-                                    updateDailyLogEntry(
-                                      logIndex,
-                                      "equipment",
-                                      entryIndex,
-                                      "equipmentId",
-                                      e.target.value,
-                                    )
-                                  }
-                                  disabled={equipment.length === 0}
-                                >
-                                  <option value="">
-                                    {equipment.length === 0
-                                      ? "⚠️ No hay equipos disponibles"
-                                      : "🔍 Seleccionar equipo existente..."}
-                                  </option>
-                                  {equipment.map((e) => (
-                                    <option key={e.id} value={e.id}>
-                                      🔧 {e.name} - €{e.costPerHour}/h
+                                    disabled={technicians.length === 0}
+                                  >
+                                    <option value="">
+                                      {technicians.length === 0
+                                        ? "⚠️ No hay técnicos disponibles"
+                                        : "🔍 Seleccionar técnico existente..."}
                                     </option>
-                                  ))}
-                                </select>
-                                {selectedEquip && (
-                                  <small className="selected-info">
-                                    💰 Coste: €{selectedEquip.costPerHour}/h
-                                  </small>
-                                )}
+                                    {technicians.map((t) => (
+                                      <option key={t.id} value={t.id}>
+                                        👷 {t.name} - €{t.costPerHour}/h
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {selectedTech && (
+                                    <div className="fiber-log-entry-info">
+                                      💰 Coste: €{selectedTech.costPerHour}/h
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="fiber-log-entry-fields">
+                                  <div className="fiber-log-entry-input-wrapper">
+                                    <label>⏰ Horas</label>
+                                    <input
+                                      type="number"
+                                      value={entry.hours || 0}
+                                      onChange={(e) =>
+                                        updateDailyLogEntry(
+                                          logIndex,
+                                          "time",
+                                          entryIndex,
+                                          "hours",
+                                          parseFloat(e.target.value) || 0,
+                                        )
+                                      }
+                                      min="0"
+                                      step="0.5"
+                                      placeholder="0"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeDailyLogEntry(
+                                        logIndex,
+                                        "time",
+                                        entryIndex,
+                                      )
+                                    }
+                                    className="fiber-btn-remove-entry"
+                                    title="Eliminar técnico"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
                               </div>
-                              <div className="log-entry-fields">
-                                <div>
-                                  <label>⏰ Horas de uso</label>
-                                  <input
-                                    type="number"
-                                    value={entry.hours || 0}
+                            );
+                          })}
+                        </div>
+
+                        {/* Equipment */}
+                        <div className="fiber-log-section">
+                          <div className="fiber-log-section-header">
+                            <div className="fiber-log-section-title">
+                              <BuildIcon />
+                              Equipos
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                addDailyLogEntry(logIndex, "equipment")
+                              }
+                              className="fiber-btn-add-entry"
+                              title="Agregar equipo existente"
+                            >
+                              + Equipo
+                            </button>
+                          </div>
+                          {log.equipment.length === 0 && (
+                            <div className="fiber-empty-state">
+                              <BuildIcon />
+                              <p>
+                                No hay equipos asignados. Haz clic en "+ Equipo"
+                                para agregar uno.
+                              </p>
+                            </div>
+                          )}
+                          {equipment.length === 0 &&
+                            log.equipment.length > 0 && (
+                              <div className="fiber-warning-message">
+                                ⚠️ No hay equipos disponibles. Ve a
+                                Configuración → Equipos para agregar uno.
+                              </div>
+                            )}
+                          {log.equipment.map((entry, entryIndex) => {
+                            const selectedEquip = equipment.find(
+                              (e) => e.id === entry.equipmentId,
+                            );
+                            return (
+                              <div key={entryIndex} className="fiber-log-entry">
+                                <div className="fiber-log-entry-select-wrapper">
+                                  <label>Equipo</label>
+                                  <select
+                                    value={entry.equipmentId}
                                     onChange={(e) =>
                                       updateDailyLogEntry(
                                         logIndex,
                                         "equipment",
                                         entryIndex,
-                                        "hours",
-                                        parseFloat(e.target.value) || 0,
+                                        "equipmentId",
+                                        e.target.value,
                                       )
                                     }
-                                    min="0"
-                                    step="0.5"
-                                    placeholder="0"
-                                    style={{ width: "80px" }}
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    removeDailyLogEntry(
-                                      logIndex,
-                                      "equipment",
-                                      entryIndex,
-                                    )
-                                  }
-                                  className="btn-mini-danger"
-                                  title="Eliminar equipo"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Materials */}
-                      <div className="log-section">
-                        <div className="log-section-header">
-                          <strong>
-                            <InventoryIcon
-                              fontSize="small"
-                              style={{
-                                verticalAlign: "middle",
-                                marginRight: "6px",
-                              }}
-                            />
-                            Materiales
-                          </strong>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addDailyLogEntry(logIndex, "materials")
-                            }
-                            className="btn-mini"
-                            title="Agregar material existente"
-                          >
-                            + Material
-                          </button>
-                        </div>
-                        {log.materials.length === 0 && (
-                          <div className="empty-state">
-                            <InventoryIcon
-                              style={{ opacity: 0.3, fontSize: "2rem" }}
-                            />
-                            <p>
-                              No hay materiales asignados. Haz clic en "+
-                              Material" para agregar uno.
-                            </p>
-                          </div>
-                        )}
-                        {materials.length === 0 && log.materials.length > 0 && (
-                          <div className="warning-message">
-                            ⚠️ No hay materiales disponibles. Ve a Configuración
-                            → Materiales para agregar uno.
-                          </div>
-                        )}
-                        {log.materials.map((entry, entryIndex) => {
-                          const selectedMat = materials.find(
-                            (m) => m.id === entry.materialId,
-                          );
-                          return (
-                            <div key={entryIndex} className="log-entry">
-                              <div className="log-entry-select">
-                                <label>Material</label>
-                                <select
-                                  value={entry.materialId}
-                                  onChange={(e) =>
-                                    updateDailyLogEntry(
-                                      logIndex,
-                                      "materials",
-                                      entryIndex,
-                                      "materialId",
-                                      e.target.value,
-                                    )
-                                  }
-                                  disabled={materials.length === 0}
-                                >
-                                  <option value="">
-                                    {materials.length === 0
-                                      ? "⚠️ No hay materiales disponibles"
-                                      : "🔍 Seleccionar material existente..."}
-                                  </option>
-                                  {materials.map((m) => (
-                                    <option key={m.id} value={m.id}>
-                                      📦 {m.name} - €{m.cost}/{m.unit}
+                                    disabled={equipment.length === 0}
+                                  >
+                                    <option value="">
+                                      {equipment.length === 0
+                                        ? "⚠️ No hay equipos disponibles"
+                                        : "🔍 Seleccionar equipo existente..."}
                                     </option>
-                                  ))}
-                                </select>
-                                {selectedMat && (
-                                  <small className="selected-info">
-                                    💰 Coste: €{selectedMat.cost}/
-                                    {selectedMat.unit}
-                                  </small>
-                                )}
+                                    {equipment.map((e) => (
+                                      <option key={e.id} value={e.id}>
+                                        🔧 {e.name} - €{e.costPerHour}/h
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {selectedEquip && (
+                                    <div className="fiber-log-entry-info">
+                                      💰 Coste: €{selectedEquip.costPerHour}/h
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="fiber-log-entry-fields">
+                                  <div className="fiber-log-entry-input-wrapper">
+                                    <label>⏰ Horas de uso</label>
+                                    <input
+                                      type="number"
+                                      value={entry.hours || 0}
+                                      onChange={(e) =>
+                                        updateDailyLogEntry(
+                                          logIndex,
+                                          "equipment",
+                                          entryIndex,
+                                          "hours",
+                                          parseFloat(e.target.value) || 0,
+                                        )
+                                      }
+                                      min="0"
+                                      step="0.5"
+                                      placeholder="0"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeDailyLogEntry(
+                                        logIndex,
+                                        "equipment",
+                                        entryIndex,
+                                      )
+                                    }
+                                    className="fiber-btn-remove-entry"
+                                    title="Eliminar equipo"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
                               </div>
-                              <div className="log-entry-fields">
-                                <div>
-                                  <label>📊 Cantidad</label>
-                                  <input
-                                    type="number"
-                                    value={entry.quantity || 0}
+                            );
+                          })}
+                        </div>
+
+                        {/* Materials */}
+                        <div className="fiber-log-section">
+                          <div className="fiber-log-section-header">
+                            <div className="fiber-log-section-title">
+                              <InventoryIcon />
+                              Materiales
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                addDailyLogEntry(logIndex, "materials")
+                              }
+                              className="fiber-btn-add-entry"
+                              title="Agregar material existente"
+                            >
+                              + Material
+                            </button>
+                          </div>
+                          {log.materials.length === 0 && (
+                            <div className="fiber-empty-state">
+                              <InventoryIcon />
+                              <p>
+                                No hay materiales asignados. Haz clic en "+
+                                Material" para agregar uno.
+                              </p>
+                            </div>
+                          )}
+                          {materials.length === 0 &&
+                            log.materials.length > 0 && (
+                              <div className="fiber-warning-message">
+                                ⚠️ No hay materiales disponibles. Ve a
+                                Configuración → Materiales para agregar uno.
+                              </div>
+                            )}
+                          {log.materials.map((entry, entryIndex) => {
+                            const selectedMat = materials.find(
+                              (m) => m.id === entry.materialId,
+                            );
+                            return (
+                              <div key={entryIndex} className="fiber-log-entry">
+                                <div className="fiber-log-entry-select-wrapper">
+                                  <label>Material</label>
+                                  <select
+                                    value={entry.materialId}
                                     onChange={(e) =>
                                       updateDailyLogEntry(
                                         logIndex,
                                         "materials",
                                         entryIndex,
-                                        "quantity",
-                                        parseFloat(e.target.value) || 0,
+                                        "materialId",
+                                        e.target.value,
                                       )
                                     }
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0"
-                                    style={{ width: "80px" }}
-                                  />
+                                    disabled={materials.length === 0}
+                                  >
+                                    <option value="">
+                                      {materials.length === 0
+                                        ? "⚠️ No hay materiales disponibles"
+                                        : "🔍 Seleccionar material existente..."}
+                                    </option>
+                                    {materials.map((m) => (
+                                      <option key={m.id} value={m.id}>
+                                        📦 {m.name} - €{m.cost}/{m.unit}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {selectedMat && (
+                                    <div className="fiber-log-entry-info">
+                                      💰 Coste: €{selectedMat.cost}/
+                                      {selectedMat.unit}
+                                    </div>
+                                  )}
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    removeDailyLogEntry(
-                                      logIndex,
-                                      "materials",
-                                      entryIndex,
-                                    )
-                                  }
-                                  className="btn-mini-danger"
-                                  title="Eliminar material"
-                                >
-                                  ×
-                                </button>
+                                <div className="fiber-log-entry-fields">
+                                  <div className="fiber-log-entry-input-wrapper">
+                                    <label>📊 Cantidad</label>
+                                    <input
+                                      type="number"
+                                      value={entry.quantity || 0}
+                                      onChange={(e) =>
+                                        updateDailyLogEntry(
+                                          logIndex,
+                                          "materials",
+                                          entryIndex,
+                                          "quantity",
+                                          parseFloat(e.target.value) || 0,
+                                        )
+                                      }
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="0"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeDailyLogEntry(
+                                        logIndex,
+                                        "materials",
+                                        entryIndex,
+                                      )
+                                    }
+                                    className="fiber-btn-remove-entry"
+                                    title="Eliminar material"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -781,15 +765,15 @@ const FiberControlForm = ({
 
             {/* Financial Summary Sidebar */}
             <div className="fiber-form-sidebar">
-              <div className="financial-summary">
+              <div className="fiber-financial-summary">
                 <h3>
                   <CalculateIcon /> Resumen Financiero
                 </h3>
 
                 {/* Income Section */}
-                <div className="summary-section">
+                <div className="fiber-summary-section">
                   <h4>💰 Ingresos</h4>
-                  <div className="summary-item">
+                  <div className="fiber-summary-item">
                     <span>Actividades:</span>
                     <strong className="text-blue">
                       €{financialSummary.income.toFixed(2)}
@@ -800,29 +784,29 @@ const FiberControlForm = ({
                 <hr />
 
                 {/* Costs Section */}
-                <div className="summary-section">
+                <div className="fiber-summary-section">
                   <h4>💸 Costes</h4>
                   {formData.executorType === "internal" ? (
                     <>
-                      <div className="summary-item">
+                      <div className="fiber-summary-item">
                         <span>Mano de Obra (MO):</span>
                         <strong>
                           €{financialSummary.costs.laborCost.toFixed(2)}
                         </strong>
                       </div>
-                      <div className="summary-item">
+                      <div className="fiber-summary-item">
                         <span>Equipos (CE):</span>
                         <strong>
                           €{financialSummary.costs.equipmentCost.toFixed(2)}
                         </strong>
                       </div>
-                      <div className="summary-item">
+                      <div className="fiber-summary-item">
                         <span>Materiales:</span>
                         <strong>
                           €{financialSummary.costs.materialCost.toFixed(2)}
                         </strong>
                       </div>
-                      <div className="summary-item">
+                      <div className="fiber-summary-item">
                         <span>Coste Indirecto (CI):</span>
                         <strong>
                           €{financialSummary.costs.indirectCost.toFixed(2)}
@@ -840,13 +824,13 @@ const FiberControlForm = ({
                     </>
                   ) : (
                     <>
-                      <div className="summary-item">
+                      <div className="fiber-summary-item">
                         <span>Subcontrata:</span>
                         <strong>
                           €{financialSummary.costs.subcontractorCost.toFixed(2)}
                         </strong>
                       </div>
-                      <div className="summary-item">
+                      <div className="fiber-summary-item">
                         <span>Coste Indirecto (CI):</span>
                         <strong>
                           €{financialSummary.costs.indirectCost.toFixed(2)}
@@ -864,14 +848,7 @@ const FiberControlForm = ({
                       </div>
                     </>
                   )}
-                  <div
-                    className="summary-item"
-                    style={{
-                      borderTop: "1px solid #ddd",
-                      paddingTop: "8px",
-                      marginTop: "8px",
-                    }}
-                  >
+                  <div className="fiber-summary-item fiber-summary-total">
                     <span>
                       <strong>Coste Total:</strong>
                     </span>
@@ -884,9 +861,9 @@ const FiberControlForm = ({
                 <hr />
 
                 {/* Profitability Section */}
-                <div className="summary-section">
+                <div className="fiber-summary-section">
                   <h4>📊 Rentabilidad</h4>
-                  <div className="summary-item large">
+                  <div className="fiber-summary-item large">
                     <span>Margen:</span>
                     <strong
                       className={
@@ -898,7 +875,7 @@ const FiberControlForm = ({
                       €{financialSummary.profitability.margin.toFixed(2)}
                     </strong>
                   </div>
-                  <div className="summary-item large">
+                  <div className="fiber-summary-item large">
                     <span>Rentabilidad:</span>
                     <strong
                       className={
