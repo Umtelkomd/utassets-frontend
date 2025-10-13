@@ -457,6 +457,26 @@ const FiberControlForm = ({
                                 )}
                               </div>
                               <div className="log-entry-fields">
+                                <div>
+                                  <label>⏰ Horas</label>
+                                  <input
+                                    type="number"
+                                    value={entry.hours || 0}
+                                    onChange={(e) =>
+                                      updateDailyLogEntry(
+                                        logIndex,
+                                        "time",
+                                        entryIndex,
+                                        "hours",
+                                        parseFloat(e.target.value) || 0,
+                                      )
+                                    }
+                                    min="0"
+                                    step="0.5"
+                                    placeholder="0"
+                                    style={{ width: "80px" }}
+                                  />
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -557,6 +577,26 @@ const FiberControlForm = ({
                                 )}
                               </div>
                               <div className="log-entry-fields">
+                                <div>
+                                  <label>⏰ Horas de uso</label>
+                                  <input
+                                    type="number"
+                                    value={entry.hours || 0}
+                                    onChange={(e) =>
+                                      updateDailyLogEntry(
+                                        logIndex,
+                                        "equipment",
+                                        entryIndex,
+                                        "hours",
+                                        parseFloat(e.target.value) || 0,
+                                      )
+                                    }
+                                    min="0"
+                                    step="0.5"
+                                    placeholder="0"
+                                    style={{ width: "80px" }}
+                                  />
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -658,6 +698,26 @@ const FiberControlForm = ({
                                 )}
                               </div>
                               <div className="log-entry-fields">
+                                <div>
+                                  <label>📊 Cantidad</label>
+                                  <input
+                                    type="number"
+                                    value={entry.quantity || 0}
+                                    onChange={(e) =>
+                                      updateDailyLogEntry(
+                                        logIndex,
+                                        "materials",
+                                        entryIndex,
+                                        "quantity",
+                                        parseFloat(e.target.value) || 0,
+                                      )
+                                    }
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0"
+                                    style={{ width: "80px" }}
+                                  />
+                                </div>
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -725,45 +785,134 @@ const FiberControlForm = ({
                 <h3>
                   <CalculateIcon /> Resumen Financiero
                 </h3>
-                <div className="summary-item">
-                  <span>Ingreso Total:</span>
-                  <strong className="text-blue">
-                    €{financialSummary.income.toFixed(2)}
-                  </strong>
+
+                {/* Income Section */}
+                <div className="summary-section">
+                  <h4>💰 Ingresos</h4>
+                  <div className="summary-item">
+                    <span>Actividades:</span>
+                    <strong className="text-blue">
+                      €{financialSummary.income.toFixed(2)}
+                    </strong>
+                  </div>
                 </div>
-                <div className="summary-item">
-                  <span>Coste Total:</span>
-                  <strong className="text-red">
-                    €{financialSummary.costs.totalCost.toFixed(2)}
-                  </strong>
-                </div>
+
                 <hr />
-                <div className="summary-item large">
-                  <span>Margen:</span>
-                  <strong
-                    className={
-                      financialSummary.profitability.margin >= 0
-                        ? "text-green"
-                        : "text-red"
-                    }
+
+                {/* Costs Section */}
+                <div className="summary-section">
+                  <h4>💸 Costes</h4>
+                  {formData.executorType === "internal" ? (
+                    <>
+                      <div className="summary-item">
+                        <span>Mano de Obra (MO):</span>
+                        <strong>
+                          €{financialSummary.costs.laborCost.toFixed(2)}
+                        </strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>Equipos (CE):</span>
+                        <strong>
+                          €{financialSummary.costs.equipmentCost.toFixed(2)}
+                        </strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>Materiales:</span>
+                        <strong>
+                          €{financialSummary.costs.materialCost.toFixed(2)}
+                        </strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>Coste Indirecto (CI):</span>
+                        <strong>
+                          €{financialSummary.costs.indirectCost.toFixed(2)}
+                        </strong>
+                        <small
+                          style={{
+                            display: "block",
+                            fontSize: "0.75rem",
+                            opacity: 0.7,
+                          }}
+                        >
+                          {settings.indirectCostRate}% sobre MO
+                        </small>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="summary-item">
+                        <span>Subcontrata:</span>
+                        <strong>
+                          €{financialSummary.costs.subcontractorCost.toFixed(2)}
+                        </strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>Coste Indirecto (CI):</span>
+                        <strong>
+                          €{financialSummary.costs.indirectCost.toFixed(2)}
+                        </strong>
+                        <small
+                          style={{
+                            display: "block",
+                            fontSize: "0.75rem",
+                            opacity: 0.7,
+                          }}
+                        >
+                          {settings.subcontractorIndirectCostRate}% sobre
+                          subcontrata
+                        </small>
+                      </div>
+                    </>
+                  )}
+                  <div
+                    className="summary-item"
+                    style={{
+                      borderTop: "1px solid #ddd",
+                      paddingTop: "8px",
+                      marginTop: "8px",
+                    }}
                   >
-                    €{financialSummary.profitability.margin.toFixed(2)}
-                  </strong>
+                    <span>
+                      <strong>Coste Total:</strong>
+                    </span>
+                    <strong className="text-red">
+                      €{financialSummary.costs.totalCost.toFixed(2)}
+                    </strong>
+                  </div>
                 </div>
-                <div className="summary-item large">
-                  <span>Rentabilidad:</span>
-                  <strong
-                    className={
-                      financialSummary.profitability.margin >= 0
-                        ? "text-green"
-                        : "text-red"
-                    }
-                  >
-                    {isFinite(financialSummary.profitability.percentage)
-                      ? financialSummary.profitability.percentage.toFixed(2)
-                      : "N/A"}
-                    %
-                  </strong>
+
+                <hr />
+
+                {/* Profitability Section */}
+                <div className="summary-section">
+                  <h4>📊 Rentabilidad</h4>
+                  <div className="summary-item large">
+                    <span>Margen:</span>
+                    <strong
+                      className={
+                        financialSummary.profitability.margin >= 0
+                          ? "text-green"
+                          : "text-red"
+                      }
+                    >
+                      €{financialSummary.profitability.margin.toFixed(2)}
+                    </strong>
+                  </div>
+                  <div className="summary-item large">
+                    <span>Rentabilidad:</span>
+                    <strong
+                      className={
+                        financialSummary.profitability.margin >= 0
+                          ? "text-green"
+                          : "text-red"
+                      }
+                    >
+                      {isFinite(financialSummary.profitability.percentage)
+                        ? financialSummary.profitability.percentage.toFixed(2)
+                        : "N/A"}
+                      %
+                    </strong>
+                  </div>
                 </div>
               </div>
             </div>

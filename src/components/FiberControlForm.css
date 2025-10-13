@@ -386,7 +386,19 @@
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 12px;
-    align-items: start;
+    align-items: end;
+}
+
+.log-entry-fields > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.log-entry-fields label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #64748b;
 }
 
 .log-entry-input-group {
@@ -485,6 +497,17 @@ select:disabled {
     margin: 0 0 24px 0;
     font-size: 1.35rem;
     font-weight: 600;
+}
+
+.summary-section {
+    margin-bottom: 8px;
+}
+
+.summary-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    opacity: 0.95;
 }
 
 .summary-item {
