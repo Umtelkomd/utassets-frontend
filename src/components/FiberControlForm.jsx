@@ -13,6 +13,7 @@ import {
   Business as BusinessIcon,
   Calculate as CalculateIcon,
 } from "@mui/icons-material";
+import "./FiberControlForm.css";
 
 const FiberControlForm = ({
   isOpen,
