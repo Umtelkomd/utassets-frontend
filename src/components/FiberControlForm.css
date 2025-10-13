@@ -2,6 +2,15 @@
    FIBER CONTROL FORM - MODERN DESIGN
    ============================================ */
 
+:root {
+  --fiber-primary: #3498db;
+  --fiber-primary-dark: #2980b9;
+  --fiber-secondary: #2ecc71;
+  --fiber-secondary-dark: #27ae60;
+  --fiber-accent: #e74c3c;
+  --fiber-accent-dark: #c0392b;
+}
+
 /* Modal Backdrop */
 .modal-backdrop {
   position: fixed;
@@ -9,7 +18,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -61,7 +70,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 28px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--fiber-primary) 0%, var(--fiber-primary-dark) 100%);
   color: white;
   position: relative;
   overflow: hidden;
@@ -188,7 +197,7 @@
 }
 
 .form-section h3 svg {
-  color: #667eea;
+  color: var(--fiber-primary);
   font-size: 1.5rem;
 }
 
@@ -244,8 +253,8 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: var(--fiber-primary);
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
   transform: translateY(-1px);
 }
 
@@ -278,8 +287,8 @@
 }
 
 .fiber-activity-row:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  border-color: var(--fiber-primary);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
   transform: translateX(4px);
 }
 
@@ -296,8 +305,8 @@
 .fiber-activity-row select:focus,
 .fiber-activity-row input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--fiber-primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 /* ============================================
@@ -305,7 +314,7 @@
    ============================================ */
 .fiber-btn-add {
   padding: 12px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--fiber-primary) 0%, var(--fiber-primary-dark) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -317,12 +326,12 @@
   font-weight: 600;
   font-size: 0.95rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 4px 6px rgba(52, 152, 219, 0.25);
 }
 
 .fiber-btn-add:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 8px 16px rgba(52, 152, 219, 0.35);
 }
 
 .fiber-btn-add:active {
@@ -386,7 +395,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent);
   transition: left 0.5s;
 }
 
@@ -395,17 +404,17 @@
 }
 
 .fiber-executor-btn:hover {
-  border-color: #667eea;
+  border-color: var(--fiber-primary);
   background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 8px 16px rgba(52, 152, 219, 0.15);
 }
 
 .fiber-executor-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #5a67d8;
+  background: linear-gradient(135deg, var(--fiber-primary) 0%, var(--fiber-primary-dark) 100%);
+  border-color: var(--fiber-primary-dark);
   color: white;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
 }
 
 .fiber-executor-btn svg {
@@ -458,8 +467,8 @@
 
 .fiber-daily-log-header input[type="date"]:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: var(--fiber-primary);
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
 /* ============================================
@@ -496,7 +505,7 @@
 }
 
 .fiber-log-section-title svg {
-  color: #667eea;
+  color: var(--fiber-primary);
   font-size: 1.35rem;
 }
 
@@ -537,8 +546,8 @@
 }
 
 .fiber-log-entry:hover {
-  border-color: #667eea;
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.15);
+  border-color: var(--fiber-primary);
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.15);
   transform: translateX(4px);
 }
 
@@ -569,8 +578,8 @@
 
 .fiber-log-entry-select-wrapper select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: var(--fiber-primary);
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
 .fiber-log-entry-select-wrapper select:disabled {
@@ -628,8 +637,8 @@
 
 .fiber-log-entry-input-wrapper input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: var(--fiber-primary);
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
 .fiber-btn-remove-entry {
@@ -708,11 +717,11 @@
 }
 
 .fiber-financial-summary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--fiber-primary) 0%, var(--fiber-primary-dark) 100%);
   padding: 32px;
   border-radius: 20px;
   color: white;
-  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 20px 40px rgba(52, 152, 219, 0.4);
   position: relative;
   overflow: hidden;
 }
@@ -860,7 +869,7 @@
 
 .btn-primary {
   padding: 14px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--fiber-primary) 0%, var(--fiber-primary-dark) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -868,12 +877,12 @@
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.5);
 }
 
 .btn-primary:active {
