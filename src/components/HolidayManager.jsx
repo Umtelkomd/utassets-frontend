@@ -38,7 +38,7 @@ const HolidayManager = ({ users, onUpdate }) => {
   }, [selectedUserId]);
 
   const fetchHolidays = async () => {
-    if (!selectedUserId) return;
+    if (!selectedUserId || selectedUserId === "ALL") return;
 
     try {
       setIsLoading(true);
