@@ -103,25 +103,39 @@ const VacationCalendar = ({
 
   // Verificar si una fecha es festivo
   const isHoliday = (date) => {
+    if (!holidays || holidays.length === 0) return false;
+
+    // Normalizar la fecha a comparar
     const checkDate = new Date(date);
-    checkDate.setHours(0, 0, 0, 0);
+    const checkDateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, "0")}-${String(checkDate.getDate()).padStart(2, "0")}`;
 
     return holidays.some((holiday) => {
+      if (!holiday || !holiday.date) return false;
+
+      // Normalizar la fecha del festivo
       const holidayDate = new Date(holiday.date);
-      holidayDate.setHours(0, 0, 0, 0);
-      return checkDate.getTime() === holidayDate.getTime();
+      const holidayDateStr = `${holidayDate.getFullYear()}-${String(holidayDate.getMonth() + 1).padStart(2, "0")}-${String(holidayDate.getDate()).padStart(2, "0")}`;
+
+      return checkDateStr === holidayDateStr;
     });
   };
 
   // Obtener festivo de una fecha
   const getHolidayForDate = (date) => {
+    if (!holidays || holidays.length === 0) return null;
+
+    // Normalizar la fecha a comparar
     const checkDate = new Date(date);
-    checkDate.setHours(0, 0, 0, 0);
+    const checkDateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, "0")}-${String(checkDate.getDate()).padStart(2, "0")}`;
 
     return holidays.find((holiday) => {
+      if (!holiday || !holiday.date) return false;
+
+      // Normalizar la fecha del festivo
       const holidayDate = new Date(holiday.date);
-      holidayDate.setHours(0, 0, 0, 0);
-      return checkDate.getTime() === holidayDate.getTime();
+      const holidayDateStr = `${holidayDate.getFullYear()}-${String(holidayDate.getMonth() + 1).padStart(2, "0")}-${String(holidayDate.getDate()).padStart(2, "0")}`;
+
+      return checkDateStr === holidayDateStr;
     });
   };
 
