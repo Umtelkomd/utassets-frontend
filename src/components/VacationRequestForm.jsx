@@ -18,6 +18,7 @@ import "./VacationRequestForm.css";
 import {
   calculateWorkingDays,
   calculateWorkingDaysExcluding,
+  isHalfWorkDay,
   formatDate,
   formatDateRange,
 } from "../utils/dateUtils";
@@ -438,6 +439,29 @@ const VacationRequestForm = ({
     });
   };
 
+  // Contar días de media jornada en el rango seleccionado
+  const getHalfDaysInRange = () => {
+    if (!formData.date || formData.type !== "rest_day") return [];
+
+    const startDate = new Date(formData.date);
+    const endDate =
+      formData.isRange && formData.endDate
+        ? new Date(formData.endDate)
+        : startDate;
+
+    const halfDays = [];
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      if (isHalfWorkDay(currentDate)) {
+        halfDays.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return halfDays;
+  };
+
   // Verificar si la solicitud excede los días disponibles
   const isRequestExceedingLimit = () => {
     if (formData.type !== "rest_day" || !availableDays) return false;
@@ -506,6 +530,17 @@ const VacationRequestForm = ({
                         </span>
                         <span className="calculation-value holiday">
                           {getHolidaysInRange().length} día(s)
+                        </span>
+                      </div>
+                    )}
+                    {getHalfDaysInRange().length > 0 && (
+                      <div className="calculation-item half-day-info">
+                        <span className="calculation-label">
+                          Medios días (24 y 31 dic):
+                        </span>
+                        <span className="calculation-value half-day">
+                          {getHalfDaysInRange().length} × 0.5 ={" "}
+                          {getHalfDaysInRange().length * 0.5} día(s)
                         </span>
                       </div>
                     )}

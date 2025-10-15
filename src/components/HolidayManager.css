@@ -377,6 +377,36 @@
     background: #7f8c8d;
 }
 
+/* Sección de información para TODOS */
+.all-users-info {
+    text-align: center;
+    padding: 60px 20px;
+    color: #2c3e50;
+}
+
+.all-users-info h3 {
+    margin: 20px 0;
+    color: #2196f3;
+    font-size: 24px;
+}
+
+.all-users-info p {
+    margin: 15px 0;
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.all-users-info .info-note {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+    margin-top: 20px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .holiday-manager {
@@ -404,5 +434,13 @@
 
     .holiday-modal {
         max-width: 90%;
+    }
+
+    .all-users-info h3 {
+        font-size: 20px;
+    }
+
+    .all-users-info p {
+        font-size: 14px;
     }
 }

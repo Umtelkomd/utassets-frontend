@@ -35,11 +35,26 @@ export function calculateWorkingDays(startDate, endDate) {
 }
 
 /**
+ * Verifica si una fecha es un día de media jornada (24 y 31 de diciembre)
+ * @param {Date|string} date - Fecha a verificar
+ * @returns {boolean} true si es día de media jornada
+ */
+export function isHalfWorkDay(date) {
+  const d = new Date(date);
+  const day = d.getDate();
+  const month = d.getMonth(); // 0 = Enero, 11 = Diciembre
+
+  // 24 de diciembre o 31 de diciembre
+  return month === 11 && (day === 24 || day === 31);
+}
+
+/**
  * Calcula el número de días laborables entre dos fechas, excluyendo festivos
+ * Considera días de media jornada (24 y 31 de diciembre) como 0.5 días
  * @param {Date|string} startDate - Fecha de inicio
  * @param {Date|string} endDate - Fecha de fin
  * @param {Array} holidays - Array de festivos (objetos con propiedad date)
- * @returns {number} Número de días laborables excluyendo festivos
+ * @returns {number} Número de días laborables excluyendo festivos (puede incluir decimales)
  */
 export function calculateWorkingDaysExcluding(
   startDate,
@@ -73,7 +88,12 @@ export function calculateWorkingDaysExcluding(
       // Verificar si no es festivo
       const currentTimestamp = new Date(currentDate).setHours(0, 0, 0, 0);
       if (!holidayTimestamps.includes(currentTimestamp)) {
-        count++;
+        // Verificar si es día de media jornada (24 o 31 de diciembre)
+        if (isHalfWorkDay(currentDate)) {
+          count += 0.5;
+        } else {
+          count += 1;
+        }
       }
     }
 

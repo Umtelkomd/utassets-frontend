@@ -505,4 +505,27 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
+}
+
+/* Estilos para días de media jornada */
+.vacation-calendar-container .vacation-calendar-day-half {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.vacation-calendar-container .vacation-calendar-day-half:hover {
+    background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
+}
+
+.vacation-calendar-container .vacation-calendar-half-day-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    background: #2196f3;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
+    min-width: 16px;
 } 

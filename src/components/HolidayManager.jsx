@@ -55,20 +55,49 @@ const HolidayManager = ({ users, onUpdate }) => {
     e.preventDefault();
 
     if (!selectedUserId) {
-      toast.error("Por favor selecciona un técnico");
+      toast.error("Por favor selecciona un técnico o TODOS");
       return;
     }
 
     try {
-      await holidayService.createHoliday({
-        ...formData,
-        userId: parseInt(selectedUserId),
-      });
-      toast.success("Festivo agregado correctamente");
-      setShowAddModal(false);
-      setFormData({ date: "", name: "", description: "" });
-      fetchHolidays();
-      if (onUpdate) onUpdate();
+      // Si se seleccionó "TODOS", crear festivo para todos los técnicos
+      if (selectedUserId === "ALL") {
+        const holidaysToCreate = users.map((user) => ({
+          ...formData,
+          userId: user.id,
+        }));
+
+        const result =
+          await holidayService.createMultipleHolidays(holidaysToCreate);
+
+        if (result.created && result.created.length > 0) {
+          toast.success(
+            `Festivo agregado para ${result.created.length} técnico(s)`,
+          );
+        }
+
+        if (result.errors && result.errors.length > 0) {
+          toast.warning(
+            `${result.errors.length} técnico(s) ya tenían este festivo asignado`,
+          );
+        }
+
+        setShowAddModal(false);
+        setFormData({ date: "", name: "", description: "" });
+        setSelectedUserId("");
+        if (onUpdate) onUpdate();
+      } else {
+        // Crear festivo para un solo técnico
+        await holidayService.createHoliday({
+          ...formData,
+          userId: parseInt(selectedUserId),
+        });
+        toast.success("Festivo agregado correctamente");
+        setShowAddModal(false);
+        setFormData({ date: "", name: "", description: "" });
+        fetchHolidays();
+        if (onUpdate) onUpdate();
+      }
     } catch (error) {
       if (error.response?.status === 409) {
         toast.error("Ya existe un festivo en esta fecha para este técnico");
@@ -131,6 +160,13 @@ const HolidayManager = ({ users, onUpdate }) => {
             required
           >
             <option value="">-- Selecciona un técnico --</option>
+            <option
+              value="ALL"
+              style={{ fontWeight: "bold", color: "#2196f3" }}
+            >
+              🌍 TODOS LOS TÉCNICOS
+            </option>
+            <option disabled>──────────</option>
             {users.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.fullName}
@@ -150,7 +186,7 @@ const HolidayManager = ({ users, onUpdate }) => {
         )}
       </div>
 
-      {selectedUserId && (
+      {selectedUserId && selectedUserId !== "ALL" && (
         <div className="holidays-section">
           <div className="section-header">
             <h3>Festivos de {selectedUser?.fullName}</h3>
@@ -200,6 +236,24 @@ const HolidayManager = ({ users, onUpdate }) => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {selectedUserId === "ALL" && (
+        <div className="holidays-section">
+          <div className="all-users-info">
+            <HolidayIcon style={{ fontSize: "48px", color: "#2196f3" }} />
+            <h3>Asignar festivo a todos los técnicos</h3>
+            <p>
+              Al agregar un festivo con la opción "TODOS LOS TÉCNICOS"
+              seleccionada, el festivo se asignará automáticamente a todos los
+              técnicos del sistema.
+            </p>
+            <p className="info-note">
+              💡 <strong>Nota:</strong> Si algún técnico ya tiene este festivo
+              asignado, se omitirá automáticamente.
+            </p>
+          </div>
         </div>
       )}
 

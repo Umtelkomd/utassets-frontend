@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./VacationCalendar.css";
-import { calculateWorkingDays } from "../utils/dateUtils";
+import { calculateWorkingDays, isHalfWorkDay } from "../utils/dateUtils";
 
 // Iconos para los diferentes tipos de vacaciones
 import BeachAccessIcon from "@mui/icons-material/BeachAccess";
@@ -199,6 +199,7 @@ const VacationCalendar = ({
         vacations: dayVacations,
         isHoliday: isHoliday(currentDay),
         holiday: getHolidayForDate(currentDay),
+        isHalfDay: isHalfWorkDay(currentDay),
       });
     }
 
@@ -369,7 +370,7 @@ const VacationCalendar = ({
                   : ""
               } ${day.isCurrentMonth ? "vacation-calendar-clickable" : ""} ${
                 day.isHoliday ? "vacation-calendar-day-holiday" : ""
-              }`}
+              } ${day.isHalfDay ? "vacation-calendar-day-half" : ""}`}
               onClick={() => handleDayClick(day)}
             >
               <div className="vacation-calendar-day-number">
@@ -380,6 +381,14 @@ const VacationCalendar = ({
                     title={day.holiday?.name}
                   >
                     <EventIcon />
+                  </span>
+                )}
+                {day.isHalfDay && !day.isHoliday && (
+                  <span
+                    className="vacation-calendar-half-day-badge"
+                    title="Medio día laboral (24 o 31 de diciembre)"
+                  >
+                    ½
                   </span>
                 )}
               </div>
