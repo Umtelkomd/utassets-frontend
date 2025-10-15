@@ -1,0 +1,408 @@
+.holiday-manager {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.holiday-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.holiday-header .header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.holiday-header .header-title svg {
+    font-size: 28px;
+    color: #ff6b6b;
+}
+
+.holiday-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 24px;
+}
+
+.user-selector-section {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-selector-section .form-group {
+    flex: 1;
+    margin: 0;
+}
+
+.user-selector-section .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.user-selector-section .form-group label svg {
+    font-size: 20px;
+    color: #3498db;
+}
+
+.user-selector-section select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.user-selector-section select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.add-holiday-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.add-holiday-btn:hover {
+    background: #ee5a52;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+}
+
+.add-holiday-btn svg {
+    font-size: 20px;
+}
+
+.holidays-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.holidays-section .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.holidays-section h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 20px;
+}
+
+.holiday-count {
+    background: #ff6b6b;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.loading-message {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+.no-holidays {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.no-holidays svg {
+    font-size: 64px;
+    color: #bdc3c7;
+    margin-bottom: 20px;
+}
+
+.no-holidays p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.no-holidays .hint {
+    font-size: 14px;
+    color: #95a5a6;
+    font-style: italic;
+}
+
+.holidays-list {
+    display: grid;
+    gap: 15px;
+}
+
+.holiday-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.holiday-card:hover {
+    border-color: #ff6b6b;
+    box-shadow: 0 4px 8px rgba(255, 107, 107, 0.1);
+}
+
+.holiday-info {
+    flex: 1;
+}
+
+.holiday-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #3498db;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.holiday-date svg {
+    font-size: 18px;
+}
+
+.holiday-card h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.holiday-description {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #7f8c8d;
+    font-size: 14px;
+    margin: 10px 0 0 0;
+}
+
+.holiday-description svg {
+    font-size: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.delete-holiday-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-holiday-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.delete-holiday-btn svg {
+    font-size: 20px;
+}
+
+/* Modal específico para festivos */
+.holiday-modal {
+    max-width: 500px;
+}
+
+.holiday-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.holiday-modal .modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.holiday-modal .modal-header svg {
+    color: #ff6b6b;
+}
+
+.holiday-modal .close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7f8c8d;
+    transition: all 0.3s ease;
+}
+
+.holiday-modal .close-btn:hover {
+    color: #2c3e50;
+    transform: rotate(90deg);
+}
+
+.holiday-modal .form-group {
+    margin-bottom: 20px;
+}
+
+.holiday-modal .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.holiday-modal .form-group label svg {
+    font-size: 18px;
+    color: #3498db;
+}
+
+.holiday-modal .form-group input,
+.holiday-modal .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.holiday-modal .form-group input:focus,
+.holiday-modal .form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.holiday-modal .form-group .disabled-input {
+    background: #f8f9fa;
+    cursor: not-allowed;
+    color: #7f8c8d;
+}
+
+.holiday-modal .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.holiday-modal .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.holiday-modal .btn-primary,
+.holiday-modal .btn-secondary {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.holiday-modal .btn-primary {
+    background: #ff6b6b;
+    color: white;
+}
+
+.holiday-modal .btn-primary:hover {
+    background: #ee5a52;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+}
+
+.holiday-modal .btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.holiday-modal .btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .holiday-manager {
+        padding: 15px;
+    }
+
+    .user-selector-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .add-holiday-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .holiday-card {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .delete-holiday-btn {
+        align-self: flex-end;
+    }
+
+    .holiday-modal {
+        max-width: 90%;
+    }
+}

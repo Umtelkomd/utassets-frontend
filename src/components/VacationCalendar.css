@@ -107,6 +107,10 @@
     background: linear-gradient(135deg, #007bff, #0056b3);
 }
 
+.vacation-calendar-container .vacation-calendar-legend-bubble.vacation-calendar-holiday {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+}
+
 /* Grid del calendario */
 .vacation-calendar-container .vacation-calendar-grid {
     border-radius: 12px;
@@ -474,4 +478,31 @@
     .vacation-calendar-tooltip {
         max-width: 240px;
     }
+}
+
+/* Estilos para días festivos */
+.vacation-calendar-container .vacation-calendar-day-holiday {
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+}
+
+.vacation-calendar-container .vacation-calendar-day-holiday:hover {
+    background: linear-gradient(135deg, #fff3cc 0%, #ffe699 100%);
+}
+
+.vacation-calendar-container .vacation-calendar-holiday-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    color: #ff9800;
+}
+
+.vacation-calendar-container .vacation-calendar-holiday-indicator svg {
+    font-size: 14px;
+}
+
+.vacation-calendar-container .vacation-calendar-day-number {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 } 

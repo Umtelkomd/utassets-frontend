@@ -5,12 +5,14 @@ import { calculateWorkingDays } from "../utils/dateUtils";
 // Iconos para los diferentes tipos de vacaciones
 import BeachAccessIcon from "@mui/icons-material/BeachAccess";
 import WorkIcon from "@mui/icons-material/Work";
+import EventIcon from "@mui/icons-material/Event";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PersonIcon from "@mui/icons-material/Person";
 
 const VacationCalendar = ({
   vacations = [],
+  holidays = [],
   onDateClick,
   onVacationClick,
   isPersonal = false,
@@ -99,6 +101,30 @@ const VacationCalendar = ({
     return checkDate >= startDate && checkDate <= endDate;
   };
 
+  // Verificar si una fecha es festivo
+  const isHoliday = (date) => {
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+
+    return holidays.some((holiday) => {
+      const holidayDate = new Date(holiday.date);
+      holidayDate.setHours(0, 0, 0, 0);
+      return checkDate.getTime() === holidayDate.getTime();
+    });
+  };
+
+  // Obtener festivo de una fecha
+  const getHolidayForDate = (date) => {
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+
+    return holidays.find((holiday) => {
+      const holidayDate = new Date(holiday.date);
+      holidayDate.setHours(0, 0, 0, 0);
+      return checkDate.getTime() === holidayDate.getTime();
+    });
+  };
+
   // Navegación del calendario
   const goToPreviousMonth = () => {
     setCurrentDate(
@@ -157,6 +183,8 @@ const VacationCalendar = ({
         date: currentDay,
         isCurrentMonth: true,
         vacations: dayVacations,
+        isHoliday: isHoliday(currentDay),
+        holiday: getHolidayForDate(currentDay),
       });
     }
 
@@ -299,6 +327,10 @@ const VacationCalendar = ({
             <div className="vacation-calendar-legend-bubble vacation-calendar-extra-work"></div>
             <span>Día extra trabajado</span>
           </div>
+          <div className="vacation-calendar-legend-item">
+            <div className="vacation-calendar-legend-bubble vacation-calendar-holiday"></div>
+            <span>Día festivo</span>
+          </div>
         </div>
       </div>
 
@@ -321,11 +353,21 @@ const VacationCalendar = ({
                 day.date.toDateString() === today.toDateString()
                   ? "vacation-calendar-today"
                   : ""
-              } ${day.isCurrentMonth ? "vacation-calendar-clickable" : ""}`}
+              } ${day.isCurrentMonth ? "vacation-calendar-clickable" : ""} ${
+                day.isHoliday ? "vacation-calendar-day-holiday" : ""
+              }`}
               onClick={() => handleDayClick(day)}
             >
               <div className="vacation-calendar-day-number">
                 {day.date.getDate()}
+                {day.isHoliday && (
+                  <span
+                    className="vacation-calendar-holiday-indicator"
+                    title={day.holiday?.name}
+                  >
+                    <EventIcon />
+                  </span>
+                )}
               </div>
 
               {day.vacations.length > 0 && (

@@ -24,7 +24,9 @@ import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import CancelVacationsModal from "../components/CancelVacationsModal";
 import PendingVacationsManager from "../components/PendingVacationsManager";
 import VacationRequestForm from "../components/VacationRequestForm";
+import HolidayManager from "../components/HolidayManager";
 import { useAuth } from "../context/AuthContext";
+import holidayService from "../services/holidayService";
 import {
   calculateWorkingDays,
   formatDate,
@@ -34,6 +36,7 @@ import {
 const Vacations = () => {
   const { currentUser } = useAuth();
   const [vacations, setVacations] = useState([]);
+  const [holidays, setHolidays] = useState([]);
   const [users, setUsers] = useState([]);
   const [usersWithDays, setUsersWithDays] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,12 +79,32 @@ const Vacations = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      await Promise.all([fetchVacations(), fetchUsers(), fetchUsersWithDays()]);
+      await Promise.all([
+        fetchVacations(),
+        fetchUsers(),
+        fetchUsersWithDays(),
+        fetchAllHolidays(),
+      ]);
     } catch (error) {
       console.error("Error al cargar datos:", error);
       toast.error("Error al cargar los datos de vacaciones");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchAllHolidays = async () => {
+    try {
+      // Obtener todos los festivos de todos los usuarios
+      const allHolidays = [];
+      const usersResponse = await axiosInstance.get("/users");
+      for (const user of usersResponse.data) {
+        const userHolidays = await holidayService.getHolidaysByUser(user.id);
+        allHolidays.push(...userHolidays);
+      }
+      setHolidays(allHolidays);
+    } catch (error) {
+      console.error("Error al cargar festivos:", error);
     }
   };
 
@@ -410,6 +433,13 @@ const Vacations = () => {
             <PendingIcon />
             Solicitudes Pendientes
           </button>
+          <button
+            className={`tab-button ${activeTab === "holidays" ? "active" : ""}`}
+            onClick={() => setActiveTab("holidays")}
+          >
+            <CalendarIcon />
+            Festivos
+          </button>
         </div>
       )}
 
@@ -429,6 +459,7 @@ const Vacations = () => {
             </p>
             <VacationCalendar
               vacations={vacations}
+              holidays={holidays}
               onDateClick={handleDateClick}
               onVacationClick={handleVacationClick}
             />
@@ -903,6 +934,11 @@ const Vacations = () => {
         <PendingVacationsManager onUpdate={fetchData} />
       )}
 
+      {/* Gestión de Festivos */}
+      {currentUser?.role === "administrador" && activeTab === "holidays" && (
+        <HolidayManager users={users} />
+      )}
+
       {/* Vista para técnicos - Solo calendario personal */}
       {currentUser?.role === "tecnico" && (
         <div className="calendar-section">
@@ -916,6 +952,7 @@ const Vacations = () => {
           </p>
           <VacationCalendar
             vacations={vacations.filter((v) => v.userId === currentUser.id)}
+            holidays={holidays.filter((h) => h.userId === currentUser.id)}
             isPersonal={true}
             showOnlyOwnVacations={true}
             currentUserId={currentUser.id}
