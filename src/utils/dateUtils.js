@@ -35,6 +35,55 @@ export function calculateWorkingDays(startDate, endDate) {
 }
 
 /**
+ * Calcula el número de días laborables entre dos fechas, excluyendo festivos
+ * @param {Date|string} startDate - Fecha de inicio
+ * @param {Date|string} endDate - Fecha de fin
+ * @param {Array} holidays - Array de festivos (objetos con propiedad date)
+ * @returns {number} Número de días laborables excluyendo festivos
+ */
+export function calculateWorkingDaysExcluding(
+  startDate,
+  endDate,
+  holidays = [],
+) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (start > end) {
+    throw new Error(
+      "La fecha de inicio no puede ser posterior a la fecha de fin",
+    );
+  }
+
+  // Convertir festivos a timestamps para comparación más eficiente
+  const holidayTimestamps = holidays.map((holiday) => {
+    const d = new Date(holiday.date || holiday);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  });
+
+  let count = 0;
+  let currentDate = new Date(start);
+
+  while (currentDate <= end) {
+    const dayOfWeek = currentDate.getDay();
+
+    // Solo contar si no es fin de semana
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      // Verificar si no es festivo
+      const currentTimestamp = new Date(currentDate).setHours(0, 0, 0, 0);
+      if (!holidayTimestamps.includes(currentTimestamp)) {
+        count++;
+      }
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return count;
+}
+
+/**
  * Verifica si una fecha es un día laborable (lunes a viernes)
  * @param {Date|string} date - Fecha a verificar
  * @returns {boolean} true si es día laborable, false si es fin de semana

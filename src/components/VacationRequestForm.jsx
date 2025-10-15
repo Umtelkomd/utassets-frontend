@@ -11,11 +11,13 @@ import {
   CheckCircle as CheckIcon,
 } from "@mui/icons-material";
 import { vacationService } from "../services/vacationService";
+import holidayService from "../services/holidayService";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import "./VacationRequestForm.css";
 import {
   calculateWorkingDays,
+  calculateWorkingDaysExcluding,
   formatDate,
   formatDateRange,
 } from "../utils/dateUtils";
@@ -27,6 +29,7 @@ const VacationRequestForm = ({
 }) => {
   const { currentUser } = useAuth();
   const [availableDays, setAvailableDays] = useState(null);
+  const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     date: selectedDate ? selectedDate : "",
@@ -40,6 +43,7 @@ const VacationRequestForm = ({
   useEffect(() => {
     if (currentUser?.id) {
       fetchAvailableDays();
+      fetchHolidays();
     }
   }, [currentUser?.id]);
 
@@ -55,6 +59,16 @@ const VacationRequestForm = ({
       setAvailableDays(data);
     } catch (error) {
       console.error("Error al obtener días disponibles:", error);
+    }
+  };
+
+  const fetchHolidays = async () => {
+    try {
+      const data = await holidayService.getHolidaysByUser(currentUser.id);
+      setHolidays(data);
+    } catch (error) {
+      console.error("Error al obtener festivos:", error);
+      setHolidays([]);
     }
   };
 
@@ -301,12 +315,16 @@ const VacationRequestForm = ({
     if (formData.type === "rest_day" && availableDays) {
       const requestedDays =
         formData.isRange && formData.endDate
-          ? calculateWorkingDays(formData.date, formData.endDate)
+          ? calculateWorkingDaysExcluding(
+              formData.date,
+              formData.endDate,
+              holidays,
+            )
           : 1;
 
       if (requestedDays > availableDays.availableDays) {
         toast.error(
-          `sNo tienes suficientes días disponibles. Solicitas ${requestedDays} días, pero ssolo tienes ${(availableDays.availableDays, availableDays, availableDays.extraWorkDays)} días disponibles.`,
+          `No tienes suficientes días disponibles. Solicitas ${requestedDays} días, pero solo tienes ${availableDays.availableDays} días disponibles.`,
         );
         return;
       }
@@ -365,24 +383,59 @@ const VacationRequestForm = ({
     if (formData.type === "extra_work_day") {
       return calculateSaturdays(startDate, endDate);
     }
-    return calculateWorkingDays(startDate, endDate);
+    return calculateWorkingDaysExcluding(startDate, endDate, holidays);
   };
 
   // Calcular días solicitados actuales
   const getCurrentlyRequestedDays = () => {
     if (formData.type !== "rest_day") return 0;
 
-    return formData.isRange && formData.endDate
-      ? getDaysBetween(formData.date, formData.endDate)
-      : formData.date
-        ? 1
-        : 0;
+    if (formData.isRange && formData.endDate) {
+      return getDaysBetween(formData.date, formData.endDate);
+    } else if (formData.date) {
+      // Para un solo día, verificar si es festivo
+      const date = new Date(formData.date);
+      date.setHours(0, 0, 0, 0);
+      const dateTimestamp = date.getTime();
+
+      const isHoliday = holidays.some((holiday) => {
+        const holidayDate = new Date(holiday.date);
+        holidayDate.setHours(0, 0, 0, 0);
+        return holidayDate.getTime() === dateTimestamp;
+      });
+
+      // Si es festivo, no cuenta como día
+      return isHoliday ? 0 : 1;
+    }
+    return 0;
   };
 
   // Calcular días restantes después de esta solicitud
   const getDaysAfterRequest = () => {
     if (!availableDays) return null;
     return availableDays.availableDays - getCurrentlyRequestedDays();
+  };
+
+  // Contar festivos en el rango seleccionado
+  const getHolidaysInRange = () => {
+    if (!formData.date || formData.type !== "rest_day") return [];
+
+    const startDate = new Date(formData.date);
+    const endDate =
+      formData.isRange && formData.endDate
+        ? new Date(formData.endDate)
+        : startDate;
+
+    return holidays.filter((holiday) => {
+      const holidayDate = new Date(holiday.date);
+      holidayDate.setHours(0, 0, 0, 0);
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(0, 0, 0, 0);
+
+      return holidayDate >= start && holidayDate <= end;
+    });
   };
 
   // Verificar si la solicitud excede los días disponibles
@@ -446,6 +499,16 @@ const VacationRequestForm = ({
                         {getCurrentlyRequestedDays()} día(s)
                       </span>
                     </div>
+                    {getHolidaysInRange().length > 0 && (
+                      <div className="calculation-item holiday-info">
+                        <span className="calculation-label">
+                          Festivos (no se descuentan):
+                        </span>
+                        <span className="calculation-value holiday">
+                          {getHolidaysInRange().length} día(s)
+                        </span>
+                      </div>
+                    )}
                     <div className="calculation-item">
                       <span className="calculation-label">Quedarían:</span>
                       <span

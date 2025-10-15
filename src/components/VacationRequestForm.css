@@ -147,6 +147,12 @@
     margin-bottom: 0.5rem;
 }
 
+.request-calculation .holiday-info {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+    border: 2px solid #ffc107;
+}
+
 .calculation-item {
     display: flex;
     justify-content: space-between;
@@ -181,6 +187,11 @@
 
 .calculation-value.normal {
     color: #2e7d32;
+}
+
+.calculation-value.holiday {
+    color: #f57c00;
+    font-weight: 700;
 }
 
 .limit-exceeded-warning {
