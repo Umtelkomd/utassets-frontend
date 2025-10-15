@@ -30,7 +30,7 @@ const HolidayManager = ({ users, onUpdate }) => {
   });
 
   useEffect(() => {
-    if (selectedUserId) {
+    if (selectedUserId && selectedUserId !== "ALL") {
       fetchHolidays();
     } else {
       setHolidays([]);
@@ -282,7 +282,11 @@ const HolidayManager = ({ users, onUpdate }) => {
                 </label>
                 <input
                   type="text"
-                  value={selectedUser?.fullName || ""}
+                  value={
+                    selectedUserId === "ALL"
+                      ? "🌍 TODOS LOS TÉCNICOS"
+                      : selectedUser?.fullName || ""
+                  }
                   disabled
                   className="disabled-input"
                 />
