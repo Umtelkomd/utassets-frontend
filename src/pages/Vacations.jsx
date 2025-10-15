@@ -71,20 +71,26 @@ const Vacations = () => {
   // Estados para edición de días de vacaciones
   const [editingVacationDays, setEditingVacationDays] = useState(null);
   const [editingDaysValue, setEditingDaysValue] = useState("");
+  const [hasLoadedData, setHasLoadedData] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (currentUser && !hasLoadedData) {
+      fetchData();
+      setHasLoadedData(true);
+    }
+  }, [currentUser, hasLoadedData]);
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      await Promise.all([
-        fetchVacations(),
-        fetchUsers(),
-        fetchUsersWithDays(),
-        fetchAllHolidays(),
-      ]);
+      const promises = [fetchVacations(), fetchUsers(), fetchUsersWithDays()];
+
+      // Solo cargar festivos si currentUser está disponible
+      if (currentUser) {
+        promises.push(fetchAllHolidays());
+      }
+
+      await Promise.all(promises);
     } catch (error) {
       console.error("Error al cargar datos:", error);
       toast.error("Error al cargar los datos de vacaciones");
@@ -95,16 +101,34 @@ const Vacations = () => {
 
   const fetchAllHolidays = async () => {
     try {
-      // Obtener todos los festivos de todos los usuarios
-      const allHolidays = [];
-      const usersResponse = await axiosInstance.get("/users");
-      for (const user of usersResponse.data) {
-        const userHolidays = await holidayService.getHolidaysByUser(user.id);
-        allHolidays.push(...userHolidays);
+      // Si es técnico, solo cargar sus propios festivos
+      if (currentUser?.role === "tecnico") {
+        const userHolidays = await holidayService.getHolidaysByUser(
+          currentUser.id,
+        );
+        setHolidays(userHolidays);
+      } else {
+        // Si es administrador, cargar festivos de todos los usuarios
+        const allHolidays = [];
+        const usersResponse = await axiosInstance.get("/users");
+        for (const user of usersResponse.data) {
+          try {
+            const userHolidays = await holidayService.getHolidaysByUser(
+              user.id,
+            );
+            allHolidays.push(...userHolidays);
+          } catch (err) {
+            console.error(
+              `Error al cargar festivos del usuario ${user.id}:`,
+              err,
+            );
+          }
+        }
+        setHolidays(allHolidays);
       }
-      setHolidays(allHolidays);
     } catch (error) {
       console.error("Error al cargar festivos:", error);
+      setHolidays([]);
     }
   };
 
@@ -936,7 +960,7 @@ const Vacations = () => {
 
       {/* Gestión de Festivos */}
       {currentUser?.role === "administrador" && activeTab === "holidays" && (
-        <HolidayManager users={users} />
+        <HolidayManager users={users} onUpdate={fetchAllHolidays} />
       )}
 
       {/* Vista para técnicos - Solo calendario personal */}

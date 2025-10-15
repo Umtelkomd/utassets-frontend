@@ -13,7 +13,7 @@ import holidayService from "../services/holidayService";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import "./HolidayManager.css";
 
-const HolidayManager = ({ users }) => {
+const HolidayManager = ({ users, onUpdate }) => {
   const [holidays, setHolidays] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -68,6 +68,7 @@ const HolidayManager = ({ users }) => {
       setShowAddModal(false);
       setFormData({ date: "", name: "", description: "" });
       fetchHolidays();
+      if (onUpdate) onUpdate();
     } catch (error) {
       if (error.response?.status === 409) {
         toast.error("Ya existe un festivo en esta fecha para este técnico");
@@ -82,6 +83,7 @@ const HolidayManager = ({ users }) => {
       await holidayService.deleteHoliday(deleteModal.holidayId);
       toast.success("Festivo eliminado correctamente");
       fetchHolidays();
+      if (onUpdate) onUpdate();
     } catch (error) {
       toast.error("Error al eliminar festivo");
     } finally {
