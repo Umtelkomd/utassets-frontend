@@ -974,6 +974,30 @@ const Vacations = () => {
             Consulta el estado de tus solicitudes de vacaciones. Las solicitudes
             aprobadas aparecen en el calendario.
           </p>
+          {/* Debug info temporalmente visible */}
+          {holidays.length > 0 && (
+            <div
+              style={{
+                padding: "10px",
+                background: "#fff3cd",
+                border: "1px solid #ffc107",
+                borderRadius: "4px",
+                marginBottom: "10px",
+              }}
+            >
+              <strong>Debug - Festivos cargados:</strong> {holidays.length}{" "}
+              total,{" "}
+              {holidays.filter((h) => h.userId === currentUser.id).length} para
+              este técnico
+              <br />
+              <small>
+                IDs de festivos:{" "}
+                {holidays
+                  .map((h) => `${h.id} (userId: ${h.userId})`)
+                  .join(", ")}
+              </small>
+            </div>
+          )}
           <VacationCalendar
             vacations={vacations.filter((v) => v.userId === currentUser.id)}
             holidays={holidays.filter((h) => h.userId === currentUser.id)}
