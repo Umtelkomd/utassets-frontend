@@ -21,6 +21,7 @@ const FiberControlSettings = ({
   settings,
   onSettingsSave,
   activities,
+  onActivitiesChange,
   technicians,
   onTechniciansChange,
   equipment,
@@ -70,6 +71,9 @@ const FiberControlSettings = ({
     setShowModal(true);
 
     switch (type) {
+      case "actividades":
+        setFormData({ id: "", description: "", unit: "", price: 0 });
+        break;
       case "tecnicos":
         setFormData({ name: "", costPerHour: 0 });
         break;
@@ -98,6 +102,20 @@ const FiberControlSettings = ({
       if (!editingItem) {
         // Add new item
         switch (activeTab) {
+          case "actividades":
+            if (
+              !formData.id ||
+              !formData.description ||
+              !formData.unit ||
+              formData.price <= 0
+            ) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const newActivity = await fiberService.createActivity(formData);
+            onActivitiesChange((prev) => [...prev, newActivity]);
+            toast.success("Actividad agregada exitosamente");
+            break;
           case "tecnicos":
             if (!formData.name || formData.costPerHour <= 0) {
               toast.error("Complete todos los campos correctamente");
@@ -140,6 +158,26 @@ const FiberControlSettings = ({
       } else {
         // Edit existing item
         switch (editingItem.type || activeTab) {
+          case "actividades":
+            if (
+              !formData.description ||
+              !formData.unit ||
+              formData.price <= 0
+            ) {
+              toast.error("Complete todos los campos correctamente");
+              return;
+            }
+            const updatedActivity = await fiberService.updateActivity(
+              editingItem.id,
+              formData,
+            );
+            onActivitiesChange((prev) =>
+              prev.map((item) =>
+                item.id === editingItem.id ? updatedActivity : item,
+              ),
+            );
+            toast.success("Actividad actualizada exitosamente");
+            break;
           case "tecnicos":
             if (!formData.name || formData.costPerHour <= 0) {
               toast.error("Complete todos los campos correctamente");
@@ -219,12 +257,17 @@ const FiberControlSettings = ({
   };
 
   const handleDeleteItem = async (id, type) => {
-    if (!window.confirm("Esta seguro de eliminar este elemento?")) {
+    if (!window.confirm("¿Está seguro de eliminar este elemento?")) {
       return;
     }
 
     try {
       switch (type) {
+        case "actividades":
+          await fiberService.deleteActivity(id);
+          onActivitiesChange((prev) => prev.filter((item) => item.id !== id));
+          toast.success("Actividad eliminada exitosamente");
+          break;
         case "tecnicos":
           await fiberService.deleteTechnician(id);
           onTechniciansChange((prev) => prev.filter((item) => item.id !== id));
@@ -320,23 +363,27 @@ const FiberControlSettings = ({
               <h3>
                 <AssignmentIcon /> Actividades
               </h3>
-              <p className="readonly-note">
-                Las actividades son de solo lectura
-              </p>
+              <button
+                onClick={() => openAddModal("actividades")}
+                className="btn-add"
+              >
+                <AddIcon /> Agregar Actividad
+              </button>
             </div>
             <table className="settings-table">
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Descripcion</th>
+                  <th>Descripción</th>
                   <th>Unidad</th>
                   <th>Precio (EUR)</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {activities.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="no-data">
+                    <td colSpan="5" className="no-data">
                       No hay actividades disponibles
                     </td>
                   </tr>
@@ -347,6 +394,24 @@ const FiberControlSettings = ({
                       <td>{activity.description}</td>
                       <td>{activity.unit}</td>
                       <td>{(Number(activity.price) || 0).toFixed(2)}</td>
+                      <td className="action-buttons">
+                        <button
+                          onClick={() => openEditModal(activity, "actividades")}
+                          className="btn-edit"
+                          title="Editar"
+                        >
+                          <EditIcon />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeleteItem(activity.id, "actividades")
+                          }
+                          className="btn-delete"
+                          title="Eliminar"
+                        >
+                          <DeleteIcon />
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -598,6 +663,82 @@ const FiberControlSettings = ({
 
   const renderModalContent = () => {
     switch (activeTab) {
+      case "actividades":
+        return (
+          <>
+            <div className="form-group">
+              <label htmlFor="id">ID de Actividad *</label>
+              <input
+                type="text"
+                id="id"
+                value={formData.id || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, id: e.target.value }))
+                }
+                placeholder="Ej: DGF_ACT_001"
+                required
+                disabled={!!editingItem}
+                style={
+                  editingItem
+                    ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" }
+                    : {}
+                }
+              />
+              {editingItem && (
+                <small style={{ color: "#64748b", fontSize: "0.875rem" }}>
+                  El ID no se puede modificar
+                </small>
+              )}
+            </div>
+            <div className="form-group">
+              <label htmlFor="description">Descripción *</label>
+              <input
+                type="text"
+                id="description"
+                value={formData.description || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder="Descripción de la actividad"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="unit">Unidad *</label>
+              <input
+                type="text"
+                id="unit"
+                value={formData.unit || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, unit: e.target.value }))
+                }
+                placeholder="Ej: UDS, ML, M3"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="price">Precio (EUR) *</label>
+              <input
+                type="number"
+                id="price"
+                min="0"
+                step="0.01"
+                value={formData.price || 0}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    price: parseFloat(e.target.value) || 0,
+                  }))
+                }
+                required
+              />
+            </div>
+          </>
+        );
+
       case "tecnicos":
         return (
           <>
