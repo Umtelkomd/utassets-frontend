@@ -28,7 +28,9 @@ const FiberControlForm = ({
   settings,
 }) => {
   const [formData, setFormData] = useState({
-    client: "",
+    orderNumber: "",
+    projectName: "",
+    clientName: "",
     startDate: new Date().toISOString().split("T")[0],
     endDate: "",
     status: "Pendiente",
@@ -44,7 +46,9 @@ const FiberControlForm = ({
       setFormData(JSON.parse(JSON.stringify(workOrder)));
     } else {
       setFormData({
-        client: "",
+        orderNumber: "",
+        projectName: "",
+        clientName: "",
         startDate: new Date().toISOString().split("T")[0],
         endDate: "",
         status: "Pendiente",
@@ -193,7 +197,15 @@ const FiberControlForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.client.trim()) {
+    if (!formData.orderNumber.trim()) {
+      toast.error("El número de orden es requerido");
+      return;
+    }
+    if (!formData.projectName.trim()) {
+      toast.error("El nombre del proyecto es requerido");
+      return;
+    }
+    if (!formData.clientName.trim()) {
       toast.error("El nombre del cliente es requerido");
       return;
     }
@@ -230,13 +242,13 @@ const FiberControlForm = ({
                 </h3>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Cliente *</label>
+                    <label>Número de Orden *</label>
                     <input
                       type="text"
-                      name="client"
-                      value={formData.client}
+                      name="orderNumber"
+                      value={formData.orderNumber}
                       onChange={handleChange}
-                      placeholder="Nombre del cliente"
+                      placeholder="Ej: OT-2024-001"
                       required
                     />
                   </div>
@@ -252,6 +264,30 @@ const FiberControlForm = ({
                       <option value="Completada">Completada</option>
                       <option value="Facturada">Facturada</option>
                     </select>
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Nombre del Proyecto *</label>
+                    <input
+                      type="text"
+                      name="projectName"
+                      value={formData.projectName}
+                      onChange={handleChange}
+                      placeholder="Nombre del proyecto"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Cliente *</label>
+                    <input
+                      type="text"
+                      name="clientName"
+                      value={formData.clientName}
+                      onChange={handleChange}
+                      placeholder="Nombre del cliente"
+                      required
+                    />
                   </div>
                 </div>
                 <div className="form-row">
@@ -313,12 +349,12 @@ const FiberControlForm = ({
                           updateActivity(
                             index,
                             "quantity",
-                            parseFloat(e.target.value) || 0,
+                            parseInt(e.target.value) || 0,
                           )
                         }
                         placeholder="Cantidad"
                         min="0"
-                        step="0.01"
+                        step="1"
                       />
                       <button
                         type="button"
