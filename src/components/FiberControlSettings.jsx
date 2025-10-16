@@ -34,6 +34,12 @@ const FiberControlSettings = ({
   const [editingItem, setEditingItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({});
+  const [localSettings, setLocalSettings] = useState(settings);
+
+  // Sync local settings when prop changes
+  React.useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
 
   const tabs = [
     { id: "costes", label: "Costes Indirectos", icon: <PercentIcon /> },
@@ -44,12 +50,15 @@ const FiberControlSettings = ({
     { id: "subcontratas", label: "Subcontratas", icon: <BusinessIcon /> },
   ];
 
-  const handleSettingsChange = async (field, value) => {
-    const newSettings = { ...settings, [field]: parseFloat(value) || 0 };
+  const handleSettingsChange = (field, value) => {
+    setLocalSettings((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
+  };
+
+  const handleSaveSettings = async () => {
     try {
-      await fiberService.updateSettings(newSettings);
-      onSettingsSave(newSettings);
-      toast.success("Configuracion actualizada");
+      await fiberService.updateSettings(localSettings);
+      onSettingsSave(localSettings);
+      toast.success("Configuración actualizada");
     } catch (error) {
       console.error("Error updating settings:", error);
       toast.error("Error al actualizar la configuración");
@@ -265,7 +274,7 @@ const FiberControlSettings = ({
                   id="indirectCostRate"
                   min="0"
                   step="0.1"
-                  value={settings.indirectCostRate || 0}
+                  value={localSettings.indirectCostRate || 0}
                   onChange={(e) =>
                     handleSettingsChange("indirectCostRate", e.target.value)
                   }
@@ -284,7 +293,7 @@ const FiberControlSettings = ({
                   id="subcontractorIndirectCostRate"
                   min="0"
                   step="0.1"
-                  value={settings.subcontractorIndirectCostRate || 0}
+                  value={localSettings.subcontractorIndirectCostRate || 0}
                   onChange={(e) =>
                     handleSettingsChange(
                       "subcontractorIndirectCostRate",
@@ -293,6 +302,12 @@ const FiberControlSettings = ({
                   }
                 />
                 <small>Porcentaje aplicado sobre el coste de subcontrata</small>
+              </div>
+
+              <div className="form-actions">
+                <button onClick={handleSaveSettings} className="btn-save">
+                  <SaveIcon /> Guardar Cambios
+                </button>
               </div>
             </div>
           </div>
