@@ -320,9 +320,12 @@ const FiberControl = () => {
                       <th>Estado</th>
                       <th>Fecha Inicio</th>
                       <th>Fecha Fin</th>
+                      <th>Coste Real</th>
                       <th>Costos Totales</th>
+                      <th>Ingreso</th>
                       <th>Monto Facturado</th>
-                      <th>Margen</th>
+                      <th>Rentabilidad</th>
+                      <th>Margen %</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -343,6 +346,11 @@ const FiberControl = () => {
                         income,
                         costs.totalCost,
                       );
+                      const realCost =
+                        costs.laborCost +
+                        costs.equipmentCost +
+                        costs.materialCost +
+                        costs.subcontractorCost;
                       return (
                         <tr key={order.id}>
                           <td>{order.orderNumber}</td>
@@ -365,8 +373,21 @@ const FiberControl = () => {
                                 )
                               : "-"}
                           </td>
+                          <td>{formatCurrency(realCost)}</td>
                           <td>{formatCurrency(costs.totalCost)}</td>
+                          <td>{formatCurrency(income)}</td>
                           <td>{formatCurrency(order.billedAmount || 0)}</td>
+                          <td>
+                            <span
+                              className={
+                                profitability.margin >= 0
+                                  ? "positive-margin"
+                                  : "negative-margin"
+                              }
+                            >
+                              {formatCurrency(profitability.margin)}
+                            </span>
+                          </td>
                           <td>
                             <span
                               className={
