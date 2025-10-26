@@ -470,11 +470,22 @@ export const calculateWorkOrderCosts = (
           (materialCost += (materialMap.get(m.materialId) || 0) * m.quantity),
       );
     });
-    indirectCost = laborCost * (settings.indirectCostRate / 100);
+    // Convert percentage to decimal: if rate is 30 (meaning 30%), divide by 100 to get 0.30
+    // If rate is already less than 1, assume it's already in decimal format
+    const indirectRate =
+      settings.indirectCostRate >= 1
+        ? settings.indirectCostRate / 100
+        : settings.indirectCostRate;
+    indirectCost = laborCost * indirectRate;
   } else if (workOrder.executorType === "subcontractor") {
     subcontractorCost = workOrder.subcontractorCost || 0;
-    indirectCost =
-      subcontractorCost * (settings.subcontractorIndirectCostRate / 100);
+    // Convert percentage to decimal: if rate is 30 (meaning 30%), divide by 100 to get 0.30
+    // If rate is already less than 1, assume it's already in decimal format
+    const subcontractorIndirectRate =
+      settings.subcontractorIndirectCostRate >= 1
+        ? settings.subcontractorIndirectCostRate / 100
+        : settings.subcontractorIndirectCostRate;
+    indirectCost = subcontractorCost * subcontractorIndirectRate;
   }
 
   const totalCost =
